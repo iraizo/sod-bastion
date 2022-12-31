@@ -44,3 +44,5 @@ end
 function MythicPlusUtils:HasCriticalDispel(unit)
 
 end
+
+return MythicPlusUtils
