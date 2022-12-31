@@ -33,6 +33,7 @@ Bastion.AuraTable = Bastion.require("AuraTable")
 Bastion.Class = Bastion.require("Class")
 Bastion.Timer = Bastion.require("Timer")
 Bastion.CombatTimer = Bastion.Timer:New('combat')
+Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
 
 Bastion.modules = {}
 Bastion.Enabled = false
@@ -140,6 +141,19 @@ Command:Register('module', 'Toggle a module on/off', function(args)
     else
         Bastion:Print("Module not found")
     end
+end)
+
+Command:Register('mplus', 'Toggle m+ module on/off', function(args)
+    local cmd = args[2]
+    if cmd == 'debuffs' then
+        Bastion.MythicPlusUtils:ToggleDebuffLogging()
+        Bastion:Print("Debuff logging", Bastion.MythicPlusUtils.debuffLogging and "enabled" or "disabled")
+        return
+    end
+
+    Bastion:Print("[MythicPlusUtils] Unknown command")
+    Bastion:Print("Available commands:")
+    Bastion:Print("debuffs")
 end)
 
 local files = ListFiles("scripts/bastion/scripts")

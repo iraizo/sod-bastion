@@ -338,7 +338,8 @@ DefaultAPL:AddSpell(
                     (
                     Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
                         Lowest:GetPartyHPAround(30, 90) >= 2)) or
-                (Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2)) and not Player:IsMoving()
+                (Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2) or
+                Lowest:GetHP() <= 55) and not Player:IsMoving()
     end):SetTarget(Lowest)
 )
 
@@ -348,7 +349,8 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Lowest) and Lowest:GetHP() < 75 and
             (
             NaturesSwiftness:GetTimeSinceLastCast() < 2 or Player:GetAuras():FindMy(NaturesSwiftness):IsUp() or
-                NaturesSwiftness:IsKnownAndUsable()) and not Player:IsMoving()
+                NaturesSwiftness:IsKnownAndUsable()) and not Player:IsMoving() and
+            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
     end):SetTarget(Lowest)
 )
 
