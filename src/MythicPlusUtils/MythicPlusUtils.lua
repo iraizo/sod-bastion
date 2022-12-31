@@ -13,9 +13,7 @@ function MythicPlusUtils:New()
     self.random = math.random(1000000, 9999999)
 
     Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
-        local u = Bastion.UnitManager[unit]
-
-        if not self.unit:IsUnit(unit) then
+        if not self.debuffLogging then
             return
         end
 
