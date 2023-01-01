@@ -17,16 +17,18 @@ function MythicPlusUtils:New()
             return
         end
 
-        local addedAuras = auras.addedAuras
+        if auras.addedAuras then
+            local addedAuras = auras.addedAuras
 
-        if #addedAuras > 0 then
-            for i = 1, #addedAuras do
-                local aura = Bastion.Aura:CreateFromUnitAuraInfo(addedAuras[i])
-                if not aura:IsBuff() then
-                    WriteFile('bastion-MPlusDebuffs-' .. self.random .. '.lua', [[
+            if #addedAuras > 0 then
+                for i = 1, #addedAuras do
+                    local aura = Bastion.Aura:CreateFromUnitAuraInfo(addedAuras[i])
+                    if not aura:IsBuff() then
+                        WriteFile('bastion-MPlusDebuffs-' .. self.random .. '.lua', [[
                         AuraName: ]] .. aura:GetName() .. [[
-                        AuraID: ]] .. aura:GetID() .. [[
-                    ]], true)
+                        AuraID: ]] .. aura:GetSpell():GetID() .. "\n" .. [[
+                    ]]   , true)
+                    end
                 end
             end
         end

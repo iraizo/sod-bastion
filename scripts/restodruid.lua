@@ -287,7 +287,7 @@ DefaultAPL:AddSpell(
     NaturesSwiftness:CastableIf(function(self)
         return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(Lowest) and
-            (Lowest:GetHP() < 75 or (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70))
+            (Lowest:GetHP() < 70 or (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70))
             )
     end):SetTarget(Lowest)
 )
@@ -320,7 +320,7 @@ DefaultAPL:AddSpell(
         return SwiftmendUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(SwiftmendUnit) and
             (
-            SwiftmendUnit:GetHP() <= 85 or
+            SwiftmendUnit:GetHP() <= 80 or
                 (
                 Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2
                 )
@@ -338,29 +338,26 @@ DefaultAPL:AddSpell(
                     (
                     Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
                         Lowest:GetPartyHPAround(30, 90) >= 2)) or
-                (Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2) or
-                Lowest:GetHP() <= 55) and not Player:IsMoving()
+                (Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2)) and not Player:IsMoving()
     end):SetTarget(Lowest)
 )
 
 DefaultAPL:AddSpell(
     Regrowth:CastableIf(function(self)
         return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and Lowest:GetHP() < 75 and
+            and Player:CanSee(Lowest) and Lowest:GetHP() < 50 and
+            Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and not Player:IsMoving()
+    end):SetTarget(Lowest)
+)
+
+DefaultAPL:AddSpell(
+    Regrowth:CastableIf(function(self)
+        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Lowest) and Lowest:GetHP() < 70 and
             (
             NaturesSwiftness:GetTimeSinceLastCast() < 2 or Player:GetAuras():FindMy(NaturesSwiftness):IsUp() or
                 NaturesSwiftness:IsKnownAndUsable()) and not Player:IsMoving() and
             not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
-    end):SetTarget(Lowest)
-)
-
-DefaultAPL:AddSpell(
-    Regrowth:CastableIf(function(self)
-        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and
-            (Lowest:GetHP() < 70 or (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
-            not Player:GetAuras():FindMy(Regrowth):IsUp() and not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
-            not Player:IsMoving()
     end):SetTarget(Lowest)
 )
 
@@ -398,6 +395,16 @@ DefaultAPL:AddSpell(
             and Player:CanSee(RejuvUnit) and RejuvUnit:GetHP() <= 94 and
             not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
     end):SetTarget(RejuvUnit)
+)
+
+DefaultAPL:AddSpell(
+    Regrowth:CastableIf(function(self)
+        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Lowest) and
+            (Lowest:GetHP() < 70 or (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
+            not Player:GetAuras():FindMy(Regrowth):IsUp() and not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
+            not Player:IsMoving()
+    end):SetTarget(Lowest)
 )
 
 DefaultAPL:AddSpell(
