@@ -139,6 +139,36 @@ local Lowest = Bastion.UnitManager:CreateCustomUnit('lowest', function(unit)
     return lowest
 end)
 
+local DispelTarget = Bastion.UnitManager:CreateCustomUnit('dispel', function()
+    local dispelTarget = nil
+
+    Bastion.UnitManager:EnumFriends(function(unit)
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if unit:IsDead() then
+            return false
+        end
+
+        if unit:GetAuras():HasAnyDispelableAura(NaturesCure) then
+            return true
+        end
+
+        return false
+    end)
+
+    if not dispelTarget then
+        dispelTarget = Player
+    end
+
+    return dispelTarget
+end)
+
 local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
     local tank = nil
 
@@ -281,6 +311,13 @@ DefaultAPL:AddAction(
             CancelShapeshiftForm()
         end
     end
+)
+
+DefaultAPL:AddSpell(
+    NaturesCure:CastableIf(function(self)
+        return DispelTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            self:IsInRange(DispelTarget) and DispelTarget:GetAuras():HasAnyDispelableAura(self)
+    end):SetTarget(DispelTarget)
 )
 
 DefaultAPL:AddSpell(
