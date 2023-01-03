@@ -217,7 +217,10 @@ local RejuvUnit = Bastion.UnitManager:CreateCustomUnit('rejuv', function(unit)
             return false
         end
 
-        if not unit:IsDead() and Player:CanSee(unit) and not unit:GetAuras():FindMy(Rejuvenation):IsUp() then
+        if not unit:IsDead() and Player:CanSee(unit) and
+            (
+            not unit:GetAuras():FindMy(Rejuvenation):IsUp() or
+                unit:GetAuras():FindMy(Rejuvenation):GetRemainingTime() <= 3.6) then
 
             local hp = unit:GetHP()
             if hp < lowestHP then
@@ -415,14 +418,20 @@ DefaultAPL:AddSpell(
 DefaultAPL:AddSpell(
     Lifebloom:CastableIf(function(self)
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and not Player:GetAuras():FindMy(LifebloomAura):IsUp() and Player:IsAffectingCombat()
+            and
+            (
+            not Player:GetAuras():FindMy(LifebloomAura):IsUp() or
+                Player:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Player:IsAffectingCombat()
     end):SetTarget(Player)
 )
 
 DefaultAPL:AddSpell(
     Lifebloom:CastableIf(function(self)
         return Tank:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and not Tank:GetAuras():FindMy(LifebloomAura):IsUp() and Tank:IsAffectingCombat()
+            and
+            (
+            not Tank:GetAuras():FindMy(LifebloomAura):IsUp() or
+                Tank:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Tank:IsAffectingCombat()
     end):SetTarget(Tank)
 )
 
@@ -447,14 +456,20 @@ DefaultAPL:AddSpell(
 DefaultAPL:AddSpell(
     Sunfire:CastableIf(function(self)
         return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and not Target:GetAuras():FindMy(SunfireAura):IsUp()
+            and Player:CanSee(Target) and
+            (
+            not Target:GetAuras():FindMy(SunfireAura):IsUp() or
+                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4)
     end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Moonfire:CastableIf(function(self)
         return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and not Target:GetAuras():FindMy(MoonfireAura):IsUp()
+            and Player:CanSee(Target) and
+            (
+            not Target:GetAuras():FindMy(MoonfireAura):IsUp() or
+                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4)
     end):SetTarget(Target)
 )
 
