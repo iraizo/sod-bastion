@@ -174,34 +174,34 @@ local DispelTarget = Bastion.UnitManager:CreateCustomUnit('rejuv', function(unit
     return lowest
 end)
 
--- local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
---     local purge = nil
+local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
+    local purge = nil
 
---     Bastion.UnitManager:EnumEnemies(function(unit)
---         if unit:IsDead() then
---             return false
---         end
+    Bastion.UnitManager:EnumEnemies(function(unit)
+        if unit:IsDead() then
+            return false
+        end
 
---         if not Player:CanSee(unit) then
---             return false
---         end
+        if not Player:CanSee(unit) then
+            return false
+        end
 
---         if Player:GetDistance(unit) > 40 then
---             return false
---         end
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
 
---         if not unit:IsDead() and Player:CanSee(unit) and
---             unit:GetAuras():HasAnyStealableAura() then
---             purge = unit
---         end
---     end)
+        if not unit:IsDead() and Player:CanSee(unit) and
+            unit:GetAuras():HasAnyStealableAura() then
+            purge = unit
+        end
+    end)
 
---     if purge == nil then
---         purge = None
---     end
+    if purge == nil then
+        purge = None
+    end
 
---     return purge
--- end)
+    return purge
+end)
 
 local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
     local tank = nil
@@ -359,9 +359,9 @@ DefaultAPL:AddSpell(
 
 DefaultAPL:AddSpell(
     Soothe:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
-            self:IsInRange(Target) and Target:GetAuras():HasAnyStealableAura()
-    end):SetTarget(Target)
+        return PurgeTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            self:IsInRange(PurgeTarget) and PurgeTarget:GetAuras():HasAnyStealableAura()
+    end):SetTarget(PurgeTarget)
 )
 
 DefaultAPL:AddSpell(
