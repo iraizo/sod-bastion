@@ -139,11 +139,12 @@ local Lowest = Bastion.UnitManager:CreateCustomUnit('lowest', function(unit)
     return lowest
 end)
 
-local DispelTarget = Bastion.UnitManager:CreateCustomUnit('dispel', function()
-    local dispelTarget = nil
+local DispelTarget = Bastion.UnitManager:CreateCustomUnit('rejuv', function(unit)
+    local lowest = nil
+    local lowestHP = math.huge
 
     Bastion.UnitManager:EnumFriends(function(unit)
-        if Player:GetDistance(unit) > 40 then
+        if unit:IsDead() then
             return false
         end
 
@@ -151,23 +152,56 @@ local DispelTarget = Bastion.UnitManager:CreateCustomUnit('dispel', function()
             return false
         end
 
-        if unit:IsDead() then
+        if Player:GetDistance(unit) > 40 then
             return false
         end
 
-        if unit:GetAuras():HasAnyDispelableAura(NaturesCure) then
-            return true
-        end
+        if not unit:IsDead() and Player:CanSee(unit) and
+            unit:GetAuras():HasAnyDispelableAura(NaturesCure) then
 
-        return false
+            local hp = unit:GetHP()
+            if hp < lowestHP then
+                lowest = unit
+                lowestHP = hp
+            end
+        end
     end)
 
-    if not dispelTarget then
-        dispelTarget = Player
+    if lowest == nil then
+        lowest = None
     end
 
-    return dispelTarget
+    return lowest
 end)
+
+-- local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
+--     local purge = nil
+
+--     Bastion.UnitManager:EnumEnemies(function(unit)
+--         if unit:IsDead() then
+--             return false
+--         end
+
+--         if not Player:CanSee(unit) then
+--             return false
+--         end
+
+--         if Player:GetDistance(unit) > 40 then
+--             return false
+--         end
+
+--         if not unit:IsDead() and Player:CanSee(unit) and
+--             unit:GetAuras():HasAnyStealableAura() then
+--             purge = unit
+--         end
+--     end)
+
+--     if purge == nil then
+--         purge = None
+--     end
+
+--     return purge
+-- end)
 
 local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
     local tank = nil
@@ -277,7 +311,7 @@ local SwiftmendUnit = Bastion.UnitManager:CreateCustomUnit('swiftmend', function
 
 
     if lowest == nil then
-        lowest = Player
+        lowest = None
     end
 
     return lowest
@@ -319,8 +353,15 @@ DefaultAPL:AddAction(
 DefaultAPL:AddSpell(
     NaturesCure:CastableIf(function(self)
         return DispelTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
-            self:IsInRange(DispelTarget) and DispelTarget:GetAuras():HasAnyDispelableAura(self)
+            self:IsInRange(DispelTarget) and DispelTarget:GetAuras():HasAnyDispelableAura(NaturesCure)
     end):SetTarget(DispelTarget)
+)
+
+DefaultAPL:AddSpell(
+    Soothe:CastableIf(function(self)
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            self:IsInRange(Target) and Target:GetAuras():HasAnyStealableAura()
+    end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
@@ -459,7 +500,8 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Target) and
             (
             not Target:GetAuras():FindMy(SunfireAura):IsUp() or
-                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4)
+                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and Target:IsHostile() and
+            Target:IsAffectingCombat()
     end):SetTarget(Target)
 )
 
@@ -469,21 +511,24 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Target) and
             (
             not Target:GetAuras():FindMy(MoonfireAura):IsUp() or
-                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4)
+                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and Target:IsHostile() and
+            Target:IsAffectingCombat()
     end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Starsurge:CastableIf(function(self)
         return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target)
+            and Player:CanSee(Target) and Target:IsHostile() and
+            Target:IsAffectingCombat()
     end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Wrath:CastableIf(function(self)
         return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and not Player:IsMoving()
+            and Player:CanSee(Target) and not Player:IsMoving() and Target:IsHostile() and
+            Target:IsAffectingCombat()
     end):SetTarget(Target)
 )
 

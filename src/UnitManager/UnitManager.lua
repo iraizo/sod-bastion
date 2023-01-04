@@ -1,5 +1,7 @@
 local Tinkr, Bastion = ...
 
+local ObjectManager = Tinkr.Util.ObjectManager
+
 local Unit = Bastion.Unit
 
 local prefixes = {
@@ -49,6 +51,7 @@ end
 local UnitManager = {
     units = {},
     customUnits = {},
+    objects = {},
     cache = {}
 }
 
@@ -70,6 +73,10 @@ function UnitManager:__index(k)
         return self.customUnits[k].unit
     end
 
+    if self.objects[k] then
+        return self.objects[k]
+    end
+
     -- if not Validate(k) then
     --     error("UnitManager:Get - Invalid token: " .. k)
     -- end
@@ -77,6 +84,8 @@ function UnitManager:__index(k)
     if self.units[k] == nil then
         self.units[k] = Unit:New(k)
     end
+
+
 
     return self.units[k]
 end
@@ -105,6 +114,14 @@ function UnitManager:Get(token)
     end
 
     return self.units[token]
+end
+
+function UnitManager:GetObject(guid)
+    return self.objects[guid]
+end
+
+function UnitManager:SetObject(unit)
+    self.objects[unit:GetGUID()] = unit
 end
 
 -- Create a custom unit and cache it for .5 seconds
@@ -160,14 +177,18 @@ end
 
 -- Enum Enemies (object manager)
 function UnitManager:EnumEnemies(cb)
-    local objs = Objects()
-    for i = 1, #objs do
-        local obj = objs[i]
+    for obj in ObjectManager:Objects() do
         if ObjectType(obj) == 5 or ObjectType(obj) == 6 then
-            local unit = Unit:New(obj)
-            if unit:IsHostile() and unit:IsAffectingCombat() and unit:IsAlive() and unit:CanSee(self)
+            local unit = UnitManager:GetObject(ObjectGUID(obj))
+            if not unit then
+                unit = Unit:New(obj)
+                UnitManager:SetObject(unit)
+            end
+            if unit:IsHostile() and unit:IsAffectingCombat() and unit:IsAlive()
             then
-                cb(unit)
+                if cb(unit) then
+                    break
+                end
             end
         end
     end
@@ -179,8 +200,26 @@ function UnitManager:EnumUnits(cb)
     for i = 1, #objs do
         local obj = objs[i]
         if ObjectType(obj) == 5 or ObjectType(obj) == 6 then
-            local unit = Unit:New(obj)
-            cb(unit)
+            local unit = UnitManager:GetObject(ObjectGUID(obj))
+            if not unit then
+                unit = Unit:New(obj)
+                UnitManager:SetObject(unit)
+            end
+            if cb(unit) then
+                break
+            end
+        end
+    end
+end
+
+-- Enum enemies (nameplates)
+function UnitManager:EnumNameplates(cb)
+    for i = 1, 50 do
+        local unit = self:Get('nameplate' .. i)
+        if unit:IsValid() then
+            if cb(unit) then
+                break
+            end
         end
     end
 end
