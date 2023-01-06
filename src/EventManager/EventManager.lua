@@ -27,7 +27,6 @@ function EventManager:New()
         end
     end)
 
-
     return self
 end
 
@@ -36,6 +35,7 @@ function EventManager:RegisterEvent(event, handler)
     if not self.events[event] then
         self.events[event] = {}
     end
+
     table.insert(self.events[event], handler)
 end
 
@@ -45,6 +45,7 @@ function EventManager:RegisterWoWEvent(event, handler)
         self.wowEventHandlers[event] = {}
         self.frame:RegisterEvent(event)
     end
+
     table.insert(self.wowEventHandlers[event], handler)
 end
 

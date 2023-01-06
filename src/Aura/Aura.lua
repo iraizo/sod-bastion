@@ -69,6 +69,7 @@ function Aura:New(unit, index, type)
         castByPlayer = castByPlayer,
         nameplateShowAll = nameplateShowAll,
         timeMod = timeMod,
+        auraInstanceID = nil,
 
         index = index,
         type = type,
@@ -94,6 +95,7 @@ function Aura:CreateFromUnitAuraInfo(unitAuraInfo)
         castByPlayer = unitAuraInfo.isFromPlayerOrPlayerPet,
         nameplateShowAll = unitAuraInfo.nameplateShowAll,
         timeMod = unitAuraInfo.timeMod,
+        auraInstanceID = unitAuraInfo.auraInstanceID,
 
         index = nil,
         type = unitAuraInfo.isHarmful and "HARMFUL" or "HELPFUL",
@@ -109,6 +111,11 @@ end
 -- Check if the aura is up
 function Aura:IsUp()
     return self:IsValid() and (self:GetDuration() == 0 or self:GetRemainingTime() > 0)
+end
+
+-- Check if the aura is down
+function Aura:IsDown()
+    return not self:IsUp()
 end
 
 -- Get the auras index
@@ -215,6 +222,11 @@ end
 -- Check if the aura is a debuff
 function Aura:IsDebuff()
     return self.aura.type == "HARMFUL"
+end
+
+-- Get aura instance id
+function Aura:GetAuraInstanceID()
+    return self.aura.auraInstanceID
 end
 
 -- Check if the aura is dispelable by a spell

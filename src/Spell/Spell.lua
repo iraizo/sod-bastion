@@ -102,8 +102,14 @@ function Spell:Cast(unit, condition)
     -- Check if the mouse was looking
     self.wasLooking = IsMouselooking()
 
+    -- if unit.unit contains 'nameplate' then we need to use Object wrapper to cast
+    local u = unit.unit
+    if string.find(u, 'nameplate') then
+        u = Object(u)
+    end
+
     -- Cast the spell
-    CastSpellByName(self:GetName(), unit.unit)
+    CastSpellByName(self:GetName(), u)
 
     Bastion:Debug("Casting", self)
 

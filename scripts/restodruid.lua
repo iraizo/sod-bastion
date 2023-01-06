@@ -1,7 +1,7 @@
 local Tinkr, Bastion = ...
 
 local RestoModule = Bastion.Module:New('resto_druid')
-
+local Evaluator = Tinkr.Util.Evaluator
 local Player = Bastion.UnitManager:Get('player')
 local None = Bastion.UnitManager:Get('none')
 local Target = Bastion.UnitManager:Get('target')
@@ -177,7 +177,7 @@ end)
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumEnemies(function(unit)
+    Bastion.UnitManager:EnumNameplates(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -193,6 +193,7 @@ local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
         if not unit:IsDead() and Player:CanSee(unit) and
             unit:GetAuras():HasAnyStealableAura() then
             purge = unit
+            return true
         end
     end)
 
@@ -317,6 +318,48 @@ local SwiftmendUnit = Bastion.UnitManager:CreateCustomUnit('swiftmend', function
     return lowest
 end)
 
+local WildGrowthUnit = Bastion.UnitManager:CreateCustomUnit('wildgrowth', function(unit)
+    local lowest = nil
+    local lowestHP = math.huge
+
+    Bastion.UnitManager:EnumFriends(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if Player:CanSee(unit) and (
+            (
+                Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
+                    (
+                    Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
+                        unit:GetPartyHPAround(30, 90) >= 2)) or
+                (unit:GetPartyHPAround(30, 90) >= 3 or unit:GetPartyHPAround(30, 85) >= 2))
+        then
+            local hp = unit:GetHP()
+            if hp < lowestHP then
+                lowest = unit
+                lowestHP = hp
+            end
+        end
+
+    end)
+
+
+    if lowest == nil then
+        lowest = None
+    end
+
+    return lowest
+end)
+
 local RestoCommands = Bastion.Command:New('resto')
 
 local PLACE_EFFLO = false
@@ -385,7 +428,14 @@ DefaultAPL:AddSpell(
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
             self:IsInRange(Player) and (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70) >= 3) and
             (not ConvokeTheSpirits:IsKnownAndUsable() and ConvokeTheSpirits:GetTimeSinceLastCast() > 7) and
-            WildGrowth:GetTimeSinceLastCast() <= 4
+            WildGrowth:GetTimeSinceLastCast() <= 6
+    end):SetTarget(Player)
+)
+
+DefaultAPL:AddSpell(
+    NaturesVigil:CastableIf(function(self)
+        return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            self:IsInRange(Player) and Flourish:GetTimeSinceLastCast() <= 5
     end):SetTarget(Player)
 )
 
@@ -411,22 +461,23 @@ DefaultAPL:AddSpell(
 
 DefaultAPL:AddSpell(
     WildGrowth:CastableIf(function(self)
-        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and
+        return WildGrowthUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(WildGrowthUnit) and
             (
             (
                 Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
                     (
                     Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
-                        Lowest:GetPartyHPAround(30, 90) >= 2)) or
-                (Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2)) and not Player:IsMoving()
-    end):SetTarget(Lowest)
+                        WildGrowthUnit:GetPartyHPAround(30, 90) >= 2)) or
+                (WildGrowthUnit:GetPartyHPAround(30, 90) >= 3 or WildGrowthUnit:GetPartyHPAround(30, 85) >= 2)) and
+            not Player:IsMoving()
+    end):SetTarget(WildGrowthUnit)
 )
 
 DefaultAPL:AddSpell(
     Regrowth:CastableIf(function(self)
         return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and Lowest:GetHP() < 50 and
+            and Player:CanSee(Lowest) and Lowest:GetHP() < 65 and
             Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and not Player:IsMoving()
     end):SetTarget(Lowest)
 )
@@ -457,6 +508,26 @@ DefaultAPL:AddSpell(
 )
 
 DefaultAPL:AddSpell(
+    Rejuvenation:CastableIf(function(self)
+        return RejuvUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(RejuvUnit) and RejuvUnit:GetHP() <= 94 and
+            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
+    end):SetTarget(RejuvUnit)
+)
+
+DefaultAPL:AddSpell(
+    Regrowth:CastableIf(function(self)
+        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Lowest) and
+            (
+            not Player:GetAuras():FindMy(Regrowth):IsUp() and Lowest:GetHP() < 70 or
+                (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
+            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
+            not Player:IsMoving()
+    end):SetTarget(Lowest)
+)
+
+DefaultAPL:AddSpell(
     Lifebloom:CastableIf(function(self)
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and
@@ -474,24 +545,6 @@ DefaultAPL:AddSpell(
             not Tank:GetAuras():FindMy(LifebloomAura):IsUp() or
                 Tank:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Tank:IsAffectingCombat()
     end):SetTarget(Tank)
-)
-
-DefaultAPL:AddSpell(
-    Rejuvenation:CastableIf(function(self)
-        return RejuvUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(RejuvUnit) and RejuvUnit:GetHP() <= 94 and
-            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
-    end):SetTarget(RejuvUnit)
-)
-
-DefaultAPL:AddSpell(
-    Regrowth:CastableIf(function(self)
-        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and
-            (Lowest:GetHP() < 70 or (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
-            not Player:GetAuras():FindMy(Regrowth):IsUp() and not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
-            not Player:IsMoving()
-    end):SetTarget(Lowest)
 )
 
 DefaultAPL:AddSpell(
