@@ -40,6 +40,13 @@ function Spell:New(id)
 
     self.spellID = id
 
+    Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
+        local unit, castGUID, spellID = ...
+        if unit == "player" and spellID == self:GetID() then
+            self.lastCastAt = GetTime()
+        end
+    end)
+
     return self
 end
 
@@ -104,7 +111,7 @@ function Spell:Cast(unit, condition)
 
     -- if unit.unit contains 'nameplate' then we need to use Object wrapper to cast
     local u = unit.unit
-    if string.find(u, 'nameplate') then
+    if type(u) == "string" and string.find(u, 'nameplate') then
         u = Object(u)
     end
 
@@ -114,7 +121,7 @@ function Spell:Cast(unit, condition)
     Bastion:Debug("Casting", self)
 
     -- Set the last cast time
-    self.lastCastAt = GetTime()
+    self.lastCastAttempt = GetTime()
 
     -- Call post cast function
     if self:GetOnCastFunction() then
@@ -202,36 +209,20 @@ function Spell:Call(unit)
     return false
 end
 
+function Spell:HasRange()
+    return SpellHasRange(self:GetName())
+end
+
 -- Check if the spell is in range of the unit
 function Spell:IsInRange(unit)
-    local name, rank, icon, castTime, spellmin, spellmax, spellID = GetSpellInfo(self:GetID())
+    local hasRange = self:HasRange()
+    local inRange = IsSpellInRange(self:GetName(), unit.unit)
 
-    local them = Object(unit.unit)
-
-    local tx, ty, tz = ObjectPosition(unit.unit)
-    local px, py, pz = ObjectPosition('player')
-
-    if not them then
-        return false
-    end
-
-    if tx == 0 and ty == 0 and tz == 0 then
+    if not hasRange then
         return true
     end
 
-    local combatReach = ObjectCombatReach("player")
-    local themCombatReach = ObjectCombatReach(unit.unit)
-
-    if Bastion.UnitManager['player']:InMelee(unit) and spellmin == 0 then
-        return true
-    end
-
-    local distance = FastDistance(px, py, pz, tx, ty, tz)
-
-    if spellmax
-        and distance >= spellmin
-        and distance <= combatReach + themCombatReach + spellmax
-    then
+    if hasRange and inRange == 1 then
         return true
     end
 

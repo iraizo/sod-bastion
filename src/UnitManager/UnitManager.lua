@@ -69,25 +69,25 @@ function UnitManager:__index(k)
             self.cache:Set(k, self.customUnits[k].unit, 0.5)
         end
 
-
         return self.customUnits[k].unit
     end
 
-    if self.objects[k] then
-        return self.objects[k]
+    local kguid = ObjectGUID(k)
+
+    if kguid and self.objects[kguid] then
+        return self.objects[kguid]
     end
 
     -- if not Validate(k) then
     --     error("UnitManager:Get - Invalid token: " .. k)
     -- end
 
-    if self.units[k] == nil then
-        self.units[k] = Unit:New(k)
+    if self.objects[kguid] == nil then
+        local unit = Unit:New(Object(k))
+        self:SetObject(unit)
     end
 
-
-
-    return self.units[k]
+    return self.objects[kguid]
 end
 
 -- Constructor
@@ -109,11 +109,13 @@ function UnitManager:Get(token)
     --     error("UnitManager:Get - Invalid token: " .. token)
     -- end
 
-    if self.units[token] == nil then
-        self.units[token] = Unit:New(token)
+    local tguid = ObjectGUID(token)
+
+    if self.objects[tguid] == nil then
+        self.objects[tguid] = Unit:New(Object(tguid))
     end
 
-    return self.units[token]
+    return self.objects[tguid]
 end
 
 function UnitManager:GetObject(guid)

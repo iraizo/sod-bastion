@@ -15,6 +15,7 @@ function Bastion.require(class)
 end
 
 Bastion.ClassMagic = Bastion.require("ClassMagic")
+Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
 Bastion.Vector3 = Bastion.require("Vector3")
 Bastion.Commmand = Bastion.require("Command")
 Bastion.Cache = Bastion.require("Cache")
@@ -34,9 +35,16 @@ Bastion.Class = Bastion.require("Class")
 Bastion.Timer = Bastion.require("Timer")
 Bastion.CombatTimer = Bastion.Timer:New('combat')
 Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
+Bastion.Notifications = Bastion.NotificationsList:New()
 
 Bastion.modules = {}
 Bastion.Enabled = false
+
+Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
+    local u = Bastion.UnitManager[unit]
+
+    u:GetAuras():OnUpdate(auras)
+end)
 
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then

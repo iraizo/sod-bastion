@@ -23,11 +23,15 @@ end
 
 -- tostring
 function Unit:__tostring()
-    return "Bastion.__Unit(" .. self.unit .. ")" .. " - " .. (self:GetName() or '')
+    return "Bastion.__Unit(" .. tostring(self.unit) .. ")" .. " - " .. (self:GetName() or '')
 end
 
 -- Constructor
 function Unit:New(unit)
+    if UnitIsUnit(unit, "player") then
+        print("Created unit for player")
+    end
+
     local self      = setmetatable({}, Unit)
     self.unit       = unit
     self.cache      = Bastion.Cache:New()
@@ -144,7 +148,7 @@ end
 
 -- Is the unit a hostile unit
 function Unit:IsHostile()
-    return UnitIsEnemy("player", self.unit)
+    return UnitCanAttack(self.unit, 'player')
 end
 
 -- Is the unit a boss
@@ -217,15 +221,7 @@ local isClassicWow = select(4, GetBuildInfo()) < 40000
 
 -- Check if two units are in melee
 function Unit:InMelee(unit)
-    local combatReach = ObjectCombatReach(self.unit)
-    local themCombatReach = ObjectCombatReach(unit.unit)
-
-    if not combatReach or not themCombatReach then
-        return false
-    end
-
-    return self:GetDistance(unit)
-        < math.max(combatReach + 1.3333 + themCombatReach, 5)
+    return UnitInMelee(self.unit, unit.unit)
 end
 
 local losFlag = bit.bor(0x1, 0x10, 0x100000)
@@ -317,24 +313,28 @@ function Unit:GetEnemies(range)
     end
 
     local count = 0
-    local objs = Objects()
-    local numobjs = #objs
 
-    for i = 1, numobjs do
-        local object = objs[i]
-        -- unit types 5,6,7
-        if ObjectType(object) == 5 or ObjectType(object) == 6 then
-            local unit = Unit:New(object)
-            if Bastion.UnitManager['player']:CanAttack(unit) and unit:IsAffectingCombat() and unit:IsAlive() and
-                unit:CanSee(self)
-                and
-                self:GetDistance(unit) <= range then
-                count = count + 1
-            end
+    Bastion.UnitManager:EnumNameplates(function(unit)
+        if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) then
+            count = count + 1
         end
-    end
+    end)
 
     self.cache:Set("enemies_" .. range, count, .5)
+    return count
+end
+
+-- Get the number of melee attackers
+function Unit:GetMeleeAttackers()
+    local count = 0
+
+    Bastion.UnitManager:EnumNameplates(function(unit)
+        if not self:IsUnit(unit) and unit:IsAlive() and self:CanSee(unit) and
+            self:InMelee(unit) and unit:IsAffectingCombat() and not unit:IsFriendly(self) then
+            count = count + 1
+        end
+    end)
+
     return count
 end
 

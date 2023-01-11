@@ -139,7 +139,7 @@ local Lowest = Bastion.UnitManager:CreateCustomUnit('lowest', function(unit)
     return lowest
 end)
 
-local DispelTarget = Bastion.UnitManager:CreateCustomUnit('rejuv', function(unit)
+local DispelTarget = Bastion.UnitManager:CreateCustomUnit('dispel', function(unit)
     local lowest = nil
     local lowestHP = math.huge
 
@@ -366,7 +366,7 @@ local PLACE_EFFLO = false
 
 RestoCommands:Register('efflo', 'Request the engine to place an Efflorescence', function()
     PLACE_EFFLO = true
-    Bastion:Print('Efflorescence will be placed on next cast')
+    Bastion.Notifications:AddNotification(Efflorescence:GetIcon(), "Efflorescence requested")
 end)
 
 local DefaultAPL = Bastion.APL:New('default')
@@ -516,18 +516,6 @@ DefaultAPL:AddSpell(
 )
 
 DefaultAPL:AddSpell(
-    Regrowth:CastableIf(function(self)
-        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and
-            (
-            not Player:GetAuras():FindMy(Regrowth):IsUp() and Lowest:GetHP() < 70 or
-                (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
-            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
-            not Player:IsMoving()
-    end):SetTarget(Lowest)
-)
-
-DefaultAPL:AddSpell(
     Lifebloom:CastableIf(function(self)
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and
@@ -548,41 +536,53 @@ DefaultAPL:AddSpell(
 )
 
 DefaultAPL:AddSpell(
-    Sunfire:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and
+    Regrowth:CastableIf(function(self)
+        return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Lowest) and
             (
-            not Target:GetAuras():FindMy(SunfireAura):IsUp() or
-                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and Target:IsHostile() and
-            Target:IsAffectingCombat()
-    end):SetTarget(Target)
+            not Player:GetAuras():FindMy(Regrowth):IsUp() and Lowest:GetHP() < 70 or
+                (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
+            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
+            not Player:IsMoving()
+    end):SetTarget(Lowest)
+)
+
+DefaultAPL:AddSpell(
+    Sunfire:CastableIf(function(self)
+        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Bastion.UnitManager['target']) and
+            (
+            not Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):IsUp() or
+                Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat()
+    end):SetTarget(Bastion.UnitManager['target'])
 )
 
 DefaultAPL:AddSpell(
     Moonfire:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and
+        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Bastion.UnitManager['target']) and
             (
-            not Target:GetAuras():FindMy(MoonfireAura):IsUp() or
-                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and Target:IsHostile() and
-            Target:IsAffectingCombat()
-    end):SetTarget(Target)
+            not Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):IsUp() or
+                Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat()
+    end):SetTarget(Bastion.UnitManager['target'])
 )
 
 DefaultAPL:AddSpell(
     Starsurge:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and Target:IsHostile() and
-            Target:IsAffectingCombat()
-    end):SetTarget(Target)
+        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Bastion.UnitManager['target']) and Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat()
+    end):SetTarget(Bastion.UnitManager['target'])
 )
 
 DefaultAPL:AddSpell(
     Wrath:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and not Player:IsMoving() and Target:IsHostile() and
-            Target:IsAffectingCombat()
-    end):SetTarget(Target)
+        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Bastion.UnitManager['target']) and not Player:IsMoving() and Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat()
+    end):SetTarget(Bastion.UnitManager['target'])
 )
 
 RestoModule:Sync(function()
