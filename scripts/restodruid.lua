@@ -553,8 +553,9 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Bastion.UnitManager['target']) and
             (
             not Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):IsUp() or
-                Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat()
+                Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
+            Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(Bastion.UnitManager['target'])
 )
 
@@ -564,8 +565,9 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Bastion.UnitManager['target']) and
             (
             not Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):IsUp() or
-                Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat()
+                Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
+            Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(Bastion.UnitManager['target'])
 )
 
@@ -573,15 +575,16 @@ DefaultAPL:AddSpell(
     Starsurge:CastableIf(function(self)
         return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(Bastion.UnitManager['target']) and Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat()
+            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(Bastion.UnitManager['target'])
 )
 
 DefaultAPL:AddSpell(
     Wrath:CastableIf(function(self)
         return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Bastion.UnitManager['target']) and not Player:IsMoving() and Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat()
+            and Player:CanSee(Bastion.UnitManager['target']) and not Player:IsMoving() and
+            Bastion.UnitManager['target']:IsHostile() and
+            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(Bastion.UnitManager['target'])
 )
 

@@ -56,6 +56,10 @@ local UnitManager = {
 }
 
 function UnitManager:__index(k)
+    if k == 'none' then
+        return self:Get('none')
+    end
+
     if UnitManager[k] then
         return UnitManager[k]
     end
@@ -112,7 +116,11 @@ function UnitManager:Get(token)
     local tguid = ObjectGUID(token)
 
     if self.objects[tguid] == nil then
-        self.objects[tguid] = Unit:New(Object(tguid))
+        if token == 'none' then
+            self.objects[tguid] = Unit:New(token)
+        else
+            self.objects[tguid] = Unit:New(Object(tguid))
+        end
     end
 
     return self.objects[tguid]
