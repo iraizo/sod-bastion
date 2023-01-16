@@ -1,6 +1,6 @@
 local Tinkr, Bastion = ...
 
-local RestoModule = Bastion.Module:New('outlaw')
+local OutlawModule = Bastion.Module:New('outlaw')
 local Evaluator = Tinkr.Util.Evaluator
 local Player = Bastion.UnitManager:Get('player')
 local None = Bastion.UnitManager:Get('none')
@@ -445,7 +445,7 @@ AOEAPL:AddSpell(
     end):SetTarget(Target)
 )
 
-RestoModule:Sync(function()
+OutlawModule:Sync(function()
     SpecialAPL:Execute()
     if Player:GetMeleeAttackers() > 1 then
         AOEAPL:Execute()
@@ -454,4 +454,4 @@ RestoModule:Sync(function()
     end
 end)
 
-Bastion:Register(RestoModule)
+Bastion:Register(OutlawModule)
