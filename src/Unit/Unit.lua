@@ -28,10 +28,6 @@ end
 
 -- Constructor
 function Unit:New(unit)
-    if UnitIsUnit(unit, "player") then
-        print("Created unit for player")
-    end
-
     local self      = setmetatable({}, Unit)
     self.unit       = unit
     self.cache      = Bastion.Cache:New()
@@ -46,7 +42,7 @@ end
 
 -- Check if the unit exists
 function Unit:Exists()
-    return UnitExists(self.unit)
+    return Object(self.unit)
 end
 
 -- Get the units token
@@ -144,6 +140,11 @@ end
 -- Is the unit a friendly unit
 function Unit:IsFriendly()
     return UnitIsFriend("player", self.unit)
+end
+
+-- IsEnemy
+function Unit:IsEnemy()
+    return UnitCanAttack("player", self.unit) and (UnitIsPVP("player") or not UnitIsPlayer(self.unit))
 end
 
 -- Is the unit a hostile unit
@@ -315,7 +316,8 @@ function Unit:GetEnemies(range)
     local count = 0
 
     Bastion.UnitManager:EnumNameplates(function(unit)
-        if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) then
+        if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) and
+            unit:IsEnemy() then
             count = count + 1
         end
     end)
@@ -330,7 +332,7 @@ function Unit:GetMeleeAttackers()
 
     Bastion.UnitManager:EnumNameplates(function(unit)
         if not self:IsUnit(unit) and unit:IsAlive() and self:CanSee(unit) and
-            self:InMelee(unit) and unit:IsAffectingCombat() and not unit:IsFriendly(self) then
+            self:InMelee(unit) and unit:IsEnemy() then
             count = count + 1
         end
     end)

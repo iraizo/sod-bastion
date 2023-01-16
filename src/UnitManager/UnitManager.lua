@@ -123,7 +123,17 @@ function UnitManager:Get(token)
         end
     end
 
-    return self.objects[tguid]
+    return Bastion.Refreshable:New(self.objects[tguid], function()
+        local tguid = ObjectGUID(token)
+        if self.objects[tguid] == nil then
+            if token == 'none' then
+                self.objects[tguid] = Unit:New(token)
+            else
+                self.objects[tguid] = Unit:New(Object(tguid))
+            end
+        end
+        return self.objects[tguid]
+    end)
 end
 
 function UnitManager:GetObject(guid)
