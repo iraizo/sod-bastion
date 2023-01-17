@@ -385,4 +385,44 @@ function Unit:IsTanking(unit)
     return isTanking
 end
 
+-- IsFacing
+function Unit:IsFacing(unit)
+    local rot = ObjectRotation(self.unit)
+    local x, y, z = ObjectPosition(self.unit)
+    local x2, y2, z2 = ObjectPosition(unit.unit)
+
+    if not x or not x2 then
+        return false
+    end
+
+    local angle = math.atan2(y2 - y, x2 - x) - rot
+    angle = math.deg(angle)
+    angle = angle % 360
+    if angle > 180 then
+        angle = angle - 360
+    end
+
+    return math.abs(angle) < 90
+end
+
+-- IsBehind
+function Unit:IsBehind(unit)
+    local rot = ObjectRotation(unit.unit)
+    local x, y, z = ObjectPosition(unit.unit)
+    local x2, y2, z2 = ObjectPosition(self.unit)
+
+    if not x or not x2 then
+        return false
+    end
+
+    local angle = math.atan2(y2 - y, x2 - x) - rot
+    angle = math.deg(angle)
+    angle = angle % 360
+    if angle > 180 then
+        angle = angle - 360
+    end
+
+    return math.abs(angle) > 90
+end
+
 return Unit

@@ -89,7 +89,7 @@ local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
             return false
         end
 
-        if unit:IsInterruptible(5) then
+        if Player:InMelee(unit) and unit:IsInterruptible(5) and Player:IsFacing(unit) then
             purge = unit
             return true
         end
