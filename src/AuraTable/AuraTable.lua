@@ -131,7 +131,7 @@ end
 
 -- Update auras
 function AuraTable:Update()
-    print("Updating auras for " .. tostring(self.unit))
+    -- print("Updating auras for " .. tostring(self.unit))
     self:Clear()
     -- self.lastUpdate = GetTime()
 

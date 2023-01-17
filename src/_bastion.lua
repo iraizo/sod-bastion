@@ -1,7 +1,7 @@
 local Tinkr = ...
 
 local Bastion = {
-    DebugMode = true
+    DebugMode = false
 }
 Bastion.__index = Bastion
 

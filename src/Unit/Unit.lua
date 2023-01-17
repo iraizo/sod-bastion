@@ -379,4 +379,10 @@ function Unit:IsUnit(unit)
     return UnitIsUnit(self.unit, unit.unit)
 end
 
+-- IsTanking
+function Unit:IsTanking(unit)
+    local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self.unit, unit.unit)
+    return isTanking
+end
+
 return Unit

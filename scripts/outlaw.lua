@@ -37,6 +37,9 @@ local Shiv = Bastion.SpellBook:GetSpell(5938)
 local KidneyShot = Bastion.SpellBook:GetSpell(408)
 local InstantPoison = Bastion.SpellBook:GetSpell(315584)
 local AtrophicPosion = Bastion.SpellBook:GetSpell(381637)
+local Evasion = Bastion.SpellBook:GetSpell(5277)
+local TricksOfTheTrade = Bastion.SpellBook:GetSpell(57934)
+local CheapShot = Bastion.SpellBook:GetSpell(1833)
 
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
@@ -99,6 +102,37 @@ local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
     return purge
 end)
 
+local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
+    local tank = nil
+
+    Bastion.UnitManager:EnumFriends(function(unit)
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if unit:IsDead() then
+            return false
+        end
+
+        if unit:IsTank() then
+            tank = unit
+            return true
+        end
+
+        return false
+    end)
+
+    if tank == nil then
+        tank = None
+    end
+
+    return tank
+end)
+
 local DefaultAPL = Bastion.APL:New('default')
 local AOEAPL = Bastion.APL:New('aoe')
 local SpecialAPL = Bastion.APL:New('special')
@@ -116,6 +150,14 @@ SpecialAPL:AddSpell(
         return KickTarget:Exists() and Player:InMelee(KickTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:GetComboPoints(KickTarget) <= 2
+    end):SetTarget(KickTarget)
+)
+
+SpecialAPL:AddSpell(
+    CheapShot:CastableIf(function(self)
+        return KickTarget:Exists() and Player:InMelee(KickTarget) and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Stealth):IsUp()
     end):SetTarget(KickTarget)
 )
 
@@ -159,13 +201,29 @@ SpecialAPL:AddSpell(
     end):SetTarget(Player)
 )
 
--- SpecialAPL:AddSpell(
---     Healthstone:UsableIf(function(self)
---         return self:IsKnownAndUsable() and
---             not Player:IsCastingOrChanneling() and
---             Player:GetHealthPercent() < 40
---     end):SetTarget(Player)
--- )
+SpecialAPL:AddItem(
+    Healthstone:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetHealthPercent() < 40
+    end):SetTarget(Player)
+)
+
+SpecialAPL:AddSpell(
+    TricksOfTheTrade:CastableIf(function(self)
+        return Tank:Exists() and self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:IsTanking(Target)
+    end):SetTarget(Tank)
+)
+
+SpecialAPL:AddSpell(
+    Evasion:CastableIf(function(self)
+        return self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetHealthPercent() < 40
+    end):SetTarget(Player)
+)
 
 SpecialAPL:AddItem(
     IrideusFragment:UsableIf(function(self)
