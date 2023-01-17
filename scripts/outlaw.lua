@@ -35,6 +35,10 @@ local MarkedForDeath = Bastion.SpellBook:GetSpell(137619)
 local CrimsonVial = Bastion.SpellBook:GetSpell(185311)
 local Shiv = Bastion.SpellBook:GetSpell(5938)
 local KidneyShot = Bastion.SpellBook:GetSpell(408)
+local InstantPoison = Bastion.SpellBook:GetSpell(315584)
+local AtrophicPosion = Bastion.SpellBook:GetSpell(381637)
+
+local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
@@ -138,6 +142,29 @@ SpecialAPL:AddSpell(
     end):SetTarget(PurgeTarget)
 )
 
+SpecialAPL:AddSpell(
+    InstantPoison:CastableIf(function(self)
+        return self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            not Player:GetAuras():FindMy(InstantPoison):IsUp() and not Player:IsMoving()
+    end):SetTarget(Player)
+)
+
+SpecialAPL:AddSpell(
+    AtrophicPosion:CastableIf(function(self)
+        return self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            not Player:GetAuras():FindMy(AtrophicPosion):IsUp() and not Player:IsMoving()
+    end):SetTarget(Player)
+)
+
+SpecialAPL:AddItem(
+    IrideusFragment:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
+    end):SetTarget(Player)
+)
+
 -- Adrenaline Rush on cooldown.
 DefaultAPL:AddSpell(
     AdrenalineRush:CastableIf(function(self)
@@ -169,8 +196,7 @@ DefaultAPL:AddSpell(
         if Player:GetAuras():FindMy(TrueBearing):IsUp() then
             numBuffs = numBuffs + 1
         end
-        return Target:Exists() and Player:InMelee(Target) and
-            self:IsKnownAndUsable() and
+        return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             ((not Player:GetAuras():FindMy(Broadside):IsUp() and
                 not Player:GetAuras():FindMy(TrueBearing):IsUp()) or numBuffs < 2)
@@ -321,8 +347,7 @@ AOEAPL:AddSpell(
         if Player:GetAuras():FindMy(TrueBearing):IsUp() then
             numBuffs = numBuffs + 1
         end
-        return Target:Exists() and Player:InMelee(Target) and
-            self:IsKnownAndUsable() and
+        return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             ((not Player:GetAuras():FindMy(Broadside):IsUp() and
                 not Player:GetAuras():FindMy(TrueBearing):IsUp()) or numBuffs < 2)

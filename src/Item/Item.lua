@@ -148,7 +148,7 @@ function Item:Usable()
         return self:GetUsableFunction()(self)
     end
 
-    return self:IsKnownAndUsable()
+    return self:IsEquippedAndUsable()
 end
 
 -- Set a script to check if the Item is Usable

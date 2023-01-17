@@ -234,7 +234,7 @@ end
 
 -- Enum enemies (nameplates)
 function UnitManager:EnumNameplates(cb)
-    local n = GetNumNameplates()
+    local n = 30
     for i = 1, n do
         local unit = self:Get('nameplate' .. i)
         if unit:IsValid() then

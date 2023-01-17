@@ -144,7 +144,7 @@ end
 
 -- IsEnemy
 function Unit:IsEnemy()
-    return UnitCanAttack("player", self.unit) and (UnitIsPVP("player") or not UnitIsPlayer(self.unit))
+    return UnitCanAttack("player", self.unit)
 end
 
 -- Is the unit a hostile unit
@@ -154,7 +154,19 @@ end
 
 -- Is the unit a boss
 function Unit:IsBoss()
-    return UnitClassification(self.unit) == "worldboss"
+    if UnitClassification(self.unit) == "worldboss" then
+        return true
+    end
+
+    for i = 1, 5 do
+        local bossGUID = UnitGUID("boss" .. i)
+
+        if self:GetGUID() == bossGUID then
+            return true
+        end
+    end
+
+    return false
 end
 
 -- Is the unit a target

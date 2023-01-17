@@ -37,6 +37,14 @@ function APL:AddSpell(spell, condition)
     table.insert(self.apl, { spell = spell, condition = condition, castableFunc = castableFunc, target = target })
 end
 
+-- Add an item to the APL
+function APL:AddItem(item, condition)
+    local usableFunc = item.UsableIfFunc
+    local target = item:GetTarget()
+
+    table.insert(self.apl, { item = item, condition = condition, usableFunc = usableFunc, target = target })
+end
+
 -- Add an APL to the APL (for sub APLs)
 function APL:AddAPL(apl, condition)
     table.insert(self.apl, { apl = apl, condition = condition })
@@ -60,6 +68,16 @@ function APL:Execute()
 
             -- print("Bastion: APL:Execute: No condition for spell " .. actor.spell:GetName())
             actor.spell:CastableIf(actor.castableFunc):Cast(actor.target)
+        end
+        if actor.item then
+            if actor.condition then
+                -- print("Bastion: APL:Execute: Condition for spell " .. actor.spell:GetName())
+                actor.item:UsableIf(actor.usableFunc):Cast(actor.target,
+                    actor.condition)
+            end
+
+            -- print("Bastion: APL:Execute: No condition for spell " .. actor.spell:GetName())
+            actor.item:UsableIf(actor.usableFunc):Cast(actor.target)
         end
         if actor.action then
             -- print("Bastion: APL:Execute: Executing action " .. actor.action)
