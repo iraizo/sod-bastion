@@ -39,6 +39,7 @@ local InstantPoison = Bastion.SpellBook:GetSpell(315584)
 local AtrophicPosion = Bastion.SpellBook:GetSpell(381637)
 
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
+local Healthstone = Bastion.ItemBook:GetItem(5512)
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
@@ -157,6 +158,14 @@ SpecialAPL:AddSpell(
             not Player:GetAuras():FindMy(AtrophicPosion):IsUp() and not Player:IsMoving()
     end):SetTarget(Player)
 )
+
+-- SpecialAPL:AddSpell(
+--     Healthstone:UsableIf(function(self)
+--         return self:IsKnownAndUsable() and
+--             not Player:IsCastingOrChanneling() and
+--             Player:GetHealthPercent() < 40
+--     end):SetTarget(Player)
+-- )
 
 SpecialAPL:AddItem(
     IrideusFragment:UsableIf(function(self)

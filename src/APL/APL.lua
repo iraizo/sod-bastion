@@ -72,12 +72,12 @@ function APL:Execute()
         if actor.item then
             if actor.condition then
                 -- print("Bastion: APL:Execute: Condition for spell " .. actor.spell:GetName())
-                actor.item:UsableIf(actor.usableFunc):Cast(actor.target,
+                actor.item:UsableIf(actor.usableFunc):Use(actor.target,
                     actor.condition)
             end
 
             -- print("Bastion: APL:Execute: No condition for spell " .. actor.spell:GetName())
-            actor.item:UsableIf(actor.usableFunc):Cast(actor.target)
+            actor.item:UsableIf(actor.usableFunc):Use(actor.target)
         end
         if actor.action then
             -- print("Bastion: APL:Execute: Executing action " .. actor.action)

@@ -134,7 +134,8 @@ end
 
 -- Check if the Item is Usable
 function Item:IsEquippedAndUsable()
-    return (self:IsEquippable() and self:IsEquipped()) or (not self:IsEquippable() and self:IsUsable())
+    return ((self:IsEquippable() and self:IsEquipped()) or
+        (not self:IsEquippable() and self:IsUsable())) and not self:IsOnCooldown()
 end
 
 -- Is equippable
@@ -336,8 +337,13 @@ function Item:IsDiseaseDispel()
     })[self:GetID()]
 end
 
-function Item:IsItem(Item)
-    return self:GetID() == Item:GetID()
+function Item:IsItem(item)
+    return self:GetID() == item:GetID()
+end
+
+function Item:GetSpell()
+    local name, spellID = GetItemSpell(self:GetID())
+    return Bastion.SpellBook:GetSpell(spellID)
 end
 
 return Item
