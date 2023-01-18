@@ -57,6 +57,7 @@ local ShurikenStorm      = Bastion.SpellBook:GetSpell(197835)
 local BlackPowder        = Bastion.SpellBook:GetSpell(319175)
 local SecretTechnique    = Bastion.SpellBook:GetSpell(280719)
 local DarkBrew           = Bastion.SpellBook:GetSpell(310454)
+local Premeditation      = Bastion.SpellBook:GetSpell(343173)
 
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
@@ -308,7 +309,7 @@ SpecialAPL:AddItem(
 
 SpecialAPL:AddItem(
     WindscarWhetstone:UsableIf(function(self)
-        return self:IsEquippedAndUsable() and
+        return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
     end):SetTarget(Player)
 )
@@ -318,7 +319,7 @@ SpecialAPL:AddSpell(
     Shadowstrike:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling() and Vanish:GetTimeSinceLastCast() <= 3
+            not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Premeditation):IsUp()
     end):SetTarget(Target)
 )
 
@@ -644,7 +645,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetMeleeAttackers() >= 2 and
+            Player:GetMeleeAttackers() == 2 and
             not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
     end):SetTarget(Target)
 )
@@ -655,7 +656,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetMeleeAttackers() >= 2 and
+            Player:GetMeleeAttackers() >= 2 and Player:GetMeleeAttackers() <= 3 and
             Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
     end):SetTarget(Target)
 )
@@ -665,8 +666,7 @@ AOEAPL:AddSpell(
     ShurikenStorm:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling() and
-            Player:GetMeleeAttackers() >= 4
+            not Player:IsCastingOrChanneling()
     end):SetTarget(Target)
 )
 
