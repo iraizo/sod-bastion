@@ -354,10 +354,14 @@ DefaultAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetComboPoints(Target) >= 5 and SecretTechnique:GetCooldownRemaining() <= 2 and
+            Player:GetComboPoints(Target) >= 5 and SecretTechnique:IsKnownAndUsable() and
             Player:GetAuras():FindMy(SliceAndDice):IsUp() and
             Target:GetAuras():FindMy(Rupture):IsUp()
-    end):SetTarget(Player)
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        SecretTechnique:Cast(Target)
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Line up  Shuriken Tornado with  Symbols of Death.
@@ -503,10 +507,14 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetComboPoints(Target) >= 5 and SecretTechnique:GetCooldownRemaining() <= 2 and
+            Player:GetComboPoints(Target) >= 5 and SecretTechnique:IsKnownAndUsable() and
             Player:GetAuras():FindMy(SliceAndDice):IsUp() and
             Target:GetAuras():FindMy(Rupture):IsUp()
-    end):SetTarget(Player)
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        SecretTechnique:Cast(Target)
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Line up  Shuriken Tornado with  Symbols of Death.
