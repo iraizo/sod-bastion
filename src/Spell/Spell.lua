@@ -5,6 +5,7 @@ local Spell = {
     CastableIfFunc = false,
     PreCastFunc = false,
     OnCastFunc = false,
+    PostCastFunc = false,
     wasLooking = false,
     lastCastAt = 0,
     conditions = {},
@@ -44,6 +45,10 @@ function Spell:New(id)
         local unit, castGUID, spellID = ...
         if unit == "player" and spellID == self:GetID() then
             self.lastCastAt = GetTime()
+
+            if self:GetPostCastFunction() then
+                self:GetPostCastFunction()(self)
+            end
         end
     end)
 
@@ -53,6 +58,12 @@ end
 -- Get the spells id
 function Spell:GetID()
     return self.spellID
+end
+
+-- Add post cast func
+function Spell:PostCast(func)
+    self.PostCastFunc = func
+    return self
 end
 
 -- Get the spells name
@@ -127,6 +138,11 @@ function Spell:Cast(unit, condition)
     if self:GetOnCastFunction() then
         self:GetOnCastFunction()(self)
     end
+end
+
+-- Get post cast func
+function Spell:GetPostCastFunction()
+    return self.PostCastFunc
 end
 
 -- Check if the spell is known

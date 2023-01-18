@@ -40,9 +40,12 @@ local AtrophicPosion = Bastion.SpellBook:GetSpell(381637)
 local Evasion = Bastion.SpellBook:GetSpell(5277)
 local TricksOfTheTrade = Bastion.SpellBook:GetSpell(57934)
 local CheapShot = Bastion.SpellBook:GetSpell(1833)
+local BagOfTricks = Bastion.SpellBook:GetSpell(312411)
+local AutoAttack = Bastion.SpellBook:GetSpell(6603)
 
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
+local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
@@ -133,6 +136,36 @@ local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
     return tank
 end)
 
+local Explosive = Bastion.UnitManager:CreateCustomUnit('explosive', function(unit)
+    local explosive = nil
+
+    Bastion.UnitManager:EnumNameplates(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if Player:InMelee(unit) and unit:GetID() == 120651 and Player:IsFacing(unit) then
+
+            explosive = unit
+            return true
+        end
+    end)
+
+    if explosive == nil then
+        explosive = None
+    end
+
+    return explosive
+end)
+
 local DefaultAPL = Bastion.APL:New('default')
 local AOEAPL = Bastion.APL:New('aoe')
 local SpecialAPL = Bastion.APL:New('special')
@@ -146,10 +179,21 @@ SpecialAPL:AddSpell(
 )
 
 SpecialAPL:AddSpell(
+    SinisterStrike:CastableIf(function(self)
+        return Explosive:Exists() and not Player:IsCastingOrChanneling()
+    end):SetTarget(Explosive)
+)
+
+SpecialAPL:AddSpell(
     KidneyShot:CastableIf(function(self)
         return KickTarget:Exists() and Player:InMelee(KickTarget) and
             self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling() and Player:GetComboPoints(KickTarget) <= 2
+            not Player:IsCastingOrChanneling() and
+            (Player:GetComboPoints(Target) >= 5 or
+                (
+                Player:GetComboPoints(Target) >= 4 and
+                    (Player:GetAuras():FindMy(Broadside):IsUp() or Player:GetAuras():FindMy(Opportunity):IsUp())))
+
     end):SetTarget(KickTarget)
 )
 
@@ -230,6 +274,21 @@ SpecialAPL:AddItem(
         return self:IsEquippedAndUsable() and
             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
     end):SetTarget(Player)
+)
+
+SpecialAPL:AddItem(
+    WindscarWhetstone:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
+    end):SetTarget(Player)
+)
+
+SpecialAPL:AddSpell(
+    BagOfTricks:CastableIf(function(self)
+        return Target:Exists() and Player:InMelee(Target) and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling()
+    end):SetTarget(Target)
 )
 
 -- Adrenaline Rush on cooldown.
@@ -341,7 +400,7 @@ DefaultAPL:AddSpell(
 -- Vanish followed by  Ambush if you won't overcap combo points and wait until you have at least 50 energy.
 DefaultAPL:AddSpell(
     Vanish:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Tank:Exists() and Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetComboPoints(Target) <= 4 and
@@ -500,7 +559,7 @@ AOEAPL:AddSpell(
 --  Vanish followed by  Ambush if you won't overcap combo points and wait until you have at least 50 energy.
 AOEAPL:AddSpell(
     Vanish:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Tank:Exists() and Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetComboPoints(Target) < 5 and

@@ -233,9 +233,9 @@ end
 local isClassicWow = select(4, GetBuildInfo()) < 40000
 
 -- Check if two units are in melee
-function Unit:InMelee(unit)
-    return UnitInMelee(self.unit, unit.unit)
-end
+-- function Unit:InMelee(unit)
+--     return UnitInMelee(self.unit, unit.unit)
+-- end
 
 local losFlag = bit.bor(0x1, 0x10, 0x100000)
 
@@ -423,6 +423,41 @@ function Unit:IsBehind(unit)
     end
 
     return math.abs(angle) > 90
+end
+
+function Unit:GetMeleeBoost()
+    if IsPlayerSpell(196924) then
+        return 3
+    end
+    return 0
+end
+
+-- Melee calculation
+-- float fMaxDist = fmaxf((float)(*(float*)((uintptr_t)this + 0x1BF8) + 1.3333) + *(float*)((uintptr_t)target + 0x1BF8), 5.0);
+-- fMaxDist = fMaxDist + 1.0;
+-- Vector3 myPos = ((WoWGameObject*)this)->GetPosition();
+-- Vector3 targetPos = ((WoWGameObject*)target)->GetPosition();
+-- return ((myPos.x - targetPos.x) * (myPos.x - targetPos.x)) + ((myPos.y - targetPos.y) * (myPos.y - targetPos.y)) + ((myPos.z - targetPos.z) * (myPos.z - targetPos.z)) <= (float)(fMaxDist * fMaxDist);
+
+-- InMelee
+function Unit:InMelee(unit)
+    local x, y, z = ObjectPosition(self.unit)
+    local x2, y2, z2 = ObjectPosition(unit.unit)
+
+    if not x or not x2 then
+        return false
+    end
+
+    local dist = math.sqrt((x - x2) ^ 2 + (y - y2) ^ 2 + (z - z2) ^ 2)
+    local maxDist = math.max((ObjectCombatReach(self.unit) + 1.3333) + ObjectCombatReach(unit.unit), 5.0)
+    maxDist = maxDist + 1.0 + self:GetMeleeBoost()
+
+    return dist <= maxDist
+end
+
+-- Get object id
+function Unit:GetID()
+    return ObjectID(self.unit)
 end
 
 return Unit

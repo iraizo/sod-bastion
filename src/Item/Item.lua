@@ -60,7 +60,7 @@ end
 
 -- Get the Items cooldown
 function Item:GetCooldown()
-    return select(2, GetItemCooldown(self:GetID()))
+    return select(2, C_Container.GetItemCooldown(self:GetID()))
 end
 
 -- Return the Usable function
@@ -80,7 +80,7 @@ end
 
 -- Get the Items cooldown remaining
 function Item:GetCooldownRemaining()
-    local start, duration = GetItemCooldown(self:GetID())
+    local start, duration = C_Container.GetItemCooldown(self:GetID())
     return start + duration - GetTime()
 end
 
@@ -123,7 +123,7 @@ end
 
 -- Check if the Item is on cooldown
 function Item:IsOnCooldown()
-    return select(2, GetItemCooldown(self:GetID())) > 0
+    return select(2, C_Container.GetItemCooldown(self:GetID())) > 0
 end
 
 -- Check if the Item is usable
