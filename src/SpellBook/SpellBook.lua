@@ -20,4 +20,8 @@ function SpellBook:GetSpell(id)
     return self.spells[id]
 end
 
+function SpellBook:GetIfRegistered(id)
+    return self.spells[id]
+end
+
 return SpellBook

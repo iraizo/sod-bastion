@@ -211,7 +211,7 @@ end
 
 -- Get if the unit is affecting combat
 function Unit:IsAffectingCombat()
-    return UnitAffectingCombat(self.unit)
+    return UnitAffectingCombat('player', self.unit)
 end
 
 -- Get the units class id
@@ -319,7 +319,6 @@ end
 
 -- Get the number of enemies in a given range of the unit and cache the result for .5 seconds
 function Unit:GetEnemies(range)
-
     local enemies = self.cache:Get("enemies_" .. range)
     if enemies then
         return enemies
@@ -327,9 +326,9 @@ function Unit:GetEnemies(range)
 
     local count = 0
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) and
-            unit:IsEnemy() then
+            unit:IsEnemy() and unit:IsAffectingCombat() then
             count = count + 1
         end
     end)
@@ -340,15 +339,21 @@ end
 
 -- Get the number of melee attackers
 function Unit:GetMeleeAttackers()
+    local enemies = self.cache:Get("melee_attackers")
+    if enemies then
+        return enemies
+    end
+
     local count = 0
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if not self:IsUnit(unit) and unit:IsAlive() and self:CanSee(unit) and
-            self:InMelee(unit) and unit:IsEnemy() then
+            self:InMelee(unit) and unit:IsEnemy() and unit:IsAffectingCombat() then
             count = count + 1
         end
     end)
 
+    self.cache:Set("melee_attackers", count, .5)
     return count
 end
 
@@ -458,6 +463,11 @@ end
 -- Get object id
 function Unit:GetID()
     return ObjectID(self.unit)
+end
+
+-- In party
+function Unit:IsInParty()
+    return UnitInParty(self.unit)
 end
 
 return Unit

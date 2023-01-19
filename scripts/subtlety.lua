@@ -66,7 +66,7 @@ local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -95,7 +95,7 @@ end)
 local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -155,7 +155,7 @@ end)
 local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
     local target = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -642,12 +642,12 @@ AOEAPL:AddSpell(
 -- Use  Shuriken Storm on 2 targets outside of  Shadow Dance.
 AOEAPL:AddSpell(
     ShurikenStorm:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and Player:GetDistance(Target) <= 10 and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetMeleeAttackers() == 2 and
+            Player:GetEnemies(10) == 2 and
             not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
-    end):SetTarget(Target)
+    end):SetTarget(Player)
 )
 
 -- Use  Shadowstrike on 2 and 3 targets during  Shadow Dance or to proc  Premeditation.
@@ -656,7 +656,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetMeleeAttackers() >= 2 and Player:GetMeleeAttackers() <= 3 and
+            Player:GetEnemies(10) >= 2 and Player:GetEnemies(10) <= 3 and
             Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
     end):SetTarget(Target)
 )
@@ -664,10 +664,10 @@ AOEAPL:AddSpell(
 -- Use  Shuriken Storm
 AOEAPL:AddSpell(
     ShurikenStorm:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and Player:GetDistance(Target) <= 10 and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
-    end):SetTarget(Target)
+    end):SetTarget(Player)
 )
 
 

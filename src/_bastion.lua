@@ -15,6 +15,7 @@ function Bastion.require(class)
 end
 
 Bastion.ClassMagic = Bastion.require("ClassMagic")
+Bastion.List = Bastion.require("List")
 Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
 Bastion.Vector3 = Bastion.require("Vector3")
 Bastion.Commmand = Bastion.require("Command")
@@ -26,6 +27,7 @@ Bastion.Aura = Bastion.require("Aura")
 Bastion.APL = Bastion.require("APL")
 Bastion.Module = Bastion.require("Module")
 Bastion.UnitManager = Bastion.require("UnitManager"):New()
+Bastion.ObjectManager = Bastion.require("ObjectManager"):New()
 Bastion.EventManager = Bastion.require("EventManager"):New()
 Bastion.Spell = Bastion.require("Spell")
 Bastion.SpellBook = Bastion.require("SpellBook"):New()
@@ -47,6 +49,20 @@ Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
     u:GetAuras():OnUpdate(auras)
 end)
 
+Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
+    local unit, castGUID, spellID = ...
+
+    local spell = Bastion.SpellBook:GetIfRegistered(spellID)
+
+    if unit == "player" and spell then
+        spell.lastCastAt = GetTime()
+
+        if spell:GetPostCastFunction() then
+            spell:GetPostCastFunction()(spell)
+        end
+    end
+end)
+
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
         Bastion.CombatTimer:Start()
@@ -55,6 +71,7 @@ Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     end
 
     if Bastion.Enabled then
+        Bastion.ObjectManager:Refresh()
         for i = 1, #Bastion.modules do
             Bastion.modules[i]:Tick()
         end

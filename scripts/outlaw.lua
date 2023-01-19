@@ -50,7 +50,7 @@ local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -79,7 +79,7 @@ end)
 local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end
@@ -139,7 +139,7 @@ end)
 local Explosive = Bastion.UnitManager:CreateCustomUnit('explosive', function(unit)
     local explosive = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end

@@ -167,82 +167,29 @@ end
 
 -- Enum Friends (party/raid members)
 function UnitManager:EnumFriends(cb)
-    local isRaid = IsInRaid()
-    local n = GetNumGroupMembers()
-
-    if cb(self:Get('player')) then
-        return
-    end
-
-    if isRaid then
-        for i = 1, n do
-            local unit = self:Get('raid' .. i)
-            if unit:IsValid() then
-                if cb(unit) then
-                    break
-                end
-            end
+    Bastion.ObjectManager.friends:each(function(unit)
+        if cb(unit) then
+            return true
         end
-    else
-        for i = 1, n do
-            local unit = self:Get('party' .. i)
-            if unit:IsValid() then
-                if cb(unit) then
-                    break
-                end
-            end
-        end
-    end
+    end)
 end
 
 -- Enum Enemies (object manager)
 function UnitManager:EnumEnemies(cb)
-    for obj in ObjectManager:Objects() do
-        if ObjectType(obj) == 5 or ObjectType(obj) == 6 then
-            local unit = UnitManager:GetObject(ObjectGUID(obj))
-            if not unit then
-                unit = Unit:New(obj)
-                UnitManager:SetObject(unit)
-            end
-            if unit:IsHostile() and unit:IsAffectingCombat() and unit:IsAlive()
-            then
-                if cb(unit) then
-                    break
-                end
-            end
+    Bastion.ObjectManager.activeEnemies:each(function(unit)
+        if cb(unit) then
+            return true
         end
-    end
+    end)
 end
 
 -- Enum Units (object manager)
 function UnitManager:EnumUnits(cb)
-    local objs = Objects()
-    for i = 1, #objs do
-        local obj = objs[i]
-        if ObjectType(obj) == 5 or ObjectType(obj) == 6 then
-            local unit = UnitManager:GetObject(ObjectGUID(obj))
-            if not unit then
-                unit = Unit:New(obj)
-                UnitManager:SetObject(unit)
-            end
-            if cb(unit) then
-                break
-            end
+    Bastion.ObjectManager.enemies:each(function(unit)
+        if cb(unit) then
+            return true
         end
-    end
-end
-
--- Enum enemies (nameplates)
-function UnitManager:EnumNameplates(cb)
-    local n = 30
-    for i = 1, n do
-        local unit = self:Get('nameplate' .. i)
-        if unit:IsValid() then
-            if cb(unit) then
-                break
-            end
-        end
-    end
+    end)
 end
 
 -- Get the number of friends with a buff (party/raid members)

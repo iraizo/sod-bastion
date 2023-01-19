@@ -177,7 +177,7 @@ end)
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
 
-    Bastion.UnitManager:EnumNameplates(function(unit)
+    Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
             return false
         end

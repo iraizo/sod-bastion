@@ -41,17 +41,6 @@ function Spell:New(id)
 
     self.spellID = id
 
-    Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
-        local unit, castGUID, spellID = ...
-        if unit == "player" and spellID == self:GetID() then
-            self.lastCastAt = GetTime()
-
-            if self:GetPostCastFunction() then
-                self:GetPostCastFunction()(self)
-            end
-        end
-    end)
-
     return self
 end
 
