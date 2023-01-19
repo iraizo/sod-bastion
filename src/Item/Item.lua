@@ -6,7 +6,7 @@ local Item = {
     PreUseFunc = false,
     OnUseFunc = false,
     wasLooking = false,
-    lastUseAt = 0,
+    lastUseAttempt = 0,
     conditions = {},
     target = false,
 }
@@ -39,6 +39,13 @@ function Item:New(id)
     local self = setmetatable({}, Item)
 
     self.ItemID = id
+
+    -- Register spell in spellbook
+    local name, spellID = GetItemSpell(self:GetID())
+    if spellID then
+        self.spellID = spellID
+        Bastion.SpellBook:GetSpell(spellID)
+    end
 
     return self
 end
@@ -108,12 +115,22 @@ function Item:Use(unit, condition)
     Bastion:Debug("Using", self)
 
     -- Set the last Use time
-    self.lastUseAt = GetTime()
+    self.lastUseAttempt = GetTime()
 
     -- Call post Use function
     if self:GetOnUseFunction() then
         self:GetOnUseFunction()(self)
     end
+end
+
+-- Last use attempt
+function Item:GetLastUseAttempt()
+    return self.lastUseAttempt
+end
+
+-- Time since last attepmt
+function Item:GetTimeSinceLastUseAttempt()
+    return GetTime() - self:GetLastUseAttempt()
 end
 
 -- Check if the Item is known
@@ -238,7 +255,7 @@ end
 
 -- Get the last use time
 function Item:GetLastUseTime()
-    return self.lastUseAt
+    return Bastion.SpellBook:GetSpell(self:GetID()):GetLastCastTime()
 end
 
 -- Get time since last use
@@ -342,8 +359,11 @@ function Item:IsItem(item)
 end
 
 function Item:GetSpell()
-    local name, spellID = GetItemSpell(self:GetID())
-    return Bastion.SpellBook:GetSpell(spellID)
+    if self.spellID then
+        return Bastion.SpellBook:GetSpell(self.spellID)
+    end
+
+    return nil
 end
 
 return Item

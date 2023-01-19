@@ -46,6 +46,7 @@ function Aura:New(unit, index, type)
             type = nil,
 
         }
+        Bastion.SpellBook:GetSpell(self.aura.spellId)
         return self
     end
 
@@ -74,6 +75,7 @@ function Aura:New(unit, index, type)
         index = index,
         type = type,
     }
+    Bastion.SpellBook:GetSpell(self.aura.spellId)
     return self
 end
 
@@ -100,6 +102,9 @@ function Aura:CreateFromUnitAuraInfo(unitAuraInfo)
         index = nil,
         type = unitAuraInfo.isHarmful and "HARMFUL" or "HELPFUL",
     }
+
+    -- Register spell in spellbook
+    Bastion.SpellBook:GetSpell(self.aura.spellId)
     return self
 end
 
@@ -186,7 +191,7 @@ end
 
 -- Get the auras spell id
 function Aura:GetSpell()
-    return Bastion.Spell:New(self.aura.spellId)
+    return Bastion.SpellBook:GetSpell(self.aura.spellId)
 end
 
 -- Get the auras can apply aura status

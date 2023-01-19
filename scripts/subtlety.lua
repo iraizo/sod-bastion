@@ -168,10 +168,6 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
             return false
         end
 
-        if not unit:IsAffectingCombat() then
-            return false
-        end
-
         if not Player:IsFacing(unit) then
             return false
         end
@@ -422,7 +418,7 @@ DefaultAPL:AddSpell(
                 (Player:GetComboPoints(Target) >= 5 and
                     Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
             not Target:GetAuras():FindMy(Rupture):IsUp() or
-                Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 12
+                Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
     end):SetTarget(Target)
 )
@@ -555,9 +551,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 6 or
-                (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and
+            (Player:GetComboPoints(Target) >= 5) and
             (
             not Player:GetAuras():FindMy(SliceAndDice):IsUp() or
                 Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() < 6
@@ -571,11 +565,9 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 6 or
-                (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
+            (Player:GetComboPoints(Target) >= 5) and (
             not Target:GetAuras():FindMy(Rupture):IsUp() or
-                Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 12
+                Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
     end):SetTarget(Target)
 )
@@ -586,9 +578,7 @@ AOEAPL:AddSpell(
         return RuptureTarget:Exists() and Player:InMelee(RuptureTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(RuptureTarget) >= 6 or
-                (Player:GetComboPoints(RuptureTarget) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
+            (Player:GetComboPoints(RuptureTarget) >= 6) and (
             not RuptureTarget:GetAuras():FindMy(Rupture):IsUp() or
                 RuptureTarget:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
@@ -600,9 +590,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 6 or
-                (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp()))
+            (Player:GetComboPoints(Target) >= 5)
     end):SetTarget(Target)
 )
 
@@ -612,6 +600,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
+            (Player:GetComboPoints(Target) >= 5) and
             (Player:GetMeleeAttackers() >= 3 or
                 (Player:GetMeleeAttackers() >= 2 and
                     DarkBrew:IsKnown()))

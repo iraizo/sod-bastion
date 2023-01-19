@@ -360,6 +360,31 @@ local WildGrowthUnit = Bastion.UnitManager:CreateCustomUnit('wildgrowth', functi
     return lowest
 end)
 
+local Explosive = Bastion.UnitManager:CreateCustomUnit('explosive', function(unit)
+    local explosive = nil
+
+    Bastion.ObjectManager.explosives:each(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) <= 40 then
+            explosive = unit
+            return true
+        end
+    end)
+
+    if explosive == nil then
+        explosive = None
+    end
+
+    return explosive
+end)
+
 local RestoCommands = Bastion.Command:New('resto')
 
 local PLACE_EFFLO = false
@@ -371,6 +396,12 @@ end)
 
 local DefaultAPL = Bastion.APL:New('default')
 local DamageAPL = Bastion.APL:New('damage')
+
+DefaultAPL:AddSpell(
+    Moonfire:CastableIf(function(self)
+        return Explosive:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+    end):SetTarget(Explosive)
+)
 
 DefaultAPL:AddSpell(
     Efflorescence:CastableIf(function(self)
