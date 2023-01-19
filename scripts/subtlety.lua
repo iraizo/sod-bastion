@@ -581,19 +581,19 @@ AOEAPL:AddSpell(
 )
 
 -- Cast  Rupture on all targets. (scam??)
--- AOEAPL:AddSpell(
---     Rupture:CastableIf(function(self)
---         return RuptureTarget:Exists() and Player:InMelee(RuptureTarget) and
---             self:IsKnownAndUsable() and
---             not Player:IsCastingOrChanneling() and
---             (Player:GetComboPoints(RuptureTarget) >= 6 or
---                 (Player:GetComboPoints(RuptureTarget) >= 5 and
---                     Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
---             not RuptureTarget:GetAuras():FindMy(Rupture):IsUp() or
---                 RuptureTarget:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
---             )
---     end):SetTarget(RuptureTarget)
--- )
+AOEAPL:AddSpell(
+    Rupture:CastableIf(function(self)
+        return RuptureTarget:Exists() and Player:InMelee(RuptureTarget) and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            (Player:GetComboPoints(RuptureTarget) >= 6 or
+                (Player:GetComboPoints(RuptureTarget) >= 5 and
+                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
+            not RuptureTarget:GetAuras():FindMy(Rupture):IsUp() or
+                RuptureTarget:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
+            )
+    end):SetTarget(RuptureTarget)
+)
 
 AOEAPL:AddSpell(
     SecretTechnique:CastableIf(function(self)
