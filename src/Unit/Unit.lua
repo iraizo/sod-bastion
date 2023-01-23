@@ -550,7 +550,7 @@ function Unit:PredictHealth(time)
     local x = {}
     local y = {}
 
-    if #self.regression_history > 10 then
+    if #self.regression_history > 20 then
         table.remove(self.regression_history, 1)
     end
 
@@ -571,7 +571,7 @@ function Unit:PredictTime(percent)
     local x = {}
     local y = {}
 
-    if #self.regression_history > 10 then
+    if #self.regression_history > 20 then
         table.remove(self.regression_history, 1)
     end
 
@@ -594,9 +594,9 @@ function Unit:TimeToDie()
         return 0
     end
 
-    local timeto = GetTime() - self:PredictTime(0)
+    local timeto = self:PredictTime(0) - GetTime()
 
-    if timeto ~= timeto or timeto == math.huge or timeto < 0 then
+    if timeto ~= timeto or timeto < 0 or timeto == math.huge then
         return 0
     end
 
