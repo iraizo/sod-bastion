@@ -4,7 +4,7 @@ local Tinkr, Bastion = ...
 local Unit = {
     cache = nil,
     aura_table = nil,
-    unit = nil
+    unit = nil,
 }
 
 function Unit:__index(k)
@@ -28,10 +28,11 @@ end
 
 -- Constructor
 function Unit:New(unit)
-    local self      = setmetatable({}, Unit)
-    self.unit       = unit
-    self.cache      = Bastion.Cache:New()
-    self.aura_table = Bastion.AuraTable:New(self)
+    local self              = setmetatable({}, Unit)
+    self.unit               = unit
+    self.cache              = Bastion.Cache:New()
+    self.aura_table         = Bastion.AuraTable:New(self)
+    self.regression_history = {}
     return self
 end
 
@@ -281,6 +282,22 @@ function Unit:IsCasting()
     return UnitCastingInfo(self.unit) ~= nil
 end
 
+-- Get Casting or channeling spell
+function Unit:GetCastingOrChannelingSpell()
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
+        .unit)
+
+    if not name then
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
+    end
+
+    if name then
+        return Bastion.SpellBook:GetSpell(spellId)
+    end
+
+    return nil
+end
+
 -- Check if the unit is channeling a spell
 function Unit:IsChanneling()
     return UnitChannelInfo(self.unit) ~= nil
@@ -296,10 +313,7 @@ function Unit:CanAttack(unit)
     return UnitCanAttack(self.unit, unit.unit)
 end
 
--- Check if unit is interruptible
-function Unit:IsInterruptible(percent)
-    local percent = percent or math.random(2, 5)
-
+function Unit:GetChannelOrCastPercentComplete()
     local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
         .unit)
 
@@ -307,13 +321,44 @@ function Unit:IsInterruptible(percent)
         name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
     end
 
-    if name and startTimeMS and endTimeMS and not notInterruptible then
-        local castTimeRemaining = endTimeMS / 1000 - GetTime()
-        local castTimeTotal = (endTimeMS - startTimeMS) / 1000
-        if castTimeTotal > 0 and castTimeRemaining / castTimeTotal * 100 >= percent then
-            return true
-        end
+    if name and startTimeMS and endTimeMS then
+        local start = startTimeMS / 1000
+        local finish = endTimeMS / 1000
+        local current = GetTime()
+        print(((current - start) / (finish - start)) * 100)
+        return ((current - start) / (finish - start)) * 100
     end
+    return 0
+end
+
+function Unit:IsInterruptible()
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
+        .unit)
+
+    if not name then
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
+    end
+
+    if name then
+        return not notInterruptible
+    end
+
+    return false
+end
+
+-- Check if unit is interruptible
+function Unit:IsInterruptibleAt(percent)
+    if not self:IsInterruptible() then
+        return false
+    end
+
+    local percent = percent or math.random(2, 5)
+
+    local castPercent = self:GetChannelOrCastPercentComplete()
+    if castPercent >= percent then
+        return true
+    end
+
     return false
 end
 
@@ -375,8 +420,12 @@ function Unit:IsMoving()
     return GetUnitSpeed(self.unit) > 0
 end
 
-function Unit:GetComboPoints(unit)
-    return GetComboPoints(self.unit, unit.unit)
+function Unit:IsMovingAtAll()
+    return ObjectMovementFlag(self.unit) ~= 0
+end
+
+function Unit:GetComboPoints()
+    return UnitPower(self.unit, 4)
 end
 
 -- IsUnit
@@ -468,6 +517,90 @@ end
 -- In party
 function Unit:IsInParty()
     return UnitInParty(self.unit)
+end
+
+-- Linear regression between time and percent to something
+function Unit:LinearRegression(time, percent)
+    local x = time
+    local y = percent
+
+    local n = #x
+    local sum_x = 0
+    local sum_y = 0
+    local sum_xy = 0
+    local sum_xx = 0
+    local sum_yy = 0
+
+    for i = 1, n do
+        sum_x = sum_x + x[i]
+        sum_y = sum_y + y[i]
+        sum_xy = sum_xy + x[i] * y[i]
+        sum_xx = sum_xx + x[i] * x[i]
+        sum_yy = sum_yy + y[i] * y[i]
+    end
+
+    local slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x)
+    local intercept = (sum_y - slope * sum_x) / n
+
+    return slope, intercept
+end
+
+-- Use linear regression to get the health percent at a given time in the future
+function Unit:PredictHealth(time)
+    local x = {}
+    local y = {}
+
+    if #self.regression_history > 10 then
+        table.remove(self.regression_history, 1)
+    end
+
+    table.insert(self.regression_history, { time = GetTime(), percent = self:GetHP() })
+
+    for i = 1, #self.regression_history do
+        local entry = self.regression_history[i]
+        table.insert(x, entry.time)
+        table.insert(y, entry.percent)
+    end
+
+    local slope, intercept = self:LinearRegression(x, y)
+    return slope * time + intercept
+end
+
+-- Use linear regression to guess the time until a given health percent
+function Unit:PredictTime(percent)
+    local x = {}
+    local y = {}
+
+    if #self.regression_history > 10 then
+        table.remove(self.regression_history, 1)
+    end
+
+    table.insert(self.regression_history, { time = GetTime(), percent = self:GetHP() })
+
+    for i = 1, #self.regression_history do
+        local entry = self.regression_history[i]
+        table.insert(x, entry.time)
+        table.insert(y, entry.percent)
+    end
+
+    local slope, intercept = self:LinearRegression(x, y)
+    return (percent - intercept) / slope
+end
+
+-- Time until death
+function Unit:TimeToDie()
+    if self:IsDead() then
+        self.regression_history = {}
+        return 0
+    end
+
+    local timeto = GetTime() - self:PredictTime(0)
+
+    if timeto ~= timeto or timeto == math.huge or timeto < 0 then
+        return 0
+    end
+
+    return timeto
 end
 
 return Unit

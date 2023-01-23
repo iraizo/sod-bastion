@@ -252,6 +252,25 @@ function Spell:GetCharges()
     return GetSpellCharges(self:GetID())
 end
 
+function Spell:GetChargesFractional()
+    local charges, maxCharges, start, duration = GetSpellCharges(self:GetID())
+
+    if charges == maxCharges then
+        return maxCharges
+    end
+
+    if charges == 0 then
+        return 0
+    end
+
+    local timeSinceStart = GetTime() - start
+    local timeLeft = duration - timeSinceStart
+    local timePerCharge = duration / maxCharges
+    local chargesFractional = charges + (timeLeft / timePerCharge)
+
+    return chargesFractional
+end
+
 -- Get the spells charges remaining
 function Spell:GetChargesRemaining()
     local charges, maxCharges, start, duration = GetSpellCharges(self:GetID())

@@ -3,9 +3,9 @@ local Tinkr, Bastion = ...
 local List = {}
 List.__index = List
 
-function List:New()
+function List:New(from)
     local self = setmetatable({}, List)
-    self._list = {}
+    self._list = from or {}
     return self
 end
 

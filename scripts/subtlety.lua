@@ -37,6 +37,7 @@ local CrimsonVial        = Bastion.SpellBook:GetSpell(185311)
 local Shiv               = Bastion.SpellBook:GetSpell(5938)
 local KidneyShot         = Bastion.SpellBook:GetSpell(408)
 local InstantPoison      = Bastion.SpellBook:GetSpell(315584)
+local Sanguine           = Bastion.SpellBook:GetSpell(326509)
 local AtrophicPosion     = Bastion.SpellBook:GetSpell(381637)
 local Evasion            = Bastion.SpellBook:GetSpell(5277)
 local TricksOfTheTrade   = Bastion.SpellBook:GetSpell(57934)
@@ -58,10 +59,23 @@ local BlackPowder        = Bastion.SpellBook:GetSpell(319175)
 local SecretTechnique    = Bastion.SpellBook:GetSpell(280719)
 local DarkBrew           = Bastion.SpellBook:GetSpell(310454)
 local Premeditation      = Bastion.SpellBook:GetSpell(343173)
+local DanseMacabre       = Bastion.SpellBook:GetSpell(393969)
 
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
 local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
+local DarkMoonRime = Bastion.ItemBook:GetItem(198477)
+
+local RimeCards = {
+    One = Bastion.SpellBook:GetSpell(382844),
+    Two = Bastion.SpellBook:GetSpell(382845),
+    Three = Bastion.SpellBook:GetSpell(382846),
+    Four = Bastion.SpellBook:GetSpell(382847),
+    Five = Bastion.SpellBook:GetSpell(382848),
+    Six = Bastion.SpellBook:GetSpell(382849),
+    Seven = Bastion.SpellBook:GetSpell(382850),
+    Eight = Bastion.SpellBook:GetSpell(382851),
+}
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
     local purge = nil
@@ -93,7 +107,7 @@ local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
 end)
 
 local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
-    local purge = nil
+    local kick = nil
 
     Bastion.UnitManager:EnumEnemies(function(unit)
         if unit:IsDead() then
@@ -108,17 +122,17 @@ local KickTarget = Bastion.UnitManager:CreateCustomUnit('kick', function(unit)
             return false
         end
 
-        if Player:InMelee(unit) and unit:IsInterruptible(5) and Player:IsFacing(unit) then
-            purge = unit
+        if Player:InMelee(unit) and Player:IsFacing(unit) and Bastion.MythicPlusUtils:CastingCriticalKick(unit, 5) then
+            kick = unit
             return true
         end
     end)
 
-    if purge == nil then
-        purge = None
+    if kick == nil then
+        kick = None
     end
 
-    return purge
+    return kick
 end)
 
 local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
@@ -176,6 +190,7 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
             not unit:GetAuras():FindMy(Rupture):IsUp() or
                 unit:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
+            and unit:TimeToDie() > 12
         then
             target = unit
             return true
@@ -212,6 +227,7 @@ SpecialAPL:AddSpell(
                 (
                 Player:GetComboPoints(Target) >= 4 and
                     (Player:GetAuras():FindMy(Broadside):IsUp() or Player:GetAuras():FindMy(Opportunity):IsUp())))
+            and not Target:GetAuras():Find(Sanguine):IsUp()
 
     end):SetTarget(KickTarget)
 )
@@ -310,12 +326,29 @@ SpecialAPL:AddItem(
     end):SetTarget(Player)
 )
 
+SpecialAPL:AddItem(
+    DarkMoonRime:UsableIf(function(self)
+        return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss()) and
+            (Player:GetAuras():FindMy(RimeCards.One):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Two):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Three):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Four):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Five):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Six):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Seven):IsUp() or
+                Player:GetAuras():FindMy(RimeCards.Eight):IsUp()
+            )
+    end):SetTarget(Target)
+)
+
 -- Use  Shadowstrike during  Shadow Dance.
 SpecialAPL:AddSpell(
     Shadowstrike:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Premeditation):IsUp()
+            not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Premeditation):IsUp() and
+            Player:GetEnemies(10) <= 3
     end):SetTarget(Target)
 )
 
@@ -333,7 +366,11 @@ DefaultAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
-    end):SetTarget(Player)
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        ShurikenTornado:Cast(Target)
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Use  Shadow Blades on cooldown.
@@ -375,12 +412,17 @@ DefaultAPL:AddSpell(
 DefaultAPL:AddSpell(
     ShadowDance:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
-            self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling()
-    end):SetTarget(Player)
+            self:IsKnownAndUsable() and Gloomblade:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and Player:GetComboPoints(Target) <= 2
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        Gloomblade:Cast(Target) -- We want to cast gloomblade immediately with shadow dance to trigger 1 stack of danse macabre
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Use  Thistle Tea when low on energy.
+-- actions.cds+=/thistle_tea,if=cooldown.symbols_of_death.remains>=3&!buff.thistle_tea.up&(energy.deficit>=100|cooldown.thistle_tea.charges_fractional>=2.75&buff.shadow_dance.up)|buff.shadow_dance.remains>=4&!buff.thistle_tea.up&spell_targets.shuriken_storm>=3|!buff.thistle_tea.up&fight_remains<=(6*cooldown.thistle_tea.charges)
 DefaultAPL:AddSpell(
     ThistleTea:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
@@ -389,6 +431,7 @@ DefaultAPL:AddSpell(
             Player:GetPowerDeficit() >= 100 and
             ThistleTea:GetTimeSinceLastCast() >= 3
     end):SetTarget(Player)
+
 )
 
 -- Use Finishing moves with 6 or more combo points (5 or more during  Shadow Dance) with the following priority:
@@ -419,7 +462,7 @@ DefaultAPL:AddSpell(
                     Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and (
             not Target:GetAuras():FindMy(Rupture):IsUp() or
                 Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
-            )
+            ) and not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
     end):SetTarget(Target)
 )
 
@@ -431,7 +474,7 @@ DefaultAPL:AddSpell(
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 6 or
                 (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp()))
+                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and Target:GetAuras():FindMy(Rupture):IsUp()
     end):SetTarget(Target)
 )
 
@@ -486,7 +529,11 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
-    end):SetTarget(Player)
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        ShurikenTornado:Cast(Target)
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Use  Shadow Blades on cooldown.
@@ -528,9 +575,13 @@ AOEAPL:AddSpell(
 AOEAPL:AddSpell(
     ShadowDance:CastableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and
-            self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling()
-    end):SetTarget(Player)
+            self:IsKnownAndUsable() and Gloomblade:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and Player:GetComboPoints(Target) <= 2
+    end):SetTarget(Player):OnCast(function()
+        SpellCancelQueuedSpell()
+        Gloomblade:Cast(Target) -- We want to cast gloomblade immediately with shadow dance to trigger 1 stack of danse macabre
+        SpellCancelQueuedSpell()
+    end)
 )
 
 -- Use  Thistle Tea with  Shadow Dance.
@@ -539,7 +590,7 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and Player:GetPowerDeficit() >= 70 and
+            Player:GetPowerDeficit() >= 100 and
             ThistleTea:GetTimeSinceLastCast() >= 3
     end):SetTarget(Player)
 )
@@ -556,6 +607,7 @@ AOEAPL:AddSpell(
             not Player:GetAuras():FindMy(SliceAndDice):IsUp() or
                 Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() < 6
             )
+            and Player:GetEnemies(10) < 6
     end):SetTarget(Target)
 )
 
@@ -569,6 +621,9 @@ AOEAPL:AddSpell(
             not Target:GetAuras():FindMy(Rupture):IsUp() or
                 Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
+            and not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
+            and not Player:GetAuras():FindMy(SymbolsOfDeath):IsUp()
+            and not Player:GetAuras():FindMy(ThistleTea):IsUp()
     end):SetTarget(Target)
 )
 
@@ -582,6 +637,7 @@ AOEAPL:AddSpell(
             not RuptureTarget:GetAuras():FindMy(Rupture):IsUp() or
                 RuptureTarget:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
+            and not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
     end):SetTarget(RuptureTarget)
 )
 
@@ -590,7 +646,9 @@ AOEAPL:AddSpell(
         return Target:Exists() and Player:InMelee(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 5)
+            (Player:GetComboPoints(Target) >= 6 or
+                (Player:GetComboPoints(Target) >= 5 and
+                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and Target:GetAuras():FindMy(Rupture):IsUp()
     end):SetTarget(Target)
 )
 
@@ -601,8 +659,8 @@ AOEAPL:AddSpell(
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 5) and
-            (Player:GetMeleeAttackers() >= 3 or
-                (Player:GetMeleeAttackers() >= 2 and
+            (Player:GetEnemies(10) >= 3 or
+                (Player:GetEnemies(10) >= 2 and
                     DarkBrew:IsKnown()))
     end):SetTarget(Target)
 )
@@ -659,10 +717,9 @@ AOEAPL:AddSpell(
     end):SetTarget(Player)
 )
 
-
 SubModulue:Sync(function()
     SpecialAPL:Execute()
-    if Player:GetMeleeAttackers() > 1 then
+    if Player:GetEnemies(10) >= 2 then
         AOEAPL:Execute()
     else
         DefaultAPL:Execute()
