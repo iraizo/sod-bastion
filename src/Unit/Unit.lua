@@ -325,7 +325,7 @@ function Unit:GetChannelOrCastPercentComplete()
         local start = startTimeMS / 1000
         local finish = endTimeMS / 1000
         local current = GetTime()
-        print(((current - start) / (finish - start)) * 100)
+
         return ((current - start) / (finish - start)) * 100
     end
     return 0
@@ -601,6 +601,21 @@ function Unit:TimeToDie()
     end
 
     return timeto
+end
+
+-- Set combat time if affecting combat and return the difference between now and the last time
+function Unit:GetCombatTime()
+    if self:IsAffectingCombat() then
+        self.last_combat_time = GetTime()
+    elseif not self:IsAffectingCombat() and self.last_combat_time then
+        self.last_combat_time = nil
+    end
+
+    if not self.last_combat_time then
+        return 0
+    end
+
+    return GetTime() - self.last_combat_time
 end
 
 return Unit

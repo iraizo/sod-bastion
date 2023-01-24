@@ -6,25 +6,20 @@ local Bastion = {
 Bastion.__index = Bastion
 
 function Bastion.require(class)
-    if Bastion[class] then
-        return Bastion[class]
-    end
-
-    Bastion[class] = Tinkr:require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
-    return Bastion[class]
+    return Tinkr:require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
 end
 
 Bastion.ClassMagic = Bastion.require("ClassMagic")
 Bastion.List = Bastion.require("List")
 Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
 Bastion.Vector3 = Bastion.require("Vector3")
-Bastion.Commmand = Bastion.require("Command")
+Bastion.Command = Bastion.require("Command")
 Bastion.Cache = Bastion.require("Cache")
 Bastion.Cacheable = Bastion.require("Cacheable")
 Bastion.Refreshable = Bastion.require("Refreshable")
 Bastion.Unit = Bastion.require("Unit")
 Bastion.Aura = Bastion.require("Aura")
-Bastion.APL = Bastion.require("APL")
+Bastion.APL, Bastion.APLActor, Bastion.APLTrait = Bastion.require("APL")
 Bastion.Module = Bastion.require("Module")
 Bastion.UnitManager = Bastion.require("UnitManager"):New()
 Bastion.ObjectManager = Bastion.require("ObjectManager"):New()
@@ -115,7 +110,7 @@ function Bastion:Debug(...)
     print(str)
 end
 
-local Command = Bastion.Commmand:New('bastion')
+local Command = Bastion.Command:New('bastion')
 
 Command:Register('toggle', 'Toggle bastion on/off', function()
     Bastion.Enabled = not Bastion.Enabled

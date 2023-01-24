@@ -37,7 +37,7 @@ local CrimsonVial        = Bastion.SpellBook:GetSpell(185311)
 local Shiv               = Bastion.SpellBook:GetSpell(5938)
 local KidneyShot         = Bastion.SpellBook:GetSpell(408)
 local InstantPoison      = Bastion.SpellBook:GetSpell(315584)
-local Sanguine           = Bastion.SpellBook:GetSpell(326509)
+local Sanguine           = Bastion.SpellBook:GetSpell(226512)
 local AtrophicPosion     = Bastion.SpellBook:GetSpell(381637)
 local Evasion            = Bastion.SpellBook:GetSpell(5277)
 local TricksOfTheTrade   = Bastion.SpellBook:GetSpell(57934)
@@ -65,6 +65,7 @@ local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
 local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
 local DarkMoonRime = Bastion.ItemBook:GetItem(198477)
+local AlgetharsPuzzleBox = Bastion.ItemBook:GetItem(193701)
 
 local RimeCards = {
     One = Bastion.SpellBook:GetSpell(382844),
@@ -191,6 +192,7 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
                 unit:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
             )
             and unit:TimeToDie() > 12
+            and unit:GetCombatTime() > 4
         then
             target = unit
             return true
@@ -209,17 +211,25 @@ local AOEAPL = Bastion.APL:New('aoe')
 local SpecialAPL = Bastion.APL:New('special')
 local RacialsAPL = Bastion.APL:New('racials')
 
+local Facing = function(t)
+    return Bastion.APLTrait:New(function()
+        return Player:IsFacing(t)
+    end)
+end
+
 SpecialAPL:AddSpell(
     Kick:CastableIf(function(self)
-        return KickTarget:Exists() and Player:InMelee(KickTarget) and
+        return KickTarget:Exists() and self:IsInRange(KickTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
     end):SetTarget(KickTarget)
+):AddTraits(
+    Facing(KickTarget)
 )
 
 SpecialAPL:AddSpell(
     KidneyShot:CastableIf(function(self)
-        return KickTarget:Exists() and Player:InMelee(KickTarget) and
+        return KickTarget:Exists() and self:IsInRange(KickTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Kick:GetTimeSinceLastCast() > 2 and
@@ -234,9 +244,10 @@ SpecialAPL:AddSpell(
 
 SpecialAPL:AddSpell(
     CheapShot:CastableIf(function(self)
-        return KickTarget:Exists() and Player:InMelee(KickTarget) and
+        return KickTarget:Exists() and self:IsInRange(KickTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Stealth):IsUp()
+            and not Target:GetAuras():Find(Sanguine):IsUp()
     end):SetTarget(KickTarget)
 )
 
@@ -258,7 +269,7 @@ SpecialAPL:AddSpell(
 
 SpecialAPL:AddSpell(
     Shiv:CastableIf(function(self)
-        return PurgeTarget:Exists() and Player:InMelee(PurgeTarget) and
+        return PurgeTarget:Exists() and self:IsInRange(PurgeTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and PurgeTarget:GetAuras():HasAnyStealableAura()
     end):SetTarget(PurgeTarget)
@@ -327,6 +338,13 @@ SpecialAPL:AddItem(
 )
 
 SpecialAPL:AddItem(
+    AlgetharsPuzzleBox:UsableIf(function(self)
+        return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 3 or Target:IsBoss())
+    end):SetTarget(Player)
+)
+
+SpecialAPL:AddItem(
     DarkMoonRime:UsableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss()) and
@@ -345,7 +363,7 @@ SpecialAPL:AddItem(
 -- Use  Shadowstrike during  Shadow Dance.
 SpecialAPL:AddSpell(
     Shadowstrike:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:GetAuras():FindMy(Premeditation):IsUp() and
             Player:GetEnemies(10) <= 3
@@ -454,7 +472,7 @@ DefaultAPL:AddSpell(
 -- Cast  Rupture if it needs to be refreshed for maintenance or if it is not up.
 DefaultAPL:AddSpell(
     Rupture:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 6 or
@@ -466,22 +484,24 @@ DefaultAPL:AddSpell(
     end):SetTarget(Target)
 )
 
---  Secret Technique - Best is to use it during  Shadow Dance.
 DefaultAPL:AddSpell(
     SecretTechnique:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 6 or
-                (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and Target:GetAuras():FindMy(Rupture):IsUp()
+            (Player:GetComboPoints(Target) >= 5) and
+            Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and
+            (Player:GetAuras():FindMy(DanseMacabre):GetCount() >= 3 or
+                not DanseMacabre:IsKnown()) and
+            (not ColdBlood:IsKnown() or
+                ColdBlood:GetCooldownRemaining() > Player:GetAuras():FindMy(ShadowDanceAura):GetRemainingTime() - 2)
     end):SetTarget(Target)
 )
 
--- Cast  Eviscerate.
+-- Cast Eviscerate if it is available.
 DefaultAPL:AddSpell(
     Eviscerate:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 6 or
@@ -504,7 +524,7 @@ DefaultAPL:AddSpell(
 -- Use  Gloomblade outside of  Shadow Dance.
 DefaultAPL:AddSpell(
     Gloomblade:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
@@ -514,7 +534,7 @@ DefaultAPL:AddSpell(
 -- Use  Shadowstrike during  Shadow Dance.
 DefaultAPL:AddSpell(
     Shadowstrike:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
@@ -587,7 +607,7 @@ AOEAPL:AddSpell(
 -- Use  Thistle Tea with  Shadow Dance.
 AOEAPL:AddSpell(
     ThistleTea:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetPowerDeficit() >= 100 and
@@ -614,7 +634,7 @@ AOEAPL:AddSpell(
 -- Cast  Rupture if it needs to be refreshed for maintenance or if it is not up.
 AOEAPL:AddSpell(
     Rupture:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 5) and (
@@ -630,7 +650,7 @@ AOEAPL:AddSpell(
 -- Cast  Rupture on all targets. (scam??)
 AOEAPL:AddSpell(
     Rupture:CastableIf(function(self)
-        return RuptureTarget:Exists() and Player:InMelee(RuptureTarget) and
+        return RuptureTarget:Exists() and self:IsInRange(RuptureTarget) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(RuptureTarget) >= 6) and (
@@ -641,22 +661,25 @@ AOEAPL:AddSpell(
     end):SetTarget(RuptureTarget)
 )
 
+-- actions.finish+=/secret_technique,if=buff.shadow_dance.up&(buff.danse_macabre.stack>=3|!talent.danse_macabre)&(!talent.cold_blood|cooldown.cold_blood.remains>buff.shadow_dance.remains-2)
 AOEAPL:AddSpell(
     SecretTechnique:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            (Player:GetComboPoints(Target) >= 6 or
-                (Player:GetComboPoints(Target) >= 5 and
-                    Player:GetAuras():FindMy(ShadowDanceAura):IsUp())) and Target:GetAuras():FindMy(Rupture):IsUp()
+            (Player:GetComboPoints(Target) >= 5) and
+            Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and
+            (Player:GetAuras():FindMy(DanseMacabre):GetCount() >= 3 or
+                not DanseMacabre:IsKnown()) and
+            (not ColdBlood:IsKnown() or
+                ColdBlood:GetCooldownRemaining() > Player:GetAuras():FindMy(ShadowDanceAura):GetRemainingTime() - 2)
     end):SetTarget(Target)
 )
 
 -- Cast  Black Powder with 3 or more targets, 2 or more when talented into  Dark Brew.
 AOEAPL:AddSpell(
     BlackPowder:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
-            self:IsKnownAndUsable() and
+        return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             (Player:GetComboPoints(Target) >= 5) and
             (Player:GetEnemies(10) >= 3 or
@@ -668,7 +691,7 @@ AOEAPL:AddSpell(
 -- Cast  Eviscerate.
 AOEAPL:AddSpell(
     Eviscerate:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetComboPoints(Target) >= 5
@@ -689,8 +712,7 @@ AOEAPL:AddSpell(
 -- Use  Shuriken Storm on 2 targets outside of  Shadow Dance.
 AOEAPL:AddSpell(
     ShurikenStorm:CastableIf(function(self)
-        return Target:Exists() and Player:GetDistance(Target) <= 10 and
-            self:IsKnownAndUsable() and
+        return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetEnemies(10) == 2 and
             not Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
@@ -700,7 +722,7 @@ AOEAPL:AddSpell(
 -- Use  Shadowstrike on 2 and 3 targets during  Shadow Dance or to proc  Premeditation.
 AOEAPL:AddSpell(
     Shadowstrike:CastableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and
+        return Target:Exists() and self:IsInRange(Target) and
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:GetEnemies(10) >= 2 and Player:GetEnemies(10) <= 3 and
@@ -708,13 +730,23 @@ AOEAPL:AddSpell(
     end):SetTarget(Target)
 )
 
--- Use  Shuriken Storm
+-- Use  Shuriken Storm at > 2 targets.
 AOEAPL:AddSpell(
     ShurikenStorm:CastableIf(function(self)
-        return Target:Exists() and Player:GetDistance(Target) <= 10 and
-            self:IsKnownAndUsable() and
-            not Player:IsCastingOrChanneling()
+        return self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetEnemies(10) > 2
     end):SetTarget(Player)
+)
+
+-- Use gloomblade at <= 2 targets.
+AOEAPL:AddSpell(
+    Gloomblade:CastableIf(function(self)
+        return Target:Exists() and self:IsInRange(Target) and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetEnemies(10) <= 2
+    end):SetTarget(Target)
 )
 
 SubModulue:Sync(function()
