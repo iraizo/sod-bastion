@@ -117,6 +117,7 @@ function Spell:Cast(unit, condition)
 
     -- Cast the spell
     CastSpellByName(self:GetName(), u)
+    SpellCancelQueuedSpell()
 
     Bastion:Debug("Casting", self)
 
@@ -223,15 +224,15 @@ function Spell:IsInRange(unit)
     local hasRange = self:HasRange()
     local inRange = IsSpellInRange(self:GetName(), unit.unit)
 
-    if not hasRange then
+    if hasRange == false then
         return true
     end
 
-    if hasRange and inRange == 1 then
+    if inRange == 1 then
         return true
     end
 
-    return false
+    return Bastion.UnitManager['player']:InMelee(unit)
 end
 
 -- Get the last cast time

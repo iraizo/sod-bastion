@@ -385,9 +385,7 @@ DefaultAPL:AddSpell(
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         ShurikenTornado:Cast(Target)
-        SpellCancelQueuedSpell()
     end)
 )
 
@@ -410,9 +408,7 @@ DefaultAPL:AddSpell(
             Player:GetAuras():FindMy(SliceAndDice):IsUp() and
             Target:GetAuras():FindMy(Rupture):IsUp()
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         SecretTechnique:Cast(Target)
-        SpellCancelQueuedSpell()
     end)
 )
 
@@ -433,9 +429,7 @@ DefaultAPL:AddSpell(
             self:IsKnownAndUsable() and Gloomblade:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:GetComboPoints(Target) <= 2
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         Gloomblade:Cast(Target) -- We want to cast gloomblade immediately with shadow dance to trigger 1 stack of danse macabre
-        SpellCancelQueuedSpell()
     end)
 )
 
@@ -550,9 +544,7 @@ AOEAPL:AddSpell(
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling()
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         ShurikenTornado:Cast(Target)
-        SpellCancelQueuedSpell()
     end)
 )
 
@@ -575,9 +567,7 @@ AOEAPL:AddSpell(
             Player:GetAuras():FindMy(SliceAndDice):IsUp() and
             Target:GetAuras():FindMy(Rupture):IsUp()
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         SecretTechnique:Cast(Target)
-        SpellCancelQueuedSpell()
     end)
 )
 
@@ -598,9 +588,7 @@ AOEAPL:AddSpell(
             self:IsKnownAndUsable() and Gloomblade:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:GetComboPoints(Target) <= 2
     end):SetTarget(Player):OnCast(function()
-        SpellCancelQueuedSpell()
         Gloomblade:Cast(Target) -- We want to cast gloomblade immediately with shadow dance to trigger 1 stack of danse macabre
-        SpellCancelQueuedSpell()
     end)
 )
 
