@@ -237,6 +237,16 @@ function AuraTable:FindMy(spell)
     return Bastion.Aura:New()
 end
 
+-- Find any
+function AuraTable:FindAny(spell)
+    local a = self:Find(spell)
+    if a:IsValid() then
+        return a
+    end
+
+    return self:FindMy(spell)
+end
+
 -- Has any stealable aura
 function AuraTable:HasAnyStealableAura()
     for _, auras in pairs(self:GetUnitAuras()) do

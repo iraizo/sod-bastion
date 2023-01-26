@@ -70,7 +70,7 @@ end
 -- Execute
 function APLActor:Execute()
     if self:GetActor().apl then
-        if self:GetActor().condition() then
+        if self:GetActor().condition and self:GetActor().condition() then
             -- print("Bastion: APL:Execute: Executing sub APL " .. self:GetActor().apl.name)
             self:GetActor().apl:Execute()
         end
@@ -98,6 +98,10 @@ function APLActor:Execute()
     if self:GetActor().action then
         -- print("Bastion: APL:Execute: Executing action " .. self:GetActor().action)
         self:GetActor().cb(self)
+    end
+    if self:GetActor().variable then
+        -- print("Bastion: APL:Execute: Setting variable " .. self:GetActor().variable)
+        self:GetActor()._apl.variables[self:GetActor().variable] = self:GetActor().cb(self:GetActor()._apl)
     end
 end
 
@@ -137,6 +141,13 @@ function APL:GetVariable(name)
     return self.variables[name]
 end
 
+-- Add variable
+function APL:AddVariable(name, cb)
+    local actor = APLActor:New({ variable = name, cb = cb, _apl = self })
+    table.insert(self.apl, actor)
+    return actor
+end
+
 -- Add a manual action to the APL
 function APL:AddAction(action, cb)
     local actor = APLActor:New({ action = action, cb = cb })
@@ -170,6 +181,9 @@ end
 
 -- Add an APL to the APL (for sub APLs)
 function APL:AddAPL(apl, condition)
+    if not condition then
+        error("Bastion: APL:AddAPL: No condition for APL " .. apl.name)
+    end
     local actor = APLActor:New({ apl = apl, condition = condition })
     table.insert(self.apl, actor)
     return actor

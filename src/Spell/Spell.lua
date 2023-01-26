@@ -91,6 +91,11 @@ function Spell:GetCooldownRemaining()
     return start + duration - GetTime()
 end
 
+-- On cooldown
+function Spell:OnCooldown()
+    return self:GetCooldownRemaining() > 0
+end
+
 -- Cast the spell
 function Spell:Cast(unit, condition)
     if condition and not self:EvaluateCondition(condition) then

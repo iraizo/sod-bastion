@@ -5,6 +5,10 @@ local Unit = {
     cache = nil,
     aura_table = nil,
     unit = nil,
+    last_shadow_techniques = 0,
+    swings_since_sht = 0,
+    last_off_attack = 0,
+    last_main_attack = 0,
 }
 
 function Unit:__index(k)
@@ -428,6 +432,15 @@ function Unit:GetComboPoints()
     return UnitPower(self.unit, 4)
 end
 
+function Unit:GetComboPointsMax()
+    return UnitPowerMax(self.unit, 4)
+end
+
+-- Get combopoints deficit
+function Unit:GetComboPointsDeficit()
+    return self:GetComboPointsMax() - self:GetComboPoints()
+end
+
 -- IsUnit
 function Unit:IsUnit(unit)
     return UnitIsUnit(self.unit, unit.unit)
@@ -616,6 +629,203 @@ function Unit:GetCombatTime()
     end
 
     return GetTime() - self.last_combat_time
+end
+
+-- Get units gcd time
+function Unit:GetGCD()
+    local start, duration = GetSpellCooldown(61304)
+    if start == 0 then
+        return 0
+    end
+
+    return duration - (GetTime() - start)
+end
+
+-- Get units max gcd time
+--[[
+    The GCD without Haste is 1.5 seconds
+With 50% Haste the GCD is 1 second
+With 100% Haste the GCD is 0.5 seconds
+The GCD won't drop below 1 second
+More than 50% Haste will drop a spell below 1 second
+
+]]
+function Unit:GetMaxGCD()
+    local haste = UnitSpellHaste(self.unit)
+    if haste > 50 then
+        haste = 50
+    end
+
+    return 1.5 / (1 + haste / 100)
+end
+
+-- IsStealthed
+function Unit:IsStealthed()
+    local Stealth = Bastion.SpellBook:GetSpell(1784)
+    local Vanish = Bastion.SpellBook:GetSpell(1856)
+    local ShadowDance = Bastion.SpellBook:GetSpell(185422)
+    local Subterfuge = Bastion.SpellBook:GetSpell(115192)
+    local Shadowmeld = Bastion.SpellBook:GetSpell(58984)
+    local Sepsis = Bastion.SpellBook:GetSpell(328305)
+
+
+    return self:GetAuras():FindAny(Stealth)  or self:GetAuras():FindAny(ShadowDance)
+end
+
+-- Get unit swing timers
+function Unit:GetSwingTimers()
+    local main_speed, off_speed = UnitAttackSpeed(self.unit)
+    local main_speed = main_speed or 2
+    local off_speed = off_speed or 2
+
+    local main_speed_remains = main_speed - (GetTime() - self.last_main_attack)
+    local off_speed_remains = off_speed - (GetTime() - self.last_off_attack)
+
+    if main_speed_remains < 0 then
+        main_speed_remains = 0
+    end
+
+    if off_speed_remains < 0 then
+        off_speed_remains = 0
+    end
+
+    return main_speed_remains, off_speed_remains
+end
+
+function Unit:WatchForSwings()
+    Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
+        local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike = CombatLogGetCurrentEventInfo()
+
+        if sourceGUID == self:GetGUID() then
+            if subtype == "SPELL_ENERGIZE" and spellID == 196911 then
+                self.last_shadow_techniques = GetTime()
+                self.swings_since_sht = 0
+            end
+
+            if subtype:sub(1, 5) == "SWING" and not multistrike then
+                if subtype == "SWING_MISSED" then
+                    offhand = spellName
+                end
+
+                local now = GetTime()
+
+                if now > self.last_shadow_techniques + 3 then
+                    self.swings_since_sht = self.swings_since_sht + 1
+                end
+
+                if offhand then
+                    self.last_off_attack = GetTime()
+                else
+                    self.last_main_attack = GetTime()
+                end
+            end
+        end
+    end)
+end
+
+-- GetTimeToShurikenTornado
+--[[
+    spec:RegisterStateTable( "time_to_sht", setmetatable( {}, {
+    __index = function( t, k )
+        local n = tonumber( k )
+        n = n - ( n % 1 )
+
+        if not n or n > 5 then return 3600 end
+
+        if n <= swings_since_sht then return 0 end
+
+        local mh_speed = swings.mainhand_speed
+        local mh_next = ( swings.mainhand > now - 3 ) and ( swings.mainhand + mh_speed ) or now + ( mh_speed * 0.5 )
+
+        local oh_speed = swings.offhand_speed
+        local oh_next = ( swings.offhand > now - 3 ) and ( swings.offhand + oh_speed ) or now
+
+        table.wipe( sht )
+
+        if mh_speed and mh_speed > 0 then
+            for i = 1, 4 do
+                insert( sht, mh_next + ( i * mh_speed ) )
+            end
+        end
+
+        if oh_speed and oh_speed > 0 then
+            for i = 1, 4 do
+                insert( sht, oh_next + ( i * oh_speed ) )
+            end
+        end
+
+        local i = 1
+
+        while( sht[i] ) do
+            if sht[i] < last_shadow_techniques + 3 then
+                table.remove( sht, i )
+            else
+                i = i + 1
+            end
+        end
+
+        if #sht > 0 and n - swings_since_sht < #sht then
+            table.sort( sht )
+            return max( 0, sht[ n - swings_since_sht ] - query_time )
+        else
+            return 3600
+        end
+    end
+} ) )
+]]
+function Unit:GetTimeToShurikenTornado(n)
+    local now = GetTime()
+    local sht = {}
+    local swings = self:GetSwingTimers()
+
+    if not self.swings_since_sht then
+        self.swings_since_sht = 0
+    end
+
+    if not self.last_shadow_techniques then
+        self.last_shadow_techniques = 0
+    end
+
+    if n <= self.swings_since_sht then
+        return 0
+    end
+
+    local mh_speed = swings[1]
+    local mh_next = (self.last_mh > now - 3) and (self.last_mh + mh_speed) or now + (mh_speed * 0.5)
+
+    local oh_speed = swings[2]
+    local oh_next = (self.last_oh > now - 3) and (self.last_oh + oh_speed) or now
+
+    table.wipe(sht)
+
+    if mh_speed and mh_speed > 0 then
+        for i = 1, 4 do
+            table.insert(sht, mh_next + (i * mh_speed))
+        end
+    end
+
+    if oh_speed and oh_speed > 0 then
+        for i = 1, 4 do
+            table.insert(sht, oh_next + (i * oh_speed))
+        end
+    end
+
+    local i = 1
+
+    while (sht[i]) do
+        if sht[i] < self.last_shadow_techniques + 3 then
+            table.remove(sht, i)
+        else
+            i = i + 1
+        end
+    end
+
+    if #sht > 0 and n - self.swings_since_sht < #sht then
+        table.sort(sht)
+        return math.max(0, sht[n - self.swings_since_sht] - now)
+    else
+        return 3600
+    end
 end
 
 return Unit
