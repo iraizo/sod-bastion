@@ -171,18 +171,21 @@ function Item:Usable()
 end
 
 -- Set a script to check if the Item is Usable
+---@param func fun(self:Item):boolean
 function Item:UsableIf(func)
     self.UsableIfFunc = func
     return self
 end
 
 -- Set a script to run before the Item has been Use
+---@param func fun(self:Item)
 function Item:PreUse(func)
     self.PreUseFunc = func
     return self
 end
 
 -- Set a script to run after the Item has been Use
+---@param func fun(self:Item)
 function Item:OnUse(func)
     self.OnUseFunc = func
     return self
