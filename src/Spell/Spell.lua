@@ -51,6 +51,7 @@ function Spell:GetID()
 end
 
 -- Add post cast func
+---@param func fun(self:Spell)
 function Spell:PostCast(func)
     self.PostCastFunc = func
     return self
@@ -174,18 +175,21 @@ function Spell:Castable()
 end
 
 -- Set a script to check if the spell is castable
+---@param func fun(spell:Spell):boolean
 function Spell:CastableIf(func)
     self.CastableIfFunc = func
     return self
 end
 
 -- Set a script to run before the spell has been cast
+---@param func fun(spell:Spell)
 function Spell:PreCast(func)
     self.PreCastFunc = func
     return self
 end
 
 -- Set a script to run after the spell has been cast
+---@param func fun(spell:Spell)
 function Spell:OnCast(func)
     self.OnCastFunc = func
     return self
