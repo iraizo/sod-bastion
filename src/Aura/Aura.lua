@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Aura class
+---@class Aura
 local Aura = {}
 
 function Aura:__index(k)

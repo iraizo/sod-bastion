@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Class class
+---@class Class
 local Class = {}
 
 function Class:__index(k)

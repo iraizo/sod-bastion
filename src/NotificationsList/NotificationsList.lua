@@ -1,5 +1,6 @@
 -- Create a NotificationsList class
 
+---@class NotificationsList
 local NotificationsList = {
     notifications = {}
 }
@@ -29,6 +30,7 @@ function NotificationsList:New()
 end
 
 -- Create a notification class for the notifications list (takes icon and text)
+---@class Notification
 local Notification = {
 }
 Notification.__index = Notification

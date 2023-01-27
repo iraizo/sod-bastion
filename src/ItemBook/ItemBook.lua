@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new ItemBook class
+---@class ItemBook
 local ItemBook = {}
 ItemBook.__index = ItemBook
 

@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Item class
+---@class Item
 local Item = {
     UsableIfFunc = false,
     PreUseFunc = false,

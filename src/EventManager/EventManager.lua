@@ -1,5 +1,5 @@
 -- Create an EventManager class
-
+---@class EventManager
 local EventManager = {
     events = {},
     eventHandlers = {},

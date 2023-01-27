@@ -1,5 +1,5 @@
 -- Create a wow command handler class
-
+---@class Command
 local Command = {}
 Command.__index = Command
 

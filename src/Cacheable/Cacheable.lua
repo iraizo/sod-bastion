@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Define a Cacheable class
+---@class Cacheable
 local Cacheable = {
     cache = nil,
     callback = nil,

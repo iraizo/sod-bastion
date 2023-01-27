@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Spell class
+---@class Spell
 local Spell = {
     CastableIfFunc = false,
     PreCastFunc = false,
