@@ -1,5 +1,6 @@
 local Tinkr, Bastion = ...
 
+---@class MythicPlusUtils
 local MythicPlusUtils = {
     debuffLogging = false,
     random = ''

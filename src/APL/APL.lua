@@ -1,4 +1,5 @@
 -- Create an APL trait for the APL class
+---@class APLTrait
 local APLTrait = {}
 APLTrait.__index = APLTrait
 
@@ -29,6 +30,7 @@ function APLTrait:__tostring()
 end
 
 -- Create an APL actor for the APL class
+---@class APLActor
 local APLActor = {}
 APLActor.__index = APLActor
 
@@ -116,7 +118,7 @@ function APLActor:__tostring()
 end
 
 -- APL (Attack priority list) class
-
+---@class APL
 local APL = {}
 APL.__index = APL
 

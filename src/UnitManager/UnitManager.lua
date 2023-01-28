@@ -48,6 +48,7 @@ local function Validate(token)
 end
 
 -- Create a new UnitManager class
+---@class UnitManager
 local UnitManager = {
     units = {},
     customUnits = {},
@@ -108,6 +109,7 @@ function UnitManager:Validate(token)
 end
 
 -- Get or create a unit
+---@return Unit
 function UnitManager:Get(token)
     -- if not Validate(token) then
     --     error("UnitManager:Get - Invalid token: " .. token)
@@ -145,6 +147,9 @@ function UnitManager:SetObject(unit)
 end
 
 -- Create a custom unit and cache it for .5 seconds
+---@param token string
+---@param cb fun():Unit
+---@return Unit
 function UnitManager:CreateCustomUnit(token, cb)
     local unit = cb()
     local cachedUnit = Bastion.Cacheable:New(unit, cb)
@@ -175,6 +180,7 @@ function UnitManager:EnumFriends(cb)
 end
 
 -- Enum Enemies (object manager)
+---@param cb fun(unit: Unit):boolean
 function UnitManager:EnumEnemies(cb)
     Bastion.ObjectManager.activeEnemies:each(function(unit)
         if cb(unit) then
