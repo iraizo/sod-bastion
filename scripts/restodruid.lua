@@ -441,24 +441,23 @@ DefaultAPL:AddSpell(
 DefaultAPL:AddSpell(
     NaturesSwiftness:CastableIf(function(self)
         return Lowest:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Lowest) and
-            (Lowest:GetHP() < 70 or (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70))
-            )
+            and Player:CanSee(Lowest) and Lowest:GetHP() < 70
     end):SetTarget(Lowest)
 )
 
 DefaultAPL:AddSpell(
     ConvokeTheSpirits:CastableIf(function(self)
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
-            self:IsInRange(Player) and (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70) >= 3)
+            self:IsInRange(Player) and (Player:GetPartyHPAround(40, 70) >= 2 or Player:GetPartyHPAround(40, 75) >= 3)
+            and (Flourish:IsKnownAndUsable() or Flourish:GetTimeSinceLastCast() > 10)
     end):SetTarget(Player)
 )
 
 DefaultAPL:AddSpell(
     Flourish:CastableIf(function(self)
         return Player:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
-            self:IsInRange(Player) and (Player:GetPartyHPAround(40, 65) >= 2 or Player:GetPartyHPAround(40, 70) >= 3) and
-            (not ConvokeTheSpirits:IsKnownAndUsable() and ConvokeTheSpirits:GetTimeSinceLastCast() > 7) and
+            self:IsInRange(Player) and (Player:GetPartyHPAround(40, 70) >= 2 or Player:GetPartyHPAround(40, 75) >= 3) and
+            (not ConvokeTheSpirits:IsKnownAndUsable() and ConvokeTheSpirits:GetTimeSinceLastCast() > 10) and
             WildGrowth:GetTimeSinceLastCast() <= 6
     end):SetTarget(Player)
 )
@@ -482,7 +481,7 @@ DefaultAPL:AddSpell(
         return SwiftmendUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(SwiftmendUnit) and
             (
-            SwiftmendUnit:GetHP() <= 80 or
+            SwiftmendUnit:GetHP() <= 60 or
                 (
                 Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2
                 )
@@ -495,12 +494,10 @@ DefaultAPL:AddSpell(
         return WildGrowthUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(WildGrowthUnit) and
             (
-            (
-                Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
-                    (
-                    Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
-                        WildGrowthUnit:GetPartyHPAround(30, 90) >= 2)) or
-                (WildGrowthUnit:GetPartyHPAround(30, 90) >= 3 or WildGrowthUnit:GetPartyHPAround(30, 85) >= 2)) and
+            Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
+                or
+                (WildGrowthUnit:GetPartyHPAround(30, 90) >= 3 or WildGrowthUnit:GetPartyHPAround(30, 85) >= 2)
+            ) and
             not Player:IsMoving()
     end):SetTarget(WildGrowthUnit)
 )
@@ -541,7 +538,7 @@ DefaultAPL:AddSpell(
 DefaultAPL:AddSpell(
     Rejuvenation:CastableIf(function(self)
         return RejuvUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(RejuvUnit) and RejuvUnit:GetHP() <= 94 and
+            and Player:CanSee(RejuvUnit) and (RejuvUnit:GetHP() <= 94) and
             not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
     end):SetTarget(RejuvUnit)
 )
@@ -579,44 +576,52 @@ DefaultAPL:AddSpell(
 )
 
 DefaultAPL:AddSpell(
+    Rejuvenation:CastableIf(function(self)
+        return RejuvUnit:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(RejuvUnit) and (RejuvUnit:GetHP() <= 94 or Player:GetPartyHPAround(40, 90) >= 2) and
+            not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
+    end):SetTarget(RejuvUnit)
+)
+
+DefaultAPL:AddSpell(
     Sunfire:CastableIf(function(self)
-        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Bastion.UnitManager['target']) and
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Target) and
             (
-            not Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):IsUp() or
-                Bastion.UnitManager['target']:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
-            Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Bastion.UnitManager['target'])
+            not Target:GetAuras():FindMy(SunfireAura):IsUp() or
+                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
+            Target:IsHostile() and
+            Target:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Moonfire:CastableIf(function(self)
-        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Bastion.UnitManager['target']) and
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Target) and
             (
-            not Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):IsUp() or
-                Bastion.UnitManager['target']:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
-            Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Bastion.UnitManager['target'])
+            not Target:GetAuras():FindMy(MoonfireAura):IsUp() or
+                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
+            Target:IsHostile() and
+            Target:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Starsurge:CastableIf(function(self)
-        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Bastion.UnitManager['target']) and Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Bastion.UnitManager['target'])
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Target) and Target:IsHostile() and
+            Target:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(Target)
 )
 
 DefaultAPL:AddSpell(
     Wrath:CastableIf(function(self)
-        return Bastion.UnitManager['target']:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Bastion.UnitManager['target']) and not Player:IsMoving() and
-            Bastion.UnitManager['target']:IsHostile() and
-            Bastion.UnitManager['target']:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Bastion.UnitManager['target'])
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(Target) and not Player:IsMoving() and
+            Target:IsHostile() and
+            Target:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(Target)
 )
 
 RestoModule:Sync(function()

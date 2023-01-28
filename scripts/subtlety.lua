@@ -843,7 +843,8 @@ local FindWeakness          = Bastion.SpellBook:GetSpell(91023)
 local ImprovedShurikenStorm = Bastion.SpellBook:GetSpell(319951)
 
 
-
+local RefreshingHealingPotion = Bastion.ItemBook:GetItem(191380)
+local ElementalPotionOfPower = Bastion.ItemBook:GetItem(191389)
 local IrideusFragment = Bastion.ItemBook:GetItem(193743)
 local Healthstone = Bastion.ItemBook:GetItem(5512)
 local WindscarWhetstone = Bastion.ItemBook:GetItem(137486)
@@ -998,7 +999,46 @@ local BuildAPL = Bastion.APL:New('build')
 local ItemsAPL = Bastion.APL:New('items')
 
 ItemsAPL:AddItem(
+    Healthstone:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetHealthPercent() < 40
+    end):SetTarget(Player)
+)
+
+ItemsAPL:AddItem(
+    RefreshingHealingPotion:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetHealthPercent() < 40
+    end):SetTarget(Player)
+)
+
+ItemsAPL:AddSpell(
+    TricksOfTheTrade:CastableIf(function(self)
+        return Tank:Exists() and self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:IsTanking(Target)
+    end):SetTarget(Tank)
+)
+
+ItemsAPL:AddSpell(
+    Evasion:CastableIf(function(self)
+        return self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and
+            Player:GetHealthPercent() < 40
+    end):SetTarget(Player)
+)
+
+ItemsAPL:AddItem(
     IrideusFragment:UsableIf(function(self)
+        return self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
+    end):SetTarget(Player)
+)
+
+ItemsAPL:AddItem(
+    ElementalPotionOfPower:UsableIf(function(self)
         return self:IsEquippedAndUsable() and
             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss())
     end):SetTarget(Player)
