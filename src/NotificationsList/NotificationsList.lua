@@ -12,14 +12,14 @@ function NotificationsList:New()
 
     -- Create a frame for the notifications
     self.frame = CreateFrame("Frame", "BastionNotificationsList", UIParent)
-    self.frame:SetSize(300, 100)
+    self.frame:SetSize(600, 60)
     self.frame:SetPoint("TOP", UIParent, "TOP", 0, -100)
     self.frame:SetFrameStrata("HIGH")
 
     -- Remove notifications after 5 seconds
     C_Timer.NewTicker(0.1, function()
         for i, notification in ipairs(self.notifications) do
-            if GetTime() - notification.addedAt > 2 then
+            if GetTime() - notification.addedAt > notification.duration then
                 notification:Remove()
                 table.remove(self.notifications, i)
             end
@@ -36,13 +36,15 @@ local Notification = {
 Notification.__index = Notification
 
 -- Constructor
-function Notification:New(list, icon, text)
+function Notification:New(list, icon, text, duration)
     local self = setmetatable({}, Notification)
+
+    if not duration then duration = 2 end
 
     -- Create a frame for the notification
     self.frame = CreateFrame("Frame", nil, list.frame)
-    self.frame:SetSize(300, 100)
-    self.frame:SetPoint("TOP", list.frame, "TOP", 0, 0)
+    self.frame:SetSize(5, 5)
+    self.frame:SetPoint("CENTER", list.frame, "CENTER", 0, 0)
     self.frame:SetFrameStrata("HIGH")
 
     -- Create a texture for the icon
@@ -52,12 +54,16 @@ function Notification:New(list, icon, text)
     self.icon:SetTexture(icon)
 
     -- Create a fontstring for the text
-    self.text = self.frame:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
-    self.text:SetPoint("CENTER", self.frame, "CENTER", 10, 0)
+    self.text = self.frame:CreateFontString(nil, "BACKGROUND", "NumberFontNormal")
+    self.text:SetPoint("LEFT", self.frame, "LEFT", 32 + 16, 0)
     self.text:SetText(text)
-    self.text:SetFont("Fonts\\FRIZQT__.TTF", 14)
+    self.text:SetFont("Fonts\\OpenSans-Bold.ttf", 18)
+
+    -- set the frame size to the size of the text + icon
+    self.frame:SetSize(self.text:GetStringWidth() + 32 + 16, 32)
 
     self.addedAt = GetTime()
+    self.duration = duration
     self.list = list
 
     return self
@@ -77,9 +83,9 @@ function Notification:Remove()
 end
 
 -- Add a notification to the list
-function NotificationsList:AddNotification(icon, text)
+function NotificationsList:AddNotification(icon, text, duration)
     -- Create a new notification
-    local notification = Notification:New(self, icon, text)
+    local notification = Notification:New(self, icon, text, duration)
 
     -- Add the notification to the list
     table.insert(self.notifications, notification)
@@ -94,7 +100,7 @@ function NotificationsList:Update()
     -- Loop through the notifications
     for i, notification in ipairs(self.notifications) do
         -- Set the position of the notification
-        notification.frame:SetPoint("TOP", self.frame, "TOP", 0, -50 * (i - 1))
+        notification.frame:SetPoint("CENTER", self.frame, "CENTER", 0, -42 * (i - 1))
     end
 end
 
