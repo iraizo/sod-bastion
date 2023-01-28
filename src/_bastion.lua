@@ -1,5 +1,6 @@
 local Tinkr = ...
 
+---@class Bastion
 local Bastion = {
     DebugMode = false
 }
@@ -9,30 +10,54 @@ function Bastion.require(class)
     return Tinkr:require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
 end
 
+---@type ClassMagic
 Bastion.ClassMagic = Bastion.require("ClassMagic")
+---@type List
 Bastion.List = Bastion.require("List")
+---@type NotificationsList, Notification
 Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
+---@type Vector3
 Bastion.Vector3 = Bastion.require("Vector3")
+---@type Command
 Bastion.Command = Bastion.require("Command")
+---@type Cache
 Bastion.Cache = Bastion.require("Cache")
+---@type Cacheable
 Bastion.Cacheable = Bastion.require("Cacheable")
+---@type Refreshable
 Bastion.Refreshable = Bastion.require("Refreshable")
+---@type Unit
 Bastion.Unit = Bastion.require("Unit")
+---@type Aura
 Bastion.Aura = Bastion.require("Aura")
+---@type APL, APLActor, APLTrait
 Bastion.APL, Bastion.APLActor, Bastion.APLTrait = Bastion.require("APL")
 Bastion.Module = Bastion.require("Module")
+---@type UnitManager
 Bastion.UnitManager = Bastion.require("UnitManager"):New()
+---@type ObjectManager
 Bastion.ObjectManager = Bastion.require("ObjectManager"):New()
+---@type EventManager
 Bastion.EventManager = Bastion.require("EventManager"):New()
+---@type Spell
 Bastion.Spell = Bastion.require("Spell")
+---@type SpellBook
 Bastion.SpellBook = Bastion.require("SpellBook"):New()
+---@type Item
 Bastion.Item = Bastion.require("Item")
+---@type ItemBook
 Bastion.ItemBook = Bastion.require("ItemBook"):New()
+---@type AuraTable
 Bastion.AuraTable = Bastion.require("AuraTable")
+---@type Class
 Bastion.Class = Bastion.require("Class")
+---@type Timer
 Bastion.Timer = Bastion.require("Timer")
+---@type Timer
 Bastion.CombatTimer = Bastion.Timer:New('combat')
+---@type MythicPlusUtils
 Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
+---@type NotificationsList
 Bastion.Notifications = Bastion.NotificationsList:New()
 
 Bastion.modules = {}

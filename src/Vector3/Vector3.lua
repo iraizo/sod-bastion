@@ -1,5 +1,6 @@
 -- Create a Vector3 class
 
+---@class Vector3
 local Vector3 = {}
 Vector3.__index = Vector3
 

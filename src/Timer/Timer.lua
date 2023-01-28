@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Timer class
+---@class Timer
 local Timer = {
     startTime = nil,
     resetAfterCombat = false,

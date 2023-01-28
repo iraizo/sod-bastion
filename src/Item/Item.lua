@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Item class
+---@class Item
 local Item = {
     UsableIfFunc = false,
     PreUseFunc = false,
@@ -170,18 +171,21 @@ function Item:Usable()
 end
 
 -- Set a script to check if the Item is Usable
+---@param func fun(self:Item):boolean
 function Item:UsableIf(func)
     self.UsableIfFunc = func
     return self
 end
 
 -- Set a script to run before the Item has been Use
+---@param func fun(self:Item)
 function Item:PreUse(func)
     self.PreUseFunc = func
     return self
 end
 
 -- Set a script to run after the Item has been Use
+---@param func fun(self:Item)
 function Item:OnUse(func)
     self.OnUseFunc = func
     return self
@@ -278,6 +282,8 @@ function Item:GetChargesRemaining()
 end
 
 -- Create a condition for the Item
+---@param name string
+---@param func fun(self:Item)
 function Item:Condition(name, func)
     self.conditions[name] = {
         func = func

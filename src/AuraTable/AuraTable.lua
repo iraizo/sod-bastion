@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new AuraTable class
+---@class AuraTable
 local AuraTable = {}
 AuraTable.__index = AuraTable
 
@@ -196,6 +197,7 @@ function AuraTable:Clear()
 end
 
 -- Check if the unit has a specific aura
+---@return Aura
 function AuraTable:Find(spell)
     local auras = self:GetUnitAuras()
     local aurasub = auras[spell:GetID()]
@@ -217,6 +219,7 @@ function AuraTable:Find(spell)
     return Bastion.Aura:New()
 end
 
+---@return Aura
 function AuraTable:FindMy(spell)
     local aurasub = self.playerAuras[spell:GetID()]
 
@@ -238,6 +241,7 @@ function AuraTable:FindMy(spell)
 end
 
 -- Find any
+---@return Aura
 function AuraTable:FindAny(spell)
     local a = self:Find(spell)
     if a:IsValid() then

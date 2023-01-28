@@ -1,5 +1,6 @@
 local Tinkr, Bastion = ...
 
+---@class List
 local List = {}
 List.__index = List
 
