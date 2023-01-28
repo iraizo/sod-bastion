@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Create a new ItemBook class
+---@class ItemBook
 local ItemBook = {}
 ItemBook.__index = ItemBook
 
@@ -12,6 +13,7 @@ function ItemBook:New()
 end
 
 -- Get a spell from the ItemBook
+---@return Item
 function ItemBook:GetItem(id)
     if self.items[id] == nil then
         self.items[id] = Bastion.Item:New(id)

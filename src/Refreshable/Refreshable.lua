@@ -1,6 +1,7 @@
 local Tinkr, Bastion = ...
 
 -- Define a Refreshable class
+---@class Refreshable
 local Refreshable = {
     cache = nil,
     callback = nil,

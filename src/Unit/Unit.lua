@@ -1,9 +1,12 @@
 local Tinkr, Bastion = ...
 
 -- Create a new Unit class
+---@class Unit
 local Unit = {
     cache = nil,
+    ---@type AuraTable
     aura_table = nil,
+    ---@type Unit
     unit = nil,
     last_shadow_techniques = 0,
     swings_since_sht = 0,
@@ -226,6 +229,7 @@ function Unit:GetClass()
 end
 
 -- Get the units auras
+---@return AuraTable
 function Unit:GetAuras()
     return self.aura_table
 end
@@ -669,7 +673,7 @@ function Unit:IsStealthed()
     local Sepsis = Bastion.SpellBook:GetSpell(328305)
 
 
-    return self:GetAuras():FindAny(Stealth)  or self:GetAuras():FindAny(ShadowDance)
+    return self:GetAuras():FindAny(Stealth) or self:GetAuras():FindAny(ShadowDance)
 end
 
 -- Get unit swing timers

@@ -1,5 +1,6 @@
 local Tinkr, Bastion = ...
 
+---@class ObjectManager
 local ObjectManager = {}
 ObjectManager.__index = ObjectManager
 

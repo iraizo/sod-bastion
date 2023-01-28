@@ -1,3 +1,4 @@
+---@class Cache
 local Cache = {}
 Cache.__index = Cache
 

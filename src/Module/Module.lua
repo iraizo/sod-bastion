@@ -1,5 +1,6 @@
 -- Create a module class for a bastion module
 
+---@class Module
 local Module = {}
 Module.__index = Module
 
