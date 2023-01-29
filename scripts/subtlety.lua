@@ -775,6 +775,7 @@ local GrandMelee            = Bastion.SpellBook:GetSpell(193358)
 local Broadside             = Bastion.SpellBook:GetSpell(193356)
 local TrueBearing           = Bastion.SpellBook:GetSpell(193359)
 local RuthlessPrecision     = Bastion.SpellBook:GetSpell(193357)
+local DeviousStratagem      = Bastion.SpellBook:GetSpell(193531)
 local SkullAndCrossbones    = Bastion.SpellBook:GetSpell(199603)
 local ShadowFocus           = Bastion.SpellBook:GetSpell(108209)
 local BuriedTreasure        = Bastion.SpellBook:GetSpell(199600)
@@ -1109,7 +1110,7 @@ DefaultAPL:AddVariable(
     'snd_condition',
     function()
         return Player:GetAuras():FindMy(SliceAndDice):IsUp() or
-            Player:GetEnemies(10) >= Player:GetComboPointsMax()
+            Player:GetEnemies(10) >= ConsumeCPMax()
     end
 )
 
@@ -1206,7 +1207,7 @@ DefaultAPL:AddAPL(
 DefaultAPL:AddSpell(
     SliceAndDice:CastableIf(
         function(self)
-            return self:IsKnownAndUsable() and Player:GetEnemies(10) < Player:GetComboPointsMax() and
+            return self:IsKnownAndUsable() and Player:GetEnemies(10) < ConsumeCPMax() and
                 Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() < Player:GetGCD() and
                 Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() > 6 and
                 Player:GetComboPoints() >= 4
@@ -1257,7 +1258,7 @@ DefaultAPL:AddAPL(
 DefaultAPL:AddAPL(
     FinishAPL,
     function()
-        return DefaultAPL:GetVariable('effective_combo_points') >= Player:GetComboPointsMax()
+        return DefaultAPL:GetVariable('effective_combo_points') >= ConsumeCPMax()
     end
 )
 
@@ -1345,9 +1346,9 @@ BuildAPL:AddSpell(
 BuildAPL:AddVariable(
     'anima_helper',
     function()
-        return not EchoingReprimand:IsKnown() or (not (DefaultAPL:GetVariable('is_next_cp_animacharged') and
+        return not EchoingReprimand:IsKnown() or ((not (DefaultAPL:GetVariable('is_next_cp_animacharged') and
             (Player:GetTimeToShurikenTornado(3) < 0.5 or Player:GetTimeToShurikenTornado(4) < 1) and
-            Player:GetPower() < 60))
+            Player:GetPower() < 60)))
     end
 )
 
@@ -1387,7 +1388,8 @@ CDsAPL:AddSpell(
 CDsAPL:AddSpell(
     SymbolsOfDeath:CastableIf(
         function(self)
-            return self:IsKnownAndUsable() and Player:GetAuras():FindMy(ShurikenTornado):IsUp() and
+            return Player:IsAffectingCombat() and self:IsKnownAndUsable() and
+                Player:GetAuras():FindMy(ShurikenTornado):IsUp() and
                 Player:GetAuras():FindMy(ShurikenTornado):GetRemainingTime() <= 3.5
         end
     ):SetTarget(Player)
@@ -1590,6 +1592,16 @@ FinishAPL:AddVariable(
     end
 )
 
+--     return ( cp + 1 ) * p()->buffs.slice_and_dice->data().duration();
+function GetTriggeredDuration()
+    return (Player:GetComboPoints() + 1) * 6
+end
+
+--         return p()->buffs.slice_and_dice->remains() < get_triggered_duration( as<int>( p()->current_effective_cp( false ) ) ) * 0.3;
+function Refreshable(aura, target)
+    return target:GetAuras():FindMy(aura):GetRemainingTime() < GetTriggeredDuration() * 0.3
+end
+
 -- actions.finish+=/slice_and_dice,if=!variable.premed_snd_condition&spell_targets.shuriken_storm<6&!buff.shadow_dance.up&buff.slice_and_dice.remains<fight_remains&refreshable
 FinishAPL:AddSpell(
     SliceAndDice:CastableIf(
@@ -1598,7 +1610,7 @@ FinishAPL:AddSpell(
                 Player:GetEnemies(10) < 6 and
                 not Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and
                 Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() < Target:TimeToDie() and
-                Player:GetAuras():FindMy(SliceAndDice):GetRemainingTime() < 6
+                Refreshable(SliceAndDice, Player)
         end
     ):SetTarget(Player)
 )
@@ -1637,7 +1649,7 @@ FinishAPL:AddSpell(
                 (not DefaultAPL:GetVariable('skip_rupture') or
                     DefaultAPL:GetVariable('priority_rotation')) and
                 Target:TimeToDie() - Target:GetAuras():FindMy(Rupture):GetRemainingTime() > 6 and
-                Target:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
+                Refreshable(Rupture, Target)
         end
     ):SetTarget(Target)
 )
@@ -1694,7 +1706,7 @@ FinishAPL:AddSpell(
                 not DefaultAPL:GetVariable('priority_rotation') and
                 Player:GetEnemies(10) >= 2 and
                 RuptureTarget:TimeToDie() >= (2 * Player:GetComboPoints()) and
-                RuptureTarget:GetAuras():FindMy(Rupture):GetRemainingTime() < 6
+                Refreshable(Rupture, RuptureTarget)
         end
     ):SetTarget(RuptureTarget)
 )
@@ -1901,11 +1913,25 @@ StealthedAPL:AddSpell(
     ):SetTarget(Target)
 )
 
+--[[
+      double consume_cp_max() const
+  {
+    return COMBO_POINT_MAX + as<double>( talent.rogue.deeper_stratagem->effectN( 2 ).base_value() +
+                                         talent.outlaw.devious_stratagem->effectN( 2 ).base_value() +
+                                         talent.subtlety.secret_stratagem->effectN( 2 ).base_value() );
+  }
+]]
+
+function ConsumeCPMax()
+    return 5 + (DeeperStratagem:IsKnownAndUsable() and 1 or 0) + (DeviousStratagem:IsKnownAndUsable() and 1 or 0) +
+        (SecretStratagem:IsKnownAndUsable() and 1 or 0)
+end
+
 -- actions.stealthed+=/call_action_list,name=finish,if=variable.effective_combo_points>=cp_max_spend
 StealthedAPL:AddAPL(
     FinishAPL,
     function(self)
-        return DefaultAPL:GetVariable('effective_combo_points') >= Player:GetComboPointsMax()
+        return DefaultAPL:GetVariable('effective_combo_points') >= ConsumeCPMax()
     end
 )
 

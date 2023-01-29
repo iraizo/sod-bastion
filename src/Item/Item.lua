@@ -30,6 +30,11 @@ function Item:__index(k)
     return response
 end
 
+-- Equals
+function Item:__eq(other)
+    return self:GetID() == other:GetID()
+end
+
 -- tostring
 function Item:__tostring()
     return "Bastion.__Item(" .. self:GetID() .. ")" .. " - " .. self:GetName()

@@ -28,6 +28,11 @@ function Unit:__index(k)
     return response
 end
 
+-- Equals
+function Unit:__eq(other)
+    return UnitIsUnit(self.unit, other.unit)
+end
+
 -- tostring
 function Unit:__tostring()
     return "Bastion.__Unit(" .. tostring(self.unit) .. ")" .. " - " .. (self:GetName() or '')
@@ -219,7 +224,7 @@ end
 
 -- Get if the unit is affecting combat
 function Unit:IsAffectingCombat()
-    return UnitAffectingCombat('player', self.unit)
+    return UnitAffectingCombat(self.unit)
 end
 
 -- Get the units class id

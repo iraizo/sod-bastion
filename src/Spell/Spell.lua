@@ -31,6 +31,11 @@ function Spell:__index(k)
     return response
 end
 
+-- Equals
+function Spell:__eq(other)
+    return self:GetID() == other:GetID()
+end
+
 -- tostring
 function Spell:__tostring()
     return "Bastion.__Spell(" .. self:GetID() .. ")" .. " - " .. self:GetName()

@@ -18,6 +18,19 @@ function Aura:__index(k)
     return response
 end
 
+-- Equals
+function Aura:__eq(other)
+    if getmetatable(other) == Aura then
+        return self:GetSpell():GetID() == other:GetSpell():GetID()
+    end
+
+    if getmetatable(other) == Bastion.Spell then
+        return self:GetSpell():GetID() == other:GetID()
+    end
+
+    return false
+end
+
 function Aura:__tostring()
     return "Bastion.__Aura(" .. self:GetSpell():GetID() .. ")" .. " - " .. (self:GetName() or "''")
 end
