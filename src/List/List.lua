@@ -1,7 +1,25 @@
 local Tinkr, Bastion = ...
 
 ---@class List
-local List = {}
+local List = {
+    -- Add overload
+    ---@param self List
+    ---@param value any
+    ---@return List
+    __add = function(self, value)
+        self:push(value)
+        return self
+    end,
+
+    -- Subtract overload
+    ---@param self List
+    ---@param value any
+    ---@return List
+    __sub = function(self, value)
+        self:remove(value)
+        return self
+    end,
+}
 List.__index = List
 
 function List:New(from)

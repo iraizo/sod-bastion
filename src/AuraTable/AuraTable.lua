@@ -18,16 +18,21 @@ function AuraTable:New(unit)
     local self = setmetatable({}, AuraTable)
 
     self.unit = unit
-    self.auras = {}
 
+    self.auras = {}
     self.playerAuras = {}
+
     self.guid = unit:GetGUID()
     self.instanceIDLookup = {}
 
     return self
 end
 
-function AuraTable:OnUpdate(auras)
+function AuraTable:OnUpdate(a)
+    if not a then
+        self:Update()
+        return
+    end
     local isFullUpdate = auras.isFullUpdate
 
     if isFullUpdate then
@@ -110,6 +115,33 @@ end
 
 -- Get a units buffs
 function AuraTable:GetUnitBuffs()
+    if Tinkr.classic then
+        for i = 1, 40 do
+            local aura = Bastion.Aura:New(self.unit, i, 'HELPFUL')
+
+            if not aura:IsValid() then
+                break
+            end
+
+            local spellId = aura:GetSpell():GetID()
+
+            if Bastion.UnitManager['player']:IsUnit(aura:GetSource()) then
+                if not self.playerAuras[spellId] then
+                    self.playerAuras[spellId] = {}
+                end
+
+                table.insert(self.playerAuras[spellId], aura)
+            else
+                if not self.auras[spellId] then
+                    self.auras[spellId] = {}
+                end
+
+                table.insert(self.auras[spellId], aura)
+            end
+        end
+        return
+    end
+
     AuraUtil_ForEachAura(self.unit.unit, 'HELPFUL', nil, function(a)
         local aura = Bastion.Aura:CreateFromUnitAuraInfo(a)
 
@@ -121,6 +153,33 @@ end
 
 -- Get a units debuffs
 function AuraTable:GetUnitDebuffs()
+    if Tinkr.classic then
+        for i = 1, 40 do
+            local aura = Bastion.Aura:New(self.unit, i, 'HARMFUL')
+
+            if not aura:IsValid() then
+                break
+            end
+
+            local spellId = aura:GetSpell():GetID()
+
+            if Bastion.UnitManager['player']:IsUnit(aura:GetSource()) then
+                if not self.playerAuras[spellId] then
+                    self.playerAuras[spellId] = {}
+                end
+
+                table.insert(self.playerAuras[spellId], aura)
+            else
+                if not self.auras[spellId] then
+                    self.auras[spellId] = {}
+                end
+
+                table.insert(self.auras[spellId], aura)
+            end
+        end
+        return
+    end
+
     AuraUtil_ForEachAura(self.unit.unit, 'HARMFUL', nil, function(a)
         local aura = Bastion.Aura:CreateFromUnitAuraInfo(a)
 
@@ -207,11 +266,14 @@ function AuraTable:Find(spell)
     end
 
     for k, a in pairs(aurasub) do
+        print(a)
         if a ~= nil then
             if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
                 return a
             else
-                self:RemoveInstanceID(a:GetAuraInstanceID())
+                if not Tinkr.classic then
+                    self:RemoveInstanceID(a:GetAuraInstanceID())
+                end
             end
         end
     end
@@ -221,7 +283,8 @@ end
 
 ---@return Aura
 function AuraTable:FindMy(spell)
-    local aurasub = self.playerAuras[spell:GetID()]
+    local auras = self:GetMyUnitAuras()
+    local aurasub = auras[spell:GetID()]
 
     if not aurasub then
         return Bastion.Aura:New()
@@ -232,7 +295,9 @@ function AuraTable:FindMy(spell)
             if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
                 return a
             else
-                self:RemoveInstanceID(a:GetAuraInstanceID())
+                if not Tinkr.classic then
+                    self:RemoveInstanceID(a:GetAuraInstanceID())
+                end
             end
         end
     end

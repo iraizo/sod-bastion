@@ -60,7 +60,10 @@ function Aura:New(unit, index, type)
             type = nil,
 
         }
-        Bastion.SpellBook:GetSpell(self.aura.spellId)
+
+        if self.aura.spellId then
+            Bastion.SpellBook:GetSpell(self.aura.spellId)
+        end
         return self
     end
 
@@ -89,7 +92,9 @@ function Aura:New(unit, index, type)
         index = index,
         type = type,
     }
-    Bastion.SpellBook:GetSpell(self.aura.spellId)
+    if self.aura.spellId then
+        Bastion.SpellBook:GetSpell(self.aura.spellId)
+    end
     return self
 end
 
