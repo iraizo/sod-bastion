@@ -7,7 +7,7 @@ local Refreshable = {
     callback = nil,
     value = nil,
     __eq = function(self, other)
-        return self.value.__eq(self.value, other)
+        return self.value.__eq(rawget(self, 'value'), other)
     end
 }
 
@@ -23,7 +23,7 @@ end
 
 -- When the object is accessed return the value
 function Refreshable:__tostring()
-    return "Bastion.__Refreshable(" .. tostring(self.value) .. ")"
+    return "Bastion.__Refreshable(" .. tostring(rawget(self, 'value')) .. ")"
 end
 
 -- Create
@@ -34,7 +34,7 @@ function Refreshable:New(value, cb)
     self.value = value
     self.callback = cb
 
-    self.cache:Set('self', self.value, 0.5)
+    self.cache:Set('self', rawget(self, 'value'), 0.5)
 
     return self
 end

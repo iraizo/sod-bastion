@@ -1402,7 +1402,7 @@ CDsAPL:AddSpell(
         function(self)
             return Player:IsAffectingCombat() and Player:GetAuras():FindMy(Vanish):IsUp() and self:IsKnownAndUsable() and
                 Player:GetAuras():FindMy(DanseMacabre):GetCount() > 3 and
-                DefaultAPL:GetVariable('effective_combo_points') <= 2
+                DefaultAPL:GetVariable('effective_combo_points') <= 2 and Vanish:GetTimeSinceLastCast() > 2
         end
     ):SetTarget(Player)
 )
@@ -1764,7 +1764,7 @@ StealthCDsAPL:AddSpell(
                 self:IsKnownAndUsable() and
                 (not DanseMacabre:IsKnown() or Player:GetEnemies(10) >= 3) and
                 not StealthCDsAPL:GetVariable('shd_threshold') and
-                Player:GetComboPointsDeficit() > 1
+                Player:GetComboPointsDeficit() > 1 and Vanish:GetTimeSinceLastCast() > 2
         end
     ):SetTarget(Target)
 )

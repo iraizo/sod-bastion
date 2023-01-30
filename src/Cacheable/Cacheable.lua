@@ -6,9 +6,9 @@ local Cacheable = {
     cache = nil,
     callback = nil,
     value = nil,
-    __eq = function(self, other)
-        return self.value.__eq(self.value, other)
-    end
+    -- __eq = function(self, other)
+    --     return self.value.__eq(self.value, other)
+    -- end
 }
 
 -- On index check the cache to be valid and return the value or reconstruct the value and return it

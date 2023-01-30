@@ -68,7 +68,7 @@ function Aura:New(unit, index, type)
     end
 
     local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal,
-    spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(unit.unit, index, type)
+    spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(unit:GetOMToken(), index, type)
 
     local self = setmetatable({}, Aura)
     self.aura = {

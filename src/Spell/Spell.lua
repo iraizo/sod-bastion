@@ -121,8 +121,8 @@ function Spell:Cast(unit, condition)
     -- Check if the mouse was looking
     self.wasLooking = IsMouselooking()
 
-    -- if unit.unit contains 'nameplate' then we need to use Object wrapper to cast
-    local u = unit.unit
+    -- if unit:GetOMToken() contains 'nameplate' then we need to use Object wrapper to cast
+    local u = unit:GetOMToken()
     if type(u) == "string" and string.find(u, 'nameplate') then
         u = Object(u)
     end
@@ -237,7 +237,7 @@ end
 -- Check if the spell is in range of the unit
 function Spell:IsInRange(unit)
     local hasRange = self:HasRange()
-    local inRange = IsSpellInRange(self:GetName(), unit.unit)
+    local inRange = IsSpellInRange(self:GetName(), unit:GetOMToken())
 
     if hasRange == false then
         return true

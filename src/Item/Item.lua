@@ -116,7 +116,7 @@ function Item:Use(unit, condition)
     self.wasLooking = IsMouselooking()
 
     -- Use the Item
-    UseItemByName(self:GetName(), unit.unit)
+    UseItemByName(self:GetName(), unit:GetOMToken())
 
     Bastion:Debug("Using", self)
 
@@ -230,9 +230,9 @@ end
 function Item:IsInRange(unit)
     local name, rank, icon, UseTime, Itemmin, Itemmax, ItemID = GetItemInfo(self:GetID())
 
-    local them = Object(unit.unit)
+    local them = Object(unit:GetOMToken())
 
-    local tx, ty, tz = ObjectPosition(unit.unit)
+    local tx, ty, tz = ObjectPosition(unit:GetOMToken())
     local px, py, pz = ObjectPosition('player')
 
     if not them then
@@ -244,7 +244,7 @@ function Item:IsInRange(unit)
     end
 
     local combatReach = ObjectCombatReach("player")
-    local themCombatReach = ObjectCombatReach(unit.unit)
+    local themCombatReach = ObjectCombatReach(unit:GetOMToken())
 
     if Bastion.UnitManager['player']:InMelee(unit) and Itemmin == 0 then
         return true

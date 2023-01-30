@@ -88,11 +88,14 @@ function UnitManager:__index(k)
     -- end
 
     if self.objects[kguid] == nil then
-        local unit = Unit:New(Object(k))
-        self:SetObject(unit)
+        local o = Object(k)
+        if o then
+            local unit = Unit:New(Object(k))
+            self:SetObject(unit)
+        end
     end
 
-    return self.objects[kguid]
+    return self.objects['none']
 end
 
 -- Constructor
@@ -117,19 +120,20 @@ function UnitManager:Get(token)
 
     local tguid = ObjectGUID(token)
 
-    if self.objects[tguid] == nil then
+    if tguid and self.objects[tguid] == nil then
         if token == 'none' then
-            self.objects[tguid] = Unit:New(token)
+            self.objects['none'] = Unit:New()
         else
             self.objects[tguid] = Unit:New(Object(tguid))
         end
     end
 
     return Bastion.Refreshable:New(self.objects[tguid], function()
-        local tguid = ObjectGUID(token)
+        local tguid = ObjectGUID(token) or "none"
+
         if self.objects[tguid] == nil then
             if token == 'none' then
-                self.objects[tguid] = Unit:New(token)
+                self.objects['none'] = Unit:New()
             else
                 self.objects[tguid] = Unit:New(Object(tguid))
             end

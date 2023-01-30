@@ -18,6 +18,10 @@ local Unit = {
 function Unit:__index(k)
     local response = Bastion.ClassMagic:Resolve(Unit, k)
 
+    if k == 'unit' then
+        return rawget(self, k)
+    end
+
     if response == nil then
         response = rawget(self, k)
     end
@@ -31,12 +35,12 @@ end
 
 -- Equals
 function Unit:__eq(other)
-    return UnitIsUnit(self.unit, other.unit)
+    return UnitIsUnit(self:GetOMToken(), other.unit)
 end
 
 -- tostring
 function Unit:__tostring()
-    return "Bastion.__Unit(" .. tostring(self.unit) .. ")" .. " - " .. (self:GetName() or '')
+    return "Bastion.__Unit(" .. tostring(self:GetOMToken()) .. ")" .. " - " .. (self:GetName() or '')
 end
 
 -- Constructor
@@ -51,37 +55,37 @@ end
 
 -- Check if the unit is valid
 function Unit:IsValid()
-    return self.unit ~= nil and self:Exists()
+    return self:GetOMToken() ~= nil and self:Exists()
 end
 
 -- Check if the unit exists
 function Unit:Exists()
-    return Object(self.unit)
+    return Object(self:GetOMToken())
 end
 
 -- Get the units token
 function Unit:Token()
-    return self.unit
+    return self:GetOMToken()
 end
 
 -- Get the units name
 function Unit:GetName()
-    return UnitName(self.unit)
+    return UnitName(self:GetOMToken())
 end
 
 -- Get the units GUID
 function Unit:GetGUID()
-    return ObjectGUID(self.unit)
+    return ObjectGUID(self:GetOMToken())
 end
 
 -- Get the units health
 function Unit:GetHealth()
-    return UnitHealth(self.unit)
+    return UnitHealth(self:GetOMToken())
 end
 
 -- Get the units max health
 function Unit:GetMaxHealth()
-    return UnitHealthMax(self.unit)
+    return UnitHealthMax(self:GetOMToken())
 end
 
 -- Get the units health percentage
@@ -95,19 +99,19 @@ end
 
 -- Get the units power type
 function Unit:GetPowerType()
-    return UnitPowerType(self.unit)
+    return UnitPowerType(self:GetOMToken())
 end
 
 -- Get the units power
 function Unit:GetPower(powerType)
     local powerType = powerType or self:GetPowerType()
-    return UnitPower(self.unit, powerType)
+    return UnitPower(self:GetOMToken(), powerType)
 end
 
 -- Get the units max power
 function Unit:GetMaxPower(powerType)
     local powerType = powerType or self:GetPowerType()
-    return UnitPowerMax(self.unit, powerType)
+    return UnitPowerMax(self:GetOMToken(), powerType)
 end
 
 -- Get the units power percentage
@@ -124,7 +128,7 @@ end
 
 -- Get the units position
 function Unit:GetPosition()
-    local x, y, z = ObjectPosition(self.unit)
+    local x, y, z = ObjectPosition(self:GetOMToken())
     return Bastion.Vector3:New(x, y, z)
 end
 
@@ -138,37 +142,37 @@ end
 
 -- Is the unit dead
 function Unit:IsDead()
-    return UnitIsDeadOrGhost(self.unit)
+    return UnitIsDeadOrGhost(self:GetOMToken())
 end
 
 -- Is the unit alive
 function Unit:IsAlive()
-    return not UnitIsDeadOrGhost(self.unit)
+    return not UnitIsDeadOrGhost(self:GetOMToken())
 end
 
 -- Is the unit a pet
 function Unit:IsPet()
-    return UnitIsUnit(self.unit, "pet")
+    return UnitIsUnit(self:GetOMToken(), "pet")
 end
 
 -- Is the unit a friendly unit
 function Unit:IsFriendly()
-    return UnitIsFriend("player", self.unit)
+    return UnitIsFriend("player", self:GetOMToken())
 end
 
 -- IsEnemy
 function Unit:IsEnemy()
-    return UnitCanAttack("player", self.unit)
+    return UnitCanAttack("player", self:GetOMToken())
 end
 
 -- Is the unit a hostile unit
 function Unit:IsHostile()
-    return UnitCanAttack(self.unit, 'player')
+    return UnitCanAttack(self:GetOMToken(), 'player')
 end
 
 -- Is the unit a boss
 function Unit:IsBoss()
-    if UnitClassification(self.unit) == "worldboss" then
+    if UnitClassification(self:GetOMToken()) == "worldboss" then
         return true
     end
 
@@ -183,54 +187,61 @@ function Unit:IsBoss()
     return false
 end
 
+function Unit:GetOMToken()
+    if not self.unit then
+        return "none"
+    end
+    return self.unit:unit()
+end
+
 -- Is the unit a target
 function Unit:IsTarget()
-    return UnitIsUnit(self.unit, "target")
+    return UnitIsUnit(self:GetOMToken(), "target")
 end
 
 -- Is the unit a focus
 function Unit:IsFocus()
-    return UnitIsUnit(self.unit, "focus")
+    return UnitIsUnit(self:GetOMToken(), "focus")
 end
 
 -- Is the unit a mouseover
 function Unit:IsMouseover()
-    return UnitIsUnit(self.unit, "mouseover")
+    return UnitIsUnit(self:GetOMToken(), "mouseover")
 end
 
 -- Is the unit a tank
 function Unit:IsTank()
-    return UnitGroupRolesAssigned(self.unit) == "TANK"
+    return UnitGroupRolesAssigned(self:GetOMToken()) == "TANK"
 end
 
 -- Is the unit a healer
 function Unit:IsHealer()
-    return UnitGroupRolesAssigned(self.unit) == "HEALER"
+    return UnitGroupRolesAssigned(self:GetOMToken()) == "HEALER"
 end
 
 -- Is the unit a damage dealer
 function Unit:IsDamage()
-    return UnitGroupRolesAssigned(self.unit) == "DAMAGER"
+    return UnitGroupRolesAssigned(self:GetOMToken()) == "DAMAGER"
 end
 
 -- Is the unit a player
 function Unit:IsPlayer()
-    return UnitIsPlayer(self.unit)
+    return UnitIsPlayer(self:GetOMToken())
 end
 
 -- Is the unit a player controlled unit
 function Unit:IsPCU()
-    return UnitPlayerControlled(self.unit)
+    return UnitPlayerControlled(self:GetOMToken())
 end
 
 -- Get if the unit is affecting combat
 function Unit:IsAffectingCombat()
-    return UnitAffectingCombat(self.unit)
+    return UnitAffectingCombat(self:GetOMToken())
 end
 
 -- Get the units class id
 function Unit:GetClass()
-    local locale, class, classID = UnitClass(self.unit)
+    local locale, class, classID = UnitClass(self:GetOMToken())
     return Bastion.Class:New(locale, class, classID)
 end
 
@@ -242,14 +253,14 @@ end
 
 -- Get the raw unit
 function Unit:GetRawUnit()
-    return self.unit
+    return self:GetOMToken()
 end
 
 local isClassicWow = select(4, GetBuildInfo()) < 40000
 
 -- Check if two units are in melee
 -- function Unit:InMelee(unit)
---     return UnitInMelee(self.unit, unit.unit)
+--     return UnitInMelee(self:GetOMToken(), unit.unit)
 -- end
 
 local losFlag = bit.bor(0x1, 0x10, 0x100000)
@@ -271,8 +282,8 @@ function Unit:CanSee(unit)
     --         return false
     --     end
     -- end
-    local ax, ay, az = ObjectPosition(self.unit)
-    local ah = ObjectHeight(self.unit)
+    local ax, ay, az = ObjectPosition(self:GetOMToken())
+    local ah = ObjectHeight(self:GetOMToken())
     local attx, atty, attz = GetUnitAttachmentPosition(unit.unit, 34)
 
     if (ax == 0 and ay == 0 and az == 0) or (attx == 0 and atty == 0 and attz == 0) then
@@ -293,7 +304,7 @@ end
 
 -- Check if the unit is casting a spell
 function Unit:IsCasting()
-    return UnitCastingInfo(self.unit) ~= nil
+    return UnitCastingInfo(self:GetOMToken()) ~= nil
 end
 
 -- Get Casting or channeling spell
@@ -302,7 +313,8 @@ function Unit:GetCastingOrChannelingSpell()
         .unit)
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
+            :unit())
     end
 
     if name then
@@ -314,7 +326,7 @@ end
 
 -- Check if the unit is channeling a spell
 function Unit:IsChanneling()
-    return UnitChannelInfo(self.unit) ~= nil
+    return UnitChannelInfo(self:GetOMToken()) ~= nil
 end
 
 -- Check if the unit is casting or channeling a spell
@@ -324,7 +336,7 @@ end
 
 -- Check if the unit can attack the target
 function Unit:CanAttack(unit)
-    return UnitCanAttack(self.unit, unit.unit)
+    return UnitCanAttack(self:GetOMToken(), unit.unit)
 end
 
 function Unit:GetChannelOrCastPercentComplete()
@@ -332,7 +344,8 @@ function Unit:GetChannelOrCastPercentComplete()
         .unit)
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
+            :unit())
     end
 
     if name and startTimeMS and endTimeMS then
@@ -350,7 +363,8 @@ function Unit:IsInterruptible()
         .unit)
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit)
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
+            :unit())
     end
 
     if name then
@@ -407,7 +421,7 @@ function Unit:GetMeleeAttackers()
 
     Bastion.UnitManager:EnumEnemies(function(unit)
         if not self:IsUnit(unit) and unit:IsAlive() and self:CanSee(unit) and
-            self:InMelee(unit) and unit:IsEnemy() and unit:IsAffectingCombat() then
+            self:InMelee(unit) and unit:IsEnemy() and unit:InCombatOdds() > 80 then
             count = count + 1
         end
     end)
@@ -431,19 +445,19 @@ end
 
 -- Is moving
 function Unit:IsMoving()
-    return GetUnitSpeed(self.unit) > 0
+    return GetUnitSpeed(self:GetOMToken()) > 0
 end
 
 function Unit:IsMovingAtAll()
-    return ObjectMovementFlag(self.unit) ~= 0
+    return ObjectMovementFlag(self:GetOMToken()) ~= 0
 end
 
 function Unit:GetComboPoints()
-    return UnitPower(self.unit, 4)
+    return UnitPower(self:GetOMToken(), 4)
 end
 
 function Unit:GetComboPointsMax()
-    return UnitPowerMax(self.unit, 4)
+    return UnitPowerMax(self:GetOMToken(), 4)
 end
 
 -- Get combopoints deficit
@@ -453,19 +467,20 @@ end
 
 -- IsUnit
 function Unit:IsUnit(unit)
-    return UnitIsUnit(self.unit, unit.unit)
+    return UnitIsUnit(self:GetOMToken(), unit and unit:GetOMToken() or 'none')
 end
 
 -- IsTanking
 function Unit:IsTanking(unit)
-    local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self.unit, unit.unit)
+    local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self:GetOMToken(),
+        unit.unit)
     return isTanking
 end
 
 -- IsFacing
 function Unit:IsFacing(unit)
-    local rot = ObjectRotation(self.unit)
-    local x, y, z = ObjectPosition(self.unit)
+    local rot = ObjectRotation(self:GetOMToken())
+    local x, y, z = ObjectPosition(self:GetOMToken())
     local x2, y2, z2 = ObjectPosition(unit.unit)
 
     if not x or not x2 then
@@ -486,7 +501,7 @@ end
 function Unit:IsBehind(unit)
     local rot = ObjectRotation(unit.unit)
     local x, y, z = ObjectPosition(unit.unit)
-    local x2, y2, z2 = ObjectPosition(self.unit)
+    local x2, y2, z2 = ObjectPosition(self:GetOMToken())
 
     if not x or not x2 then
         return false
@@ -518,7 +533,7 @@ end
 
 -- InMelee
 function Unit:InMelee(unit)
-    local x, y, z = ObjectPosition(self.unit)
+    local x, y, z = ObjectPosition(self:GetOMToken())
     local x2, y2, z2 = ObjectPosition(unit.unit)
 
     if not x or not x2 then
@@ -526,7 +541,7 @@ function Unit:InMelee(unit)
     end
 
     local dist = math.sqrt((x - x2) ^ 2 + (y - y2) ^ 2 + (z - z2) ^ 2)
-    local maxDist = math.max((ObjectCombatReach(self.unit) + 1.3333) + ObjectCombatReach(unit.unit), 5.0)
+    local maxDist = math.max((ObjectCombatReach(self:GetOMToken()) + 1.3333) + ObjectCombatReach(unit.unit), 5.0)
     maxDist = maxDist + 1.0 + self:GetMeleeBoost()
 
     return dist <= maxDist
@@ -534,12 +549,12 @@ end
 
 -- Get object id
 function Unit:GetID()
-    return ObjectID(self.unit)
+    return ObjectID(self:GetOMToken())
 end
 
 -- In party
 function Unit:IsInParty()
-    return UnitInParty(self.unit)
+    return UnitInParty(self:GetOMToken())
 end
 
 -- Linear regression between time and percent to something
@@ -664,7 +679,7 @@ More than 50% Haste will drop a spell below 1 second
 
 ]]
 function Unit:GetMaxGCD()
-    local haste = UnitSpellHaste(self.unit)
+    local haste = UnitSpellHaste(self:GetOMToken())
     if haste > 50 then
         haste = 50
     end
@@ -687,7 +702,7 @@ end
 
 -- Get unit swing timers
 function Unit:GetSwingTimers()
-    local main_speed, off_speed = UnitAttackSpeed(self.unit)
+    local main_speed, off_speed = UnitAttackSpeed(self:GetOMToken())
     local main_speed = main_speed or 2
     local off_speed = off_speed or 2
 

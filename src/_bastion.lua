@@ -66,7 +66,9 @@ Bastion.Enabled = false
 Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
     local u = Bastion.UnitManager[unit]
 
-    u:GetAuras():OnUpdate(auras)
+    if u then
+        u:GetAuras():OnUpdate(auras)
+    end
 end)
 
 Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
@@ -90,8 +92,14 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
     local u2 = Bastion.UnitManager[destGUID]
 
     local t = GetTime()
-    u:SetLastCombatTime(t)
-    u2:SetLastCombatTime(t)
+
+    if u then
+        u:SetLastCombatTime(t)
+    end
+
+    if u2 then
+        u2:SetLastCombatTime(t)
+    end
 end)
 
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
