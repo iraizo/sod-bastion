@@ -28,8 +28,8 @@ function AuraTable:New(unit)
     return self
 end
 
-function AuraTable:OnUpdate(a)
-    if not a then
+function AuraTable:OnUpdate(auras)
+    if not auras then
         self:Update()
         return
     end
