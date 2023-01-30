@@ -305,6 +305,57 @@ function AuraTable:FindMy(spell)
     return Bastion.Aura:New()
 end
 
+function AuraTable:FindFrom(spell, source)
+    local auras = self:GetUnitAuras()
+    local aurasub = auras[spell:GetID()]
+
+    if not aurasub then
+        return Bastion.Aura:New()
+    end
+
+    for k, a in pairs(aurasub) do
+        if a ~= nil then
+            if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
+                if a:GetSource() == source then
+                    return a
+                end
+            else
+                if not Tinkr.classic then
+                    self:RemoveInstanceID(a:GetAuraInstanceID())
+                end
+            end
+        end
+    end
+
+    return Bastion.Aura:New()
+end
+
+-- Find the aura from the current unit
+function AuraTable:FindTheirs(spell)
+    local auras = self:GetUnitAuras()
+    local aurasub = auras[spell:GetID()]
+
+    if not aurasub then
+        return Bastion.Aura:New()
+    end
+
+    for k, a in pairs(aurasub) do
+        if a ~= nil then
+            if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
+                if self.unit:IsUnit(a:GetSource()) then
+                    return a
+                end
+            else
+                if not Tinkr.classic then
+                    self:RemoveInstanceID(a:GetAuraInstanceID())
+                end
+            end
+        end
+    end
+
+    return Bastion.Aura:New()
+end
+
 -- Find any
 ---@return Aura
 function AuraTable:FindAny(spell)
