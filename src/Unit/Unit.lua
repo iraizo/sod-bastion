@@ -12,6 +12,7 @@ local Unit = {
     swings_since_sht = 0,
     last_off_attack = 0,
     last_main_attack = 0,
+    last_combat_time = 0,
 }
 
 function Unit:__index(k)
@@ -386,7 +387,7 @@ function Unit:GetEnemies(range)
 
     Bastion.UnitManager:EnumEnemies(function(unit)
         if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) and
-            unit:IsEnemy() and unit:IsAffectingCombat() then
+            unit:IsEnemy() then
             count = count + 1
         end
     end)
@@ -627,17 +628,20 @@ end
 
 -- Set combat time if affecting combat and return the difference between now and the last time
 function Unit:GetCombatTime()
-    if self:IsAffectingCombat() then
-        self.last_combat_time = GetTime()
-    elseif not self:IsAffectingCombat() and self.last_combat_time then
-        self.last_combat_time = nil
-    end
-
-    if not self.last_combat_time then
-        return 0
-    end
-
     return GetTime() - self.last_combat_time
+end
+
+function Unit:SetLastCombatTime(time)
+    self.last_combat_time = time
+end
+
+-- Get combat odds (if the last combat time is less than 1 minute ago return 1 / time, else return 0)
+-- the closer to 0 the more likely the unit is to be in combat (0 = 100%) 60 = 0%
+function Unit:InCombatOdds()
+    local time = self:GetCombatTime()
+    local percent = 1 - (time / 60)
+
+    return percent * 100
 end
 
 -- Get units gcd time

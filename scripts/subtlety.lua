@@ -2040,6 +2040,7 @@ Stealth:CastableIf(
 )
 
 SubModulue:Sync(function()
+    print(Player:GetEnemies(10))
     DefaultAPL:Execute()
 end)
 

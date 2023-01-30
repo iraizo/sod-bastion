@@ -83,6 +83,17 @@ Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
     end
 end)
 
+Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
+    local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike = CombatLogGetCurrentEventInfo()
+
+    local u = Bastion.UnitManager[sourceGUID]
+    local u2 = Bastion.UnitManager[destGUID]
+
+    local t = GetTime()
+    u:SetLastCombatTime(t)
+    u2:SetLastCombatTime(t)
+end)
+
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
         Bastion.CombatTimer:Start()
