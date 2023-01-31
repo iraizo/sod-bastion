@@ -216,9 +216,16 @@ Command:Register('mplus', 'Toggle m+ module on/off', function(args)
         return
     end
 
+    if cmd == 'casts' then
+        Bastion.MythicPlusUtils:ToggleCastLogging()
+        Bastion:Print("Cast logging", Bastion.MythicPlusUtils.castLogging and "enabled" or "disabled")
+        return
+    end
+
     Bastion:Print("[MythicPlusUtils] Unknown command")
     Bastion:Print("Available commands:")
     Bastion:Print("debuffs")
+    Bastion:Print("casts")
 end)
 
 local files = ListFiles("scripts/bastion/scripts")

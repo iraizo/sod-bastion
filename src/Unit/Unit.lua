@@ -286,12 +286,20 @@ function Unit:CanSee(unit)
     local ah = ObjectHeight(self:GetOMToken())
     local attx, atty, attz = GetUnitAttachmentPosition(unit.unit, 34)
 
+    if not attx or not ax then
+        return false
+    end
+
+    if not ah then
+        return false
+    end
+
     if (ax == 0 and ay == 0 and az == 0) or (attx == 0 and atty == 0 and attz == 0) then
         return true
     end
 
     if not attx or not ax then
-        return true
+        return false
     end
 
     local x, y, z = TraceLine(ax, ay, az + ah, attx, atty, attz, losFlag)
@@ -483,7 +491,7 @@ function Unit:IsFacing(unit)
     local x, y, z = ObjectPosition(self:GetOMToken())
     local x2, y2, z2 = ObjectPosition(unit.unit)
 
-    if not x or not x2 then
+    if not x or not x2 or not rot then
         return false
     end
 

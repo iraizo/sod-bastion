@@ -3,7 +3,11 @@ local Tinkr, Bastion = ...
 ---@class MythicPlusUtils
 local MythicPlusUtils = {
     debuffLogging = false,
-    random = ''
+    castLogging = false,
+    random = '',
+    loggedCasts = {},
+    loggedDebuffs = {},
+    kickList = {},
 }
 
 MythicPlusUtils.__index = MythicPlusUtils
@@ -91,7 +95,8 @@ function MythicPlusUtils:New()
             if #addedAuras > 0 then
                 for i = 1, #addedAuras do
                     local aura = Bastion.Aura:CreateFromUnitAuraInfo(addedAuras[i])
-                    if not aura:IsBuff() then
+
+                    if not self.loggedDebuffs[aura:GetSpell():GetID()] and not aura:IsBuff() then
                         WriteFile('bastion-MPlusDebuffs-' .. self.random .. '.lua', [[
                         AuraName: ]] .. aura:GetName() .. [[
                         AuraID: ]] .. aura:GetSpell():GetID() .. "\n" .. [[
@@ -102,11 +107,53 @@ function MythicPlusUtils:New()
         end
     end)
 
+    Bastion.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_START', function(unitTarget, castGUID, spellID)
+        if not self.castLogging then
+            return
+        end
+
+        if self.loggedCasts[spellID] then
+            return
+        end
+
+        local name = GetSpellInfo(spellID)
+
+        self.loggedCasts[spellID] = true
+
+        WriteFile('bastion-MPlusCasts-' .. self.random .. '.lua', [[
+            CastName: ]] .. name .. [[
+            CastID: ]] .. spellID .. "\n" .. [[
+        ]], true)
+    end)
+
+    Bastion.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_CHANNEL_START', function(unitTarget, castGUID, spellID)
+        if not self.castLogging then
+            return
+        end
+
+        if self.loggedCasts[spellID] then
+            return
+        end
+
+        local name = GetSpellInfo(spellID)
+
+        self.loggedCasts[spellID] = true
+
+        WriteFile('bastion-MPlusCasts-' .. self.random .. '.lua', [[
+            CastName: ]] .. name .. [[
+            CastID: ]] .. spellID .. "\n" .. [[
+        ]], true)
+    end)
+
     return self
 end
 
 function MythicPlusUtils:ToggleDebuffLogging()
     self.debuffLogging = not self.debuffLogging
+end
+
+function MythicPlusUtils:ToggleCastLogging()
+    self.castLogging = not self.castLogging
 end
 
 function MythicPlusUtils:CastingCriticalKick(unit, percent)

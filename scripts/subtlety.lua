@@ -853,7 +853,6 @@ local DarkMoonRime = Bastion.ItemBook:GetItem(198477)
 local AlgetharsPuzzleBox = Bastion.ItemBook:GetItem(193701)
 
 local RimeCards = {
-    One = Bastion.SpellBook:GetSpell(382844),
     Two = Bastion.SpellBook:GetSpell(382845),
     Three = Bastion.SpellBook:GetSpell(382846),
     Four = Bastion.SpellBook:GetSpell(382847),
@@ -861,6 +860,7 @@ local RimeCards = {
     Six = Bastion.SpellBook:GetSpell(382849),
     Seven = Bastion.SpellBook:GetSpell(382850),
     Eight = Bastion.SpellBook:GetSpell(382851),
+    Ace = Bastion.SpellBook:GetSpell(382844),
 }
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
@@ -879,7 +879,7 @@ local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
             return false
         end
 
-        if unit:GetAuras():HasAnyStealableAura() then
+        if unit:GetAuras():HasAnyStealableAura() and Shiv:IsInRange(unit) then
             purge = unit
             return true
         end
@@ -991,6 +991,96 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
     return target
 end)
 
+local function GetRimeDuration(topCard)
+    --     // card order is [ 2 3 4 5 6 7 8 A ]
+
+    if topCard == RimeCards.Two then
+        return 0
+    elseif topCard == RimeCards.Three then
+        return 1
+    elseif topCard == RimeCards.Four then
+        return 2
+    elseif topCard == RimeCards.Five then
+        return 3
+    elseif topCard == RimeCards.Six then
+        return 4
+    elseif topCard == RimeCards.Seven then
+        return 5
+    elseif topCard == RimeCards.Eight then
+        return 6
+    elseif topCard == RimeCards.Ace then
+        return 7
+    end
+
+    return 0
+end
+
+local function GetRimeTopCard()
+    local topCard = nil
+
+    if Player:GetAuras():FindMy(RimeCards.Ace):IsUp() then
+        topCard = RimeCards.Ace
+    elseif Player:GetAuras():FindMy(RimeCards.Two):IsUp() then
+        topCard = RimeCards.Two
+    elseif Player:GetAuras():FindMy(RimeCards.Three):IsUp() then
+        topCard = RimeCards.Three
+    elseif Player:GetAuras():FindMy(RimeCards.Four):IsUp() then
+        topCard = RimeCards.Four
+    elseif Player:GetAuras():FindMy(RimeCards.Five):IsUp() then
+        topCard = RimeCards.Five
+    elseif Player:GetAuras():FindMy(RimeCards.Six):IsUp() then
+        topCard = RimeCards.Six
+    elseif Player:GetAuras():FindMy(RimeCards.Seven):IsUp() then
+        topCard = RimeCards.Seven
+    elseif Player:GetAuras():FindMy(RimeCards.Eight):IsUp() then
+        topCard = RimeCards.Eight
+    end
+
+    return topCard
+end
+
+local function HasRimeCard()
+    return GetRimeTopCard() ~= nil
+end
+
+local RimeTarget = Bastion.UnitManager:CreateCustomUnit('rime', function()
+    local target = nil
+
+    Bastion.UnitManager:EnumEnemies(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if not Player:InMelee(unit) then
+            return false
+        end
+
+        if not Player:IsFacing(unit) then
+            return false
+        end
+
+        if not unit:IsBoss() and Player:GetEnemies(10) < 3 then
+            return false
+        end
+
+        if HasRimeCard() and DarkMoonRime:IsEquippedAndUsable() and
+            (unit:TimeToDie() < GetRimeDuration(GetRimeTopCard()) - 0.5 or unit:IsBoss()) then
+            target = unit
+            return true
+        end
+    end)
+
+    if target == nil then
+        target = None
+    end
+
+    return target
+end)
+
 local DefaultAPL = Bastion.APL:New('default')
 local CDsAPL = Bastion.APL:New('cds')
 local StealthedAPL = Bastion.APL:New('stealthed')
@@ -1017,7 +1107,7 @@ ItemsAPL:AddItem(
 
 ItemsAPL:AddSpell(
     TricksOfTheTrade:CastableIf(function(self)
-        return Tank:Exists() and self:IsKnownAndUsable() and
+        return Tank:Exists() and Target:Exists() and self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
             Player:IsTanking(Target)
     end):SetTarget(Tank)
@@ -1059,20 +1149,13 @@ ItemsAPL:AddItem(
     end):SetTarget(Player)
 )
 
-ItemsAPL:AddItem(
+-- Since we are sniping soon to die targets with rime we can put it in the default APL since we want burst damage
+DefaultAPL:AddItem(
     DarkMoonRime:UsableIf(function(self)
-        return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
+        return RimeTarget:Exists() and Player:InMelee(RimeTarget) and self:IsEquippedAndUsable() and
             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 2 or Target:IsBoss()) and
-            (Player:GetAuras():FindMy(RimeCards.One):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Two):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Three):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Four):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Five):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Six):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Seven):IsUp() or
-                Player:GetAuras():FindMy(RimeCards.Eight):IsUp()
-            )
-    end):SetTarget(Target)
+            HasRimeCard()
+    end):SetTarget(RimeTarget)
 )
 
 -- # Executed every time the actor is available.
@@ -1095,6 +1178,23 @@ DefaultAPL:AddSpell(
             self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and Player:IsFacing(Target)
     end):SetTarget(KickTarget)
+)
+
+DefaultAPL:AddSpell(
+    KidneyShot:CastableIf(function(self)
+        return KickTarget:Exists() and self:IsInRange(KickTarget) and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and Player:IsFacing(Target)
+    end):SetTarget(KickTarget)
+)
+
+-- Purge
+DefaultAPL:AddSpell(
+    Shiv:CastableIf(function(self)
+        return PurgeTarget:Exists() and
+            self:IsKnownAndUsable() and
+            not Player:IsCastingOrChanneling() and Player:IsFacing(Target)
+    end):SetTarget(PurgeTarget)
 )
 
 -- double consume_cp_max() const
@@ -1330,13 +1430,14 @@ DefaultAPL:AddSpell(
 )
 
 -- # Builders
--- actions.build=shuriken_storm,if=spell_targets>=2+(buff.lingering_shadow.remains>=6|buff.perforated_veins.up)
+-- actions.build=shuriken_storm,if=spell_targets>=2+(talent.gloomblade&buff.lingering_shadow.remains>=6|buff.perforated_veins.up)
 BuildAPL:AddSpell(
     ShurikenStorm:CastableIf(
         function(self)
-            return self:IsKnownAndUsable() and
-                Player:GetEnemies(10) >= 2 + ((Player:GetAuras():FindMy(LingeringShadow):GetRemainingTime() >= 6 or
-                    Player:GetAuras():FindMy(PerforatedVeins):IsUp()) and 1 or 0)
+            return self:IsKnownAndUsable() and self:IsInRange(Target) and
+                Player:GetEnemies(10) >= 2 + ((Gloomblade:IsKnown() and
+                    (Player:GetAuras():FindMy(LingeringShadow):GetRemainingTime() >= 6 or
+                        Player:GetAuras():FindMy(PerforatedVeins):IsUp())) and 1 or 0)
         end
     ):SetTarget(Target)
 )
