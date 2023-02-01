@@ -260,7 +260,7 @@ local isClassicWow = select(4, GetBuildInfo()) < 40000
 
 -- Check if two units are in melee
 -- function Unit:InMelee(unit)
---     return UnitInMelee(self:GetOMToken(), unit.unit)
+--     return UnitInMelee(self:GetOMToken(), unit:GetOMToken())
 -- end
 
 local losFlag = bit.bor(0x1, 0x10, 0x100000)
@@ -284,7 +284,7 @@ function Unit:CanSee(unit)
     -- end
     local ax, ay, az = ObjectPosition(self:GetOMToken())
     local ah = ObjectHeight(self:GetOMToken())
-    local attx, atty, attz = GetUnitAttachmentPosition(unit.unit, 34)
+    local attx, atty, attz = GetUnitAttachmentPosition(unit:GetOMToken(), 34)
 
     if not attx or not ax then
         return false
@@ -344,7 +344,7 @@ end
 
 -- Check if the unit can attack the target
 function Unit:CanAttack(unit)
-    return UnitCanAttack(self:GetOMToken(), unit.unit)
+    return UnitCanAttack(self:GetOMToken(), unit:GetOMToken())
 end
 
 function Unit:GetChannelOrCastPercentComplete()
@@ -481,7 +481,7 @@ end
 -- IsTanking
 function Unit:IsTanking(unit)
     local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self:GetOMToken(),
-        unit.unit)
+        unit:GetOMToken())
     return isTanking
 end
 
@@ -489,7 +489,7 @@ end
 function Unit:IsFacing(unit)
     local rot = ObjectRotation(self:GetOMToken())
     local x, y, z = ObjectPosition(self:GetOMToken())
-    local x2, y2, z2 = ObjectPosition(unit.unit)
+    local x2, y2, z2 = ObjectPosition(unit:GetOMToken())
 
     if not x or not x2 or not rot then
         return false
@@ -507,8 +507,8 @@ end
 
 -- IsBehind
 function Unit:IsBehind(unit)
-    local rot = ObjectRotation(unit.unit)
-    local x, y, z = ObjectPosition(unit.unit)
+    local rot = ObjectRotation(unit:GetOMToken())
+    local x, y, z = ObjectPosition(unit:GetOMToken())
     local x2, y2, z2 = ObjectPosition(self:GetOMToken())
 
     if not x or not x2 then
@@ -542,14 +542,14 @@ end
 -- InMelee
 function Unit:InMelee(unit)
     local x, y, z = ObjectPosition(self:GetOMToken())
-    local x2, y2, z2 = ObjectPosition(unit.unit)
+    local x2, y2, z2 = ObjectPosition(unit:GetOMToken())
 
     if not x or not x2 then
         return false
     end
 
     local dist = math.sqrt((x - x2) ^ 2 + (y - y2) ^ 2 + (z - z2) ^ 2)
-    local maxDist = math.max((ObjectCombatReach(self:GetOMToken()) + 1.3333) + ObjectCombatReach(unit.unit), 5.0)
+    local maxDist = math.max((ObjectCombatReach(self:GetOMToken()) + 1.3333) + ObjectCombatReach(unit:GetOMToken()), 5.0)
     maxDist = maxDist + 1.0 + self:GetMeleeBoost()
 
     return dist <= maxDist

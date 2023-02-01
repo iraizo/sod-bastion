@@ -1145,7 +1145,8 @@ ItemsAPL:AddItem(
 ItemsAPL:AddItem(
     AlgetharsPuzzleBox:UsableIf(function(self)
         return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
-            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 3 or Target:IsBoss())
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 3 or Target:IsBoss()) and
+            not Player:IsMoving()
     end):SetTarget(Player)
 )
 
