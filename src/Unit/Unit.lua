@@ -549,7 +549,10 @@ end
 
 -- Get combopoints deficit
 ---@return number
-function Unit:GetComboPointsDeficit()
+function Unit:GetComboPointsDeficit(unit)
+    if Tinkr.classic then
+        return self:GetComboPointsMax() - self:GetComboPoints(unit)
+    end
     return self:GetComboPointsMax() - self:GetComboPoints()
 end
 
