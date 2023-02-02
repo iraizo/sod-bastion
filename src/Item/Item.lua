@@ -31,16 +31,20 @@ function Item:__index(k)
 end
 
 -- Equals
+---@param other Item
+---@return boolean
 function Item:__eq(other)
     return self:GetID() == other:GetID()
 end
 
 -- tostring
+---@return string
 function Item:__tostring()
     return "Bastion.__Item(" .. self:GetID() .. ")" .. " - " .. self:GetName()
 end
 
 -- Constructor
+---@param id number
 function Item:New(id)
     local self = setmetatable({}, Item)
 
@@ -57,47 +61,58 @@ function Item:New(id)
 end
 
 -- Get the Items id
+---@return number
 function Item:GetID()
     return self.ItemID
 end
 
 -- Get the Items name
+---@return string
 function Item:GetName()
     return GetItemInfo(self:GetID())
 end
 
 -- Get the Items icon
+---@return number
 function Item:GetIcon()
     return select(3, GetItemInfo(self:GetID()))
 end
 
 -- Get the Items cooldown
+---@return number
 function Item:GetCooldown()
     return select(2, C_Container.GetItemCooldown(self:GetID()))
 end
 
 -- Return the Usable function
+---@return function | boolean
 function Item:GetUsableFunction()
     return self.UsableIfFunc
 end
 
 -- Return the preUse function
+---@return function | boolean
 function Item:GetPreUseFunction()
     return self.PreUseFunc
 end
 
 -- Get the on Use func
+---@return function | boolean
 function Item:GetOnUseFunction()
     return self.OnUseFunc
 end
 
 -- Get the Items cooldown remaining
+---@return number
 function Item:GetCooldownRemaining()
     local start, duration = C_Container.GetItemCooldown(self:GetID())
     return start + duration - GetTime()
 end
 
 -- Use the Item
+---@param unit Unit
+---@param condition string
+---@return boolean
 function Item:Use(unit, condition)
     if condition and not self:EvaluateCondition(condition) then
         return false
@@ -127,46 +142,56 @@ function Item:Use(unit, condition)
     if self:GetOnUseFunction() then
         self:GetOnUseFunction()(self)
     end
+
+    return true
 end
 
 -- Last use attempt
+---@return number
 function Item:GetLastUseAttempt()
     return self.lastUseAttempt
 end
 
 -- Time since last attepmt
+---@return number
 function Item:GetTimeSinceLastUseAttempt()
     return GetTime() - self:GetLastUseAttempt()
 end
 
 -- Check if the Item is known
+---@return boolean
 function Item:IsEquipped()
     return IsEquippedItem(self:GetID())
 end
 
 -- Check if the Item is on cooldown
+---@return boolean
 function Item:IsOnCooldown()
     return select(2, C_Container.GetItemCooldown(self:GetID())) > 0
 end
 
 -- Check if the Item is usable
+---@return boolean
 function Item:IsUsable()
     local usable, noMana = IsUsableItem(self:GetID())
     return usable or usableExcludes[self:GetID()]
 end
 
 -- Check if the Item is Usable
+---@return boolean
 function Item:IsEquippedAndUsable()
     return ((self:IsEquippable() and self:IsEquipped()) or
         (not self:IsEquippable() and self:IsUsable())) and not self:IsOnCooldown()
 end
 
 -- Is equippable
+---@return boolean
 function Item:IsEquippable()
     return IsEquippableItem(self:GetID())
 end
 
 -- Check if the Item is Usable
+---@return boolean
 function Item:Usable()
     if self:GetUsableFunction() then
         return self:GetUsableFunction()(self)
@@ -177,6 +202,7 @@ end
 
 -- Set a script to check if the Item is Usable
 ---@param func fun(self:Item):boolean
+---@return Item
 function Item:UsableIf(func)
     self.UsableIfFunc = func
     return self
@@ -184,6 +210,7 @@ end
 
 -- Set a script to run before the Item has been Use
 ---@param func fun(self:Item)
+---@return Item
 function Item:PreUse(func)
     self.PreUseFunc = func
     return self
@@ -191,17 +218,23 @@ end
 
 -- Set a script to run after the Item has been Use
 ---@param func fun(self:Item)
+---@return Item
 function Item:OnUse(func)
     self.OnUseFunc = func
     return self
 end
 
 -- Get was looking
+---@return boolean
 function Item:GetWasLooking()
     return self.wasLooking
 end
 
 -- Click the Item
+---@param x number
+---@param y number
+---@param z number
+---@return boolean
 function Item:Click(x, y, z)
     if type(x) == 'table' then
         x, y, z = x.x, x.y, x.z
@@ -218,6 +251,8 @@ function Item:Click(x, y, z)
 end
 
 -- Check if the Item is Usable and Use it
+---@param unit Unit
+---@return boolean
 function Item:Call(unit)
     if self:Usable() then
         self:Use(unit)
@@ -227,6 +262,8 @@ function Item:Call(unit)
 end
 
 -- Check if the Item is in range of the unit
+---@param unit Unit
+---@return boolean
 function Item:IsInRange(unit)
     local name, rank, icon, UseTime, Itemmin, Itemmax, ItemID = GetItemInfo(self:GetID())
 
@@ -263,11 +300,13 @@ function Item:IsInRange(unit)
 end
 
 -- Get the last use time
+---@return number
 function Item:GetLastUseTime()
     return Bastion.SpellBook:GetSpell(self:GetID()):GetLastCastTime()
 end
 
 -- Get time since last use
+---@return number
 function Item:GetTimeSinceLastUse()
     if not self:GetLastUseTime() then
         return math.huge
@@ -276,11 +315,13 @@ function Item:GetTimeSinceLastUse()
 end
 
 -- Get the Items charges
+---@return number
 function Item:GetCharges()
     return GetItemCharges(self:GetID())
 end
 
 -- Get the Items charges remaining
+---@return number
 function Item:GetChargesRemaining()
     local charges, maxCharges, start, duration = GetItemCharges(self:GetID())
     return charges
@@ -289,6 +330,7 @@ end
 -- Create a condition for the Item
 ---@param name string
 ---@param func fun(self:Item)
+---@return Item
 function Item:Condition(name, func)
     self.conditions[name] = {
         func = func
@@ -297,6 +339,8 @@ function Item:Condition(name, func)
 end
 
 -- Get a condition for the Item
+---@param name string
+---@return function | nil
 function Item:GetCondition(name)
     local condition = self.conditions[name]
     if condition then
@@ -307,6 +351,8 @@ function Item:GetCondition(name)
 end
 
 -- Evaluate a condition for the Item
+---@param name string
+---@return boolean
 function Item:EvaluateCondition(name)
     local condition = self:GetCondition(name)
     if condition then
@@ -317,6 +363,8 @@ function Item:EvaluateCondition(name)
 end
 
 -- Check if the Item has a condition
+---@param name string
+---@return boolean
 function Item:HasCondition(name)
     local condition = self:GetCondition(name)
     if condition then
@@ -327,17 +375,21 @@ function Item:HasCondition(name)
 end
 
 -- Set the Items target
+---@param unit Unit
+---@return Item
 function Item:SetTarget(unit)
     self.target = unit
     return self
 end
 
 -- Get the Items target
+---@return Unit | nil
 function Item:GetTarget()
     return self.target
 end
 
 -- IsMagicDispel
+---@return boolean
 function Item:IsMagicDispel()
     return ({
         [88423] = true
@@ -345,6 +397,7 @@ function Item:IsMagicDispel()
 end
 
 -- IsCurseDispel
+---@return boolean
 function Item:IsCurseDispel()
     return ({
         [88423] = true
@@ -352,6 +405,7 @@ function Item:IsCurseDispel()
 end
 
 -- IsPoisonDispel
+---@return boolean
 function Item:IsPoisonDispel()
     return ({
         [88423] = true
@@ -359,16 +413,21 @@ function Item:IsPoisonDispel()
 end
 
 -- IsDiseaseDispel
+---@return boolean
 function Item:IsDiseaseDispel()
     return ({
 
     })[self:GetID()]
 end
 
+---@param item Item
+---@return boolean
 function Item:IsItem(item)
     return self:GetID() == item:GetID()
 end
 
+-- Get the Items spell
+---@return Spell | nil
 function Item:GetSpell()
     if self.spellID then
         return Bastion.SpellBook:GetSpell(self.spellID)
