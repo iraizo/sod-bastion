@@ -861,4 +861,34 @@ function Unit:WatchForSwings()
     end)
 end
 
+-- ismounted
+---@return boolean
+function Unit:IsMounted()
+    return UnitIsMounted(self.unit)
+end
+
+-- isindoors
+---@return boolean
+function Unit:IsOutdoors()
+    return ObjectIsOutdoors(self.unit)
+end
+
+-- IsIndoors
+---@return boolean
+function Unit:IsIndoors()
+    return not ObjectIsOutdoors(self.unit)
+end
+
+-- IsSubmerged
+---@return boolean
+function Unit:IsSubmerged()
+    return ObjectIsSubmerged(self.unit)
+end
+
+-- IsDry
+---@return boolean
+function Unit:IsDry()
+    return not ObjectIsSubmerged(self.unit)
+end
+
 return Unit
