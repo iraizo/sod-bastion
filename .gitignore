@@ -7,3 +7,6 @@ DS_Store
 
 ## ignore all files in scripts
 scripts/*
+
+## ignore vscode settings
+.vscode/*

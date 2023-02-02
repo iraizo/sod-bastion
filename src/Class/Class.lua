@@ -19,6 +19,9 @@ function Class:__index(k)
 end
 
 -- Constructor
+---@param locale string
+---@param name string
+---@param id number
 function Class:New(locale, name, id)
     local self = setmetatable({}, Class)
     self.class = {
@@ -30,21 +33,25 @@ function Class:New(locale, name, id)
 end
 
 -- Get the classes locale
+---@return string
 function Class:GetLocale()
     return self.class.locale
 end
 
 -- Get the classes name
+---@return string
 function Class:GetName()
     return self.class.name
 end
 
 -- Get the classes id
+---@return number
 function Class:GetID()
     return self.class.id
 end
 
 -- Return the classes color
+---@return ColorMixin classColor
 function Class:GetColor()
     return C_ClassColor.GetClassColor(self.class.name)
 end
