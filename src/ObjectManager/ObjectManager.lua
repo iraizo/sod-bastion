@@ -18,6 +18,9 @@ function ObjectManager:New()
 end
 
 -- Register a custom list with a callback
+---@param name string
+---@param cb function
+---@return List
 function ObjectManager:RegisterList(name, cb)
     if self._lists[name] then
         return false
@@ -32,6 +35,7 @@ function ObjectManager:RegisterList(name, cb)
 end
 
 -- reset custom lists
+---@return nil
 function ObjectManager:ResetLists()
     for _, list in pairs(self._lists) do
         list.list:clear()
@@ -39,6 +43,8 @@ function ObjectManager:ResetLists()
 end
 
 -- Refresh custom lists
+---@param object table
+---@return nil
 function ObjectManager:EnumLists(object)
     for _, list in pairs(self._lists) do
         local r = list.cb(object)
@@ -49,10 +55,14 @@ function ObjectManager:EnumLists(object)
 end
 
 -- Get a list
+---@param name string
+---@return List
 function ObjectManager:GetList(name)
     return self._lists[name].list
 end
 
+-- Refresh all lists
+---@return nil
 function ObjectManager:Refresh()
     self.enemies:clear()
     self.friends:clear()

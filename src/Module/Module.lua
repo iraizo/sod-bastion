@@ -5,10 +5,14 @@ local Module = {}
 Module.__index = Module
 
 -- __tostring
+---@return string
 function Module:__tostring()
     return "Bastion.__Module(" .. self.name .. ")"
 end
 
+-- Constructor
+---@param name string
+---@return Module
 function Module:New(name)
     local module = {}
     setmetatable(module, Module)
@@ -21,16 +25,19 @@ function Module:New(name)
 end
 
 -- Enable the module
+---@return nil
 function Module:Enable()
     self.enabled = true
 end
 
 -- Disable the module
+---@return nil
 function Module:Disable()
     self.enabled = false
 end
 
 -- Toggle the module
+---@return nil
 function Module:Toggle()
     if self.enabled then
         self:Disable()
@@ -40,11 +47,15 @@ function Module:Toggle()
 end
 
 -- Add a function to the sync list
+---@param func function
+---@return nil
 function Module:Sync(func)
     table.insert(self.synced, func)
 end
 
 -- Remove a function from the sync list
+---@param func function
+---@return nil
 function Module:Unsync(func)
     for i = 1, #self.synced do
         if self.synced[i] == func then
@@ -55,6 +66,7 @@ function Module:Unsync(func)
 end
 
 -- Sync
+---@return nil
 function Module:Tick()
     if self.enabled then
         for i = 1, #self.synced do

@@ -22,32 +22,42 @@ local List = {
 }
 List.__index = List
 
+---@param from table | nil
+---@return List
 function List:New(from)
     local self = setmetatable({}, List)
     self._list = from or {}
     return self
 end
 
+---@param value any
+---@return nil
 function List:push(value)
     table.insert(self._list, value)
 end
 
+---@return any
 function List:pop()
     return table.remove(self._list)
 end
 
+---@return any
 function List:peek()
     return self._list[#self._list]
 end
 
+---@return number
 function List:count()
     return #self._list
 end
 
+---@return nil
 function List:clear()
     self._list = {}
 end
 
+---@param value any
+---@return boolean
 function List:contains(value)
     for _, v in ipairs(self._list) do
         if v == value then
@@ -57,6 +67,8 @@ function List:contains(value)
     return false
 end
 
+---@param value any
+---@return boolean
 function List:remove(value)
     for i, v in ipairs(self._list) do
         if v == value then
@@ -67,6 +79,8 @@ function List:remove(value)
     return false
 end
 
+---@param callback fun(value: any): boolean
+---@return nil
 function List:each(callback)
     for _, v in ipairs(self._list) do
         if callback(v) then
@@ -75,6 +89,8 @@ function List:each(callback)
     end
 end
 
+---@param callback fun(value: any): boolean
+---@return boolean
 function List:map(callback)
     local newList = List.new()
     for _, v in ipairs(self._list) do
@@ -83,6 +99,8 @@ function List:map(callback)
     return newList
 end
 
+---@param callback fun(value: any): boolean
+---@return boolean
 function List:filter(callback)
     local newList = List.new()
     for _, v in ipairs(self._list) do
@@ -93,6 +111,9 @@ function List:filter(callback)
     return newList
 end
 
+---@param callback fun(value: any): boolean
+---@param initialValue any
+---@return boolean
 function List:reduce(callback, initialValue)
     local result = initialValue
     for _, v in ipairs(self._list) do
@@ -101,6 +122,8 @@ function List:reduce(callback, initialValue)
     return result
 end
 
+---@param callback fun(value: any): boolean
+---@return boolean | nil
 function List:find(callback)
     for _, v in ipairs(self._list) do
         if callback(v) then
@@ -110,6 +133,8 @@ function List:find(callback)
     return nil
 end
 
+---@param callback fun(value: any): boolean
+---@return number | nil
 function List:findIndex(callback)
     for i, v in ipairs(self._list) do
         if callback(v) then
@@ -119,10 +144,13 @@ function List:findIndex(callback)
     return nil
 end
 
+---@param callback fun(value: any): boolean
+---@return nil
 function List:sort(callback)
     table.sort(self._list, callback)
 end
 
+---@return List
 function List:reverse()
     local newList = List.new()
     for i = #self._list, 1, -1 do
@@ -131,6 +159,7 @@ function List:reverse()
     return newList
 end
 
+---@return List
 function List:clone()
     local newList = List.new()
     for _, v in ipairs(self._list) do
@@ -139,6 +168,8 @@ function List:clone()
     return newList
 end
 
+---@param list List
+---@return List
 function List:concat(list)
     local newList = List.new()
     for _, v in ipairs(self._list) do
@@ -150,6 +181,8 @@ function List:concat(list)
     return newList
 end
 
+---@param separator string
+---@return string
 function List:join(separator)
     local result = ""
     for i, v in ipairs(self._list) do
@@ -161,10 +194,12 @@ function List:join(separator)
     return result
 end
 
+---@return string
 function List:toString()
     return self:join(", ")
 end
 
+---@return string
 function List:__tostring()
     return self:toString()
 end

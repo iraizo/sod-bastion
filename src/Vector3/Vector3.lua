@@ -4,14 +4,19 @@
 local Vector3 = {}
 Vector3.__index = Vector3
 
+---@return string
 function Vector3:__tostring()
     return "Vector3(" .. self.x .. ", " .. self.y .. ", " .. self.z .. ")"
 end
 
+---@param other Vector3
+---@return Vector3
 function Vector3:__add(other)
     return Vector3:New(self.x + other.x, self.y + other.y, self.z + other.z)
 end
 
+---@param other Vector3
+---@return Vector3
 function Vector3:__sub(other)
     if type(other) == "number" then
         return Vector3:New(self.x - other, self.y - other, self.z - other)
@@ -19,30 +24,42 @@ function Vector3:__sub(other)
     return Vector3:New(self.x - other.x, self.y - other.y, self.z - other.z)
 end
 
+---@param other number
+---@return Vector3
 function Vector3:__mul(other)
     return Vector3:New(self.x * other, self.y * other, self.z * other)
 end
 
+---@param other number
+---@return Vector3
 function Vector3:__div(other)
     return Vector3:New(self.x / other, self.y / other, self.z / other)
 end
 
+---@param other Vector3
+---@return boolean
 function Vector3:__eq(other)
     return self.x == other.x and self.y == other.y and self.z == other.z
 end
 
+---@param other Vector3
+---@return boolean
 function Vector3:__lt(other)
     return self.x < other.x and self.y < other.y and self.z < other.z
 end
 
+---@param other Vector3
+---@return boolean
 function Vector3:__le(other)
     return self.x <= other.x and self.y <= other.y and self.z <= other.z
 end
 
+---@return Vector3
 function Vector3:__unm()
     return Vector3:New(-self.x, -self.y, -self.z)
 end
 
+---@return number
 function Vector3:__len()
     return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 end
@@ -152,6 +169,10 @@ function Vector3:__newindex(k, v)
     end
 end
 
+---@param x number
+---@param y number
+---@param z number
+---@return Vector3
 function Vector3:New(x, y, z)
     if x == false then
         return Vector3:New(0, 0, 0)
@@ -161,18 +182,26 @@ function Vector3:New(x, y, z)
     return self
 end
 
+---@param rhs Vector3
+---@return number
 function Vector3:Dot(rhs)
     return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 end
 
+---@param rhs Vector3
+---@return Vector3
 function Vector3:Cross(rhs)
     return Vector3:New(self.y * rhs.z - self.z * rhs.y, self.z * rhs.x - self.x * rhs.z, self.x * rhs.y - self.y * rhs.x)
 end
 
+---@param b Vector3
+---@return number
 function Vector3:Distance(b)
     return FastDistance(self.x, self.y, self.z, b.x, b.y, b.z)
 end
 
+---@param to Vector3
+---@return number
 function Vector3:Angle(to)
     return math.acos(self:Dot(to) /
         (
@@ -180,6 +209,8 @@ function Vector3:Angle(to)
             math.sqrt(to.x * to.x + to.y * to.y + to.z * to.z)))
 end
 
+---@param maxLength number
+---@return Vector3
 function Vector3:ClampMagnitude(maxLength)
     if self:Dot(self) > maxLength * maxLength then
         return self.normalized * maxLength
@@ -189,15 +220,25 @@ function Vector3:ClampMagnitude(maxLength)
 end
 
 -- Implement a clamp function
+---@param x number
+---@param min number
+---@param max number
+---@return number
 local function clamp(x, min, max)
     return x < min and min or (x > max and max or x)
 end
 
+---@param b Vector3
+---@param t number
+---@return Vector3
 function Vector3:Lerp(b, t)
     t = clamp(t, 0, 1)
     return Vector3:New(self.x + (b.x - self.x) * t, self.y + (b.y - self.y) * t, self.z + (b.z - self.z) * t)
 end
 
+---@param target Vector3
+---@param maxDistanceDelta number
+---@return Vector3
 function Vector3:MoveTowards(target, maxDistanceDelta)
     local toVector = target - self
     local distance = toVector.magnitude
@@ -208,10 +249,14 @@ function Vector3:MoveTowards(target, maxDistanceDelta)
     return self + toVector / distance * maxDistanceDelta
 end
 
+---@param b Vector3
+---@return Vector3
 function Vector3:Scale(b)
     return Vector3:New(self.x * b.x, self.y * b.y, self.z * b.z)
 end
 
+---@param onNormal Vector3
+---@return Vector3
 function Vector3:Project(onNormal)
     local num = onNormal:Dot(onNormal)
     if num < 1.401298E-45 then
@@ -221,14 +266,19 @@ function Vector3:Project(onNormal)
     return onNormal * self:Dot(onNormal) / num
 end
 
+---@param planeNormal Vector3
+---@return Vector3
 function Vector3:ProjectOnPlane(planeNormal)
     return self - self:Project(planeNormal)
 end
 
+---@param inDirection Vector3
+---@return Vector3
 function Vector3:Reflect(inNormal)
     return -2 * inNormal:Dot(self) * inNormal + self
 end
 
+---@return Vector3
 function Vector3:Normalize()
     local num = self:Dot(self)
     if num > 1E-05 then

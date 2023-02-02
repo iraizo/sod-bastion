@@ -32,16 +32,21 @@ function Spell:__index(k)
 end
 
 -- Equals
+---@param other Spell
+---@return boolean
 function Spell:__eq(other)
     return self:GetID() == other:GetID()
 end
 
 -- tostring
+---@return string
 function Spell:__tostring()
     return "Bastion.__Spell(" .. self:GetID() .. ")" .. " - " .. self:GetName()
 end
 
 -- Constructor
+---@param id number
+---@return Spell
 function Spell:New(id)
     local self = setmetatable({}, Spell)
 
@@ -51,59 +56,72 @@ function Spell:New(id)
 end
 
 -- Get the spells id
+---@return number
 function Spell:GetID()
     return self.spellID
 end
 
 -- Add post cast func
 ---@param func fun(self:Spell)
+---@return Spell
 function Spell:PostCast(func)
     self.PostCastFunc = func
     return self
 end
 
 -- Get the spells name
+---@return string
 function Spell:GetName()
     return GetSpellInfo(self:GetID())
 end
 
 -- Get the spells icon
+---@return number
 function Spell:GetIcon()
     return select(3, GetSpellInfo(self:GetID()))
 end
 
 -- Get the spells cooldown
+---@return number
 function Spell:GetCooldown()
     return select(2, GetSpellCooldown(self:GetID()))
 end
 
 -- Return the castable function
+---@return fun(self:Spell):boolean
 function Spell:GetCastableFunction()
     return self.CastableIfFunc
 end
 
 -- Return the precast function
+---@return fun(self:Spell)
 function Spell:GetPreCastFunction()
     return self.PreCastFunc
 end
 
 -- Get the on cast func
+---@return fun(self:Spell)
 function Spell:GetOnCastFunction()
     return self.OnCastFunc
 end
 
 -- Get the spells cooldown remaining
+---@return number
 function Spell:GetCooldownRemaining()
     local start, duration = GetSpellCooldown(self:GetID())
     return start + duration - GetTime()
 end
 
 -- On cooldown
+---@return boolean
 function Spell:OnCooldown()
     return self:GetCooldownRemaining() > 0
 end
 
 -- Cast the spell
+---@param unit Unit
+---@param condition string
+---@return boolean
 function Spell:Cast(unit, condition)
     if condition and not self:EvaluateCondition(condition) then
         return false
@@ -140,14 +158,18 @@ function Spell:Cast(unit, condition)
     if self:GetOnCastFunction() then
         self:GetOnCastFunction()(self)
     end
+
+    return true
 end
 
 -- Get post cast func
+---@return fun(self:Spell)
 function Spell:GetPostCastFunction()
     return self.PostCastFunc
 end
 
 -- Check if the spell is known
+---@return boolean
 function Spell:IsKnown()
     local isKnown = IsSpellKnown(self:GetID())
     local isPlayerSpell = IsPlayerSpell(self:GetID())
@@ -155,22 +177,26 @@ function Spell:IsKnown()
 end
 
 -- Check if the spell is on cooldown
+---@return boolean
 function Spell:IsOnCooldown()
     return select(2, GetSpellCooldown(self:GetID())) > 0
 end
 
 -- Check if the spell is usable
+---@return boolean
 function Spell:IsUsable()
     local usable, noMana = IsUsableSpell(self:GetID())
     return usable or usableExcludes[self:GetID()]
 end
 
 -- Check if the spell is castable
+---@return boolean
 function Spell:IsKnownAndUsable()
     return self:IsKnown() and not self:IsOnCooldown() and self:IsUsable()
 end
 
 -- Check if the spell is castable
+---@return boolean
 function Spell:Castable()
     if self:GetCastableFunction() then
         return self:GetCastableFunction()(self)
@@ -181,6 +207,7 @@ end
 
 -- Set a script to check if the spell is castable
 ---@param func fun(spell:Spell):boolean
+---@return Spell
 function Spell:CastableIf(func)
     self.CastableIfFunc = func
     return self
@@ -188,6 +215,7 @@ end
 
 -- Set a script to run before the spell has been cast
 ---@param func fun(spell:Spell)
+---@return Spell
 function Spell:PreCast(func)
     self.PreCastFunc = func
     return self
@@ -195,17 +223,23 @@ end
 
 -- Set a script to run after the spell has been cast
 ---@param func fun(spell:Spell)
+---@return Spell
 function Spell:OnCast(func)
     self.OnCastFunc = func
     return self
 end
 
 -- Get was looking
+---@return boolean
 function Spell:GetWasLooking()
     return self.wasLooking
 end
 
 -- Click the spell
+---@param x number
+---@param y number
+---@param z number
+---@return boolean
 function Spell:Click(x, y, z)
     if type(x) == 'table' then
         x, y, z = x.x, x.y, x.z
@@ -222,6 +256,8 @@ function Spell:Click(x, y, z)
 end
 
 -- Check if the spell is castable and cast it
+---@param unit Unit
+---@return boolean
 function Spell:Call(unit)
     if self:Castable() then
         self:Cast(unit)
@@ -230,11 +266,15 @@ function Spell:Call(unit)
     return false
 end
 
+-- Check if the spell is castable and cast it
+---@return boolean
 function Spell:HasRange()
     return SpellHasRange(self:GetName())
 end
 
 -- Check if the spell is in range of the unit
+---@param unit Unit
+---@return boolean
 function Spell:IsInRange(unit)
     local hasRange = self:HasRange()
     local inRange = IsSpellInRange(self:GetName(), unit:GetOMToken())
@@ -251,11 +291,13 @@ function Spell:IsInRange(unit)
 end
 
 -- Get the last cast time
+---@return number
 function Spell:GetLastCastTime()
     return self.lastCastAt
 end
 
 -- Get time since last cast
+---@return number
 function Spell:GetTimeSinceLastCast()
     if not self:GetLastCastTime() then
         return math.huge
@@ -264,10 +306,13 @@ function Spell:GetTimeSinceLastCast()
 end
 
 -- Get the spells charges
+---@return number
 function Spell:GetCharges()
     return GetSpellCharges(self:GetID())
 end
 
+-- Get the spells charges
+---@return number
 function Spell:GetChargesFractional()
     local charges, maxCharges, start, duration = GetSpellCharges(self:GetID())
 
@@ -288,12 +333,16 @@ function Spell:GetChargesFractional()
 end
 
 -- Get the spells charges remaining
+---@return number
 function Spell:GetChargesRemaining()
     local charges, maxCharges, start, duration = GetSpellCharges(self:GetID())
     return charges
 end
 
 -- Create a condition for the spell
+---@param name string
+---@param func fun(self:Spell):boolean
+---@return Spell
 function Spell:Condition(name, func)
     self.conditions[name] = {
         func = func
@@ -302,6 +351,8 @@ function Spell:Condition(name, func)
 end
 
 -- Get a condition for the spell
+---@param name string
+---@return function | nil
 function Spell:GetCondition(name)
     local condition = self.conditions[name]
     if condition then
@@ -312,6 +363,8 @@ function Spell:GetCondition(name)
 end
 
 -- Evaluate a condition for the spell
+---@param name string
+---@return boolean
 function Spell:EvaluateCondition(name)
     local condition = self:GetCondition(name)
     if condition then
@@ -322,6 +375,8 @@ function Spell:EvaluateCondition(name)
 end
 
 -- Check if the spell has a condition
+---@param name string
+---@return boolean
 function Spell:HasCondition(name)
     local condition = self:GetCondition(name)
     if condition then
@@ -332,17 +387,21 @@ function Spell:HasCondition(name)
 end
 
 -- Set the spells target
+---@param unit Unit
+---@return Spell
 function Spell:SetTarget(unit)
     self.target = unit
     return self
 end
 
 -- Get the spells target
+---@return Unit
 function Spell:GetTarget()
     return self.target
 end
 
 -- IsMagicDispel
+---@return boolean
 function Spell:IsMagicDispel()
     return ({
         [88423] = true
@@ -350,6 +409,7 @@ function Spell:IsMagicDispel()
 end
 
 -- IsCurseDispel
+---@return boolean
 function Spell:IsCurseDispel()
     return ({
         [88423] = true
@@ -357,6 +417,7 @@ function Spell:IsCurseDispel()
 end
 
 -- IsPoisonDispel
+---@return boolean
 function Spell:IsPoisonDispel()
     return ({
         [88423] = true
@@ -364,12 +425,16 @@ function Spell:IsPoisonDispel()
 end
 
 -- IsDiseaseDispel
+---@return boolean
 function Spell:IsDiseaseDispel()
     return ({
 
     })[self:GetID()]
 end
 
+-- IsSpell
+---@param spell Spell
+---@return boolean
 function Spell:IsSpell(spell)
     return self:GetID() == spell:GetID()
 end

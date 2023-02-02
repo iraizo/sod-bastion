@@ -99,6 +99,7 @@ function UnitManager:__index(k)
 end
 
 -- Constructor
+---@return UnitManager
 function UnitManager:New()
     local self = setmetatable({}, UnitManager)
     self.units = {}
@@ -112,6 +113,7 @@ function UnitManager:Validate(token)
 end
 
 -- Get or create a unit
+---@param token string
 ---@return Unit
 function UnitManager:Get(token)
     -- if not Validate(token) then
@@ -142,10 +144,16 @@ function UnitManager:Get(token)
     end)
 end
 
+-- Get a unit by guid
+---@param guid string
+---@return Unit
 function UnitManager:GetObject(guid)
     return self.objects[guid]
 end
 
+-- Set a unit by guid
+---@param unit Unit
+---@return Unit
 function UnitManager:SetObject(unit)
     self.objects[unit:GetGUID()] = unit
 end
@@ -175,6 +183,8 @@ function UnitManager:CreateCustomUnit(token, cb)
 end
 
 -- Enum Friends (party/raid members)
+---@param cb fun(unit: Unit):boolean
+---@return nil
 function UnitManager:EnumFriends(cb)
     Bastion.ObjectManager.friends:each(function(unit)
         if cb(unit) then
@@ -185,6 +195,7 @@ end
 
 -- Enum Enemies (object manager)
 ---@param cb fun(unit: Unit):boolean
+---@return nil
 function UnitManager:EnumEnemies(cb)
     Bastion.ObjectManager.activeEnemies:each(function(unit)
         if cb(unit) then
@@ -194,6 +205,8 @@ function UnitManager:EnumEnemies(cb)
 end
 
 -- Enum Units (object manager)
+---@param cb fun(unit: Unit):boolean
+---@return nil
 function UnitManager:EnumUnits(cb)
     Bastion.ObjectManager.enemies:each(function(unit)
         if cb(unit) then
@@ -203,6 +216,8 @@ function UnitManager:EnumUnits(cb)
 end
 
 -- Get the number of friends with a buff (party/raid members)
+---@param spell Spell
+---@return number
 function UnitManager:GetNumFriendsWithBuff(spell)
     local count = 0
     self:EnumFriends(function(unit)
@@ -214,6 +229,7 @@ function UnitManager:GetNumFriendsWithBuff(spell)
 end
 
 -- Get the number of friends alive (party/raid members)
+---@return number
 function UnitManager:GetNumFriendsAlive()
     local count = 0
     self:EnumFriends(function(unit)
@@ -225,7 +241,9 @@ function UnitManager:GetNumFriendsAlive()
 end
 
 -- Get the friend with the most friends within a given radius (party/raid members)
--- Return unit, friends
+---@param radius number
+---@return Unit
+---@return table
 function UnitManager:GetFriendWithMostFriends(radius)
     local unit = nil
     local count = 0
@@ -254,6 +272,9 @@ function UnitManager:GetFriendWithMostFriends(radius)
 end
 
 -- Find the centroid of the most dense area of friends (party/raid members) of a given radius within a given range
+---@param radius number
+---@param range number
+---@return Vector3 | nil
 function UnitManager:FindFriendsCentroid(radius, range)
     local unit, friends = self:GetFriendWithMostFriends(radius)
     if unit == nil then

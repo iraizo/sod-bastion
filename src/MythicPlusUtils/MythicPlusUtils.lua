@@ -12,6 +12,7 @@ local MythicPlusUtils = {
 
 MythicPlusUtils.__index = MythicPlusUtils
 
+---@return MythicPlusUtils
 function MythicPlusUtils:New()
     local self = setmetatable({}, MythicPlusUtils)
 
@@ -148,14 +149,19 @@ function MythicPlusUtils:New()
     return self
 end
 
+---@return nil
 function MythicPlusUtils:ToggleDebuffLogging()
     self.debuffLogging = not self.debuffLogging
 end
 
+---@return nil
 function MythicPlusUtils:ToggleCastLogging()
     self.castLogging = not self.castLogging
 end
 
+---@param unit Unit
+---@param percent number
+---@return boolean
 function MythicPlusUtils:CastingCriticalKick(unit, percent)
     local castingSpell = unit:GetCastingOrChannelingSpell()
 

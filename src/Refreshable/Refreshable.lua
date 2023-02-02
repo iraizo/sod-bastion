@@ -22,11 +22,15 @@ function Refreshable:__index(k)
 end
 
 -- When the object is accessed return the value
+---@return string
 function Refreshable:__tostring()
     return "Bastion.__Refreshable(" .. tostring(rawget(self, 'value')) .. ")"
 end
 
 -- Create
+---@param value any
+---@param cb function
+---@return Refreshable
 function Refreshable:New(value, cb)
     local self = setmetatable({}, Refreshable)
 
@@ -40,6 +44,7 @@ function Refreshable:New(value, cb)
 end
 
 -- Try to update the value
+---@return nil
 function Refreshable:TryUpdate()
     if self.cache:IsCached("value") then
         self.value = self.callback()
@@ -47,16 +52,21 @@ function Refreshable:TryUpdate()
 end
 
 -- Update the value
+---@return nil
 function Refreshable:Update()
     self.value = self.callback()
 end
 
 -- Set a new value
+---@param value any
+---@return nil
 function Refreshable:Set(value)
     self.value = value
 end
 
 -- Set a new callback
+---@param cb function
+---@return nil
 function Refreshable:SetCallback(cb)
     self.callback = cb
 end

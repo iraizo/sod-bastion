@@ -6,6 +6,7 @@ local ItemBook = {}
 ItemBook.__index = ItemBook
 
 -- Constructor
+---@return ItemBook
 function ItemBook:New()
     local self = setmetatable({}, ItemBook)
     self.items = {}
@@ -13,6 +14,7 @@ function ItemBook:New()
 end
 
 -- Get a spell from the ItemBook
+---@param id number
 ---@return Item
 function ItemBook:GetItem(id)
     if self.items[id] == nil then

@@ -7,6 +7,7 @@ local NotificationsList = {
 NotificationsList.__index = NotificationsList
 
 -- Constructor
+---@return NotificationsList
 function NotificationsList:New()
     local self = setmetatable({}, NotificationsList)
 
@@ -36,6 +37,11 @@ local Notification = {
 Notification.__index = Notification
 
 -- Constructor
+---@param list NotificationsList
+---@param icon string
+---@param text string
+---@param duration number
+---@return Notification
 function Notification:New(list, icon, text, duration)
     local self = setmetatable({}, Notification)
 
@@ -70,6 +76,7 @@ function Notification:New(list, icon, text, duration)
 end
 
 -- Remove notification
+---@return nil
 function Notification:Remove()
     -- Fade out the notification frame and remove it after the fade
     UIFrameFadeOut(self.frame, 0.2, 1, 0)
@@ -83,6 +90,10 @@ function Notification:Remove()
 end
 
 -- Add a notification to the list
+---@param icon string
+---@param text string
+---@param duration number
+---@return nil
 function NotificationsList:AddNotification(icon, text, duration)
     -- Create a new notification
     local notification = Notification:New(self, icon, text, duration)
@@ -96,6 +107,7 @@ function NotificationsList:AddNotification(icon, text, duration)
 end
 
 -- Update the notifications
+---@return nil
 function NotificationsList:Update()
     -- Loop through the notifications
     for i, notification in ipairs(self.notifications) do
@@ -105,6 +117,8 @@ function NotificationsList:Update()
 end
 
 -- Remove a notification from the list
+---@param notification Notification
+---@return nil
 function NotificationsList:RemoveNotification(notification)
     -- Loop through the notifications
     for i, v in ipairs(self.notifications) do
@@ -119,6 +133,7 @@ function NotificationsList:RemoveNotification(notification)
 end
 
 -- Remove all notifications from the list
+---@return nil
 function NotificationsList:RemoveAllNotifications()
     -- Loop through the notifications
     for i, v in ipairs(self.notifications) do
