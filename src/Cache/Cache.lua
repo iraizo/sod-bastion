@@ -3,12 +3,17 @@ local Cache = {}
 Cache.__index = Cache
 
 -- Constructor
+---@return Cache
 function Cache:New()
     local self = setmetatable({}, Cache)
     self.cache = {}
     return self
 end
 
+---@param key any
+---@param value any
+---@param duration number
+---@return nil
 function Cache:Set(key, value, duration)
     self.cache = self.cache or {}
     self.cache[key] = {
@@ -18,6 +23,8 @@ function Cache:Set(key, value, duration)
     }
 end
 
+---@param key any
+---@return any
 function Cache:Get(key)
     self.cache = self.cache or {}
     local cache = self.cache[key]
@@ -31,6 +38,8 @@ function Cache:Get(key)
     return nil
 end
 
+---@param key any
+---@return boolean
 function Cache:IsCached(key)
     self.cache = self.cache or {}
     local cache = self.cache[key]
