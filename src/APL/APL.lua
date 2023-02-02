@@ -1,9 +1,13 @@
+-- Document with emmy lua: https://emmylua.github.io/
+
 -- Create an APL trait for the APL class
 ---@class APLTrait
 local APLTrait = {}
 APLTrait.__index = APLTrait
 
 -- Constructor
+---@param cb fun():boolean
+---@return APLTrait
 function APLTrait:New(cb)
     local self = setmetatable({}, APLTrait)
 
@@ -14,6 +18,7 @@ function APLTrait:New(cb)
 end
 
 -- Evaulate the APL trait
+---@return boolean
 function APLTrait:Evaluate()
     if GetTime() - self.lastcall > 0.1 then
         self.lastresult = self.cb()
@@ -25,6 +30,7 @@ function APLTrait:Evaluate()
 end
 
 -- tostring
+---@return string
 function APLTrait:__tostring()
     return "Bastion.__APLTrait"
 end
@@ -35,6 +41,7 @@ local APLActor = {}
 APLActor.__index = APLActor
 
 -- Constructor
+---@param actor table
 function APLActor:New(actor)
     local self = setmetatable({}, APLActor)
 
@@ -45,6 +52,8 @@ function APLActor:New(actor)
 end
 
 -- Add a trait to the APL actor
+---@param ... APLTrait
+---@return APLActor
 function APLActor:AddTraits(...)
     for _, trait in ipairs({ ... }) do
         table.insert(self.traits, trait)
@@ -54,11 +63,13 @@ function APLActor:AddTraits(...)
 end
 
 -- Get the actor
+---@return table
 function APLActor:GetActor()
     return self.actor
 end
 
 -- Evaulate the APL actor
+---@return boolean
 function APLActor:Evaluate()
     for _, trait in ipairs(self.traits) do
         if not trait:Evaluate() then
@@ -108,11 +119,13 @@ function APLActor:Execute()
 end
 
 -- has traits
+---@return boolean
 function APLActor:HasTraits()
     return #self.traits > 0
 end
 
 -- tostring
+---@return string
 function APLActor:__tostring()
     return "Bastion.__APLActor"
 end
@@ -123,6 +136,8 @@ local APL = {}
 APL.__index = APL
 
 -- Constructor
+---@param name string
+---@return APL
 function APL:New(name)
     local self = setmetatable({}, APL)
 
@@ -134,16 +149,23 @@ function APL:New(name)
 end
 
 -- Add a variable to the APL
+---@param name string
+---@param value any
 function APL:SetVariable(name, value)
     self.variables[name] = value
 end
 
 -- Get and evaluate a variable
+---@param name string
+---@return boolean
 function APL:GetVariable(name)
     return self.variables[name]
 end
 
 -- Add variable
+---@param name string
+---@param cb fun(...):any
+---@return APLActor
 function APL:AddVariable(name, cb)
     local actor = APLActor:New({ variable = name, cb = cb, _apl = self })
     table.insert(self.apl, actor)
@@ -151,6 +173,9 @@ function APL:AddVariable(name, cb)
 end
 
 -- Add a manual action to the APL
+---@param action string
+---@param cb fun(...):any
+---@return APLActor
 function APL:AddAction(action, cb)
     local actor = APLActor:New({ action = action, cb = cb })
     table.insert(self.apl, actor)
@@ -158,6 +183,9 @@ function APL:AddAction(action, cb)
 end
 
 -- Add a spell to the APL
+---@param spell Spell
+---@param condition fun(...):boolean
+---@return APLActor
 function APL:AddSpell(spell, condition)
     local castableFunc = spell.CastableIfFunc
     local target = spell:GetTarget()
@@ -170,6 +198,9 @@ function APL:AddSpell(spell, condition)
 end
 
 -- Add an item to the APL
+---@param item Item
+---@param condition fun(...):boolean
+---@return APLActor
 function APL:AddItem(item, condition)
     local usableFunc = item.UsableIfFunc
     local target = item:GetTarget()
@@ -182,6 +213,9 @@ function APL:AddItem(item, condition)
 end
 
 -- Add an APL to the APL (for sub APLs)
+---@param apl APL
+---@param condition fun(...):boolean
+---@return APLActor
 function APL:AddAPL(apl, condition)
     if not condition then
         error("Bastion: APL:AddAPL: No condition for APL " .. apl.name)
@@ -203,6 +237,7 @@ function APL:Execute()
 end
 
 -- tostring
+---@return string
 function APL:__tostring()
     return "Bastion.__APL(" .. self.name .. ")"
 end
