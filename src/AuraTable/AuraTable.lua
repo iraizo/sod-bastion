@@ -5,15 +5,9 @@ local Tinkr, Bastion = ...
 local AuraTable = {}
 AuraTable.__index = AuraTable
 
-local function tsize(t)
-    local keys = {}
-    for k, v in pairs(t) do
-        table.insert(keys, k)
-    end
-    return keys[#keys]
-end
-
 -- Constructor
+---@param unit Unit
+---@return AuraTable
 function AuraTable:New(unit)
     local self = setmetatable({}, AuraTable)
 
@@ -28,6 +22,8 @@ function AuraTable:New(unit)
     return self
 end
 
+---@param auras UnitAuraUpdateInfo
+---@return nil
 function AuraTable:OnUpdate(auras)
     if not auras then
         self:Update()
@@ -73,6 +69,8 @@ function AuraTable:OnUpdate(auras)
     end
 end
 
+---@param instanceID number
+---@return nil
 function AuraTable:RemoveInstanceID(instanceID)
     if not self.instanceIDLookup[instanceID] then
         return
@@ -93,6 +91,10 @@ function AuraTable:RemoveInstanceID(instanceID)
     end
 end
 
+-- Update the aura table
+---@param instanceID number
+---@param aura Aura
+---@return nil
 function AuraTable:AddOrUpdateAuraInstanceID(instanceID, aura)
     local spellId = aura:GetSpell():GetID()
 
@@ -114,6 +116,7 @@ function AuraTable:AddOrUpdateAuraInstanceID(instanceID, aura)
 end
 
 -- Get a units buffs
+---@return nil
 function AuraTable:GetUnitBuffs()
     if Tinkr.classic then
         for i = 1, 40 do
@@ -152,6 +155,7 @@ function AuraTable:GetUnitBuffs()
 end
 
 -- Get a units debuffs
+---@return nil
 function AuraTable:GetUnitDebuffs()
     if Tinkr.classic then
         for i = 1, 40 do
@@ -190,6 +194,7 @@ function AuraTable:GetUnitDebuffs()
 end
 
 -- Update auras
+---@return nil
 function AuraTable:Update()
     -- print("Updating auras for " .. tostring(self.unit))
     self:Clear()
@@ -203,6 +208,7 @@ function AuraTable:Update()
 end
 
 -- Get a units auras
+---@return table
 function AuraTable:GetUnitAuras()
     if not self.did then
         self.did = true
@@ -226,6 +232,7 @@ function AuraTable:GetUnitAuras()
 end
 
 -- Get a units auras
+---@return table
 function AuraTable:GetMyUnitAuras()
     if not self.did then
         self.did = true
@@ -249,6 +256,7 @@ function AuraTable:GetMyUnitAuras()
 end
 
 -- Clear the aura table
+---@return nil
 function AuraTable:Clear()
     self.auras = {}
     self.playerAuras = {}
@@ -256,6 +264,7 @@ function AuraTable:Clear()
 end
 
 -- Check if the unit has a specific aura
+---@param spell Spell
 ---@return Aura
 function AuraTable:Find(spell)
     local auras = self:GetUnitAuras()
@@ -281,6 +290,8 @@ function AuraTable:Find(spell)
     return Bastion.Aura:New()
 end
 
+-- Check if the unit has a specific aura
+---@param spell Spell
 ---@return Aura
 function AuraTable:FindMy(spell)
     local auras = self:GetMyUnitAuras()
@@ -305,6 +316,10 @@ function AuraTable:FindMy(spell)
     return Bastion.Aura:New()
 end
 
+-- Check if the unit has a specific aura
+---@param spell Spell
+---@param source Unit
+---@return Aura
 function AuraTable:FindFrom(spell, source)
     local auras = self:GetUnitAuras()
     local aurasub = auras[spell:GetID()]
@@ -331,6 +346,8 @@ function AuraTable:FindFrom(spell, source)
 end
 
 -- Find the aura from the current unit
+---@param spell Spell
+---@return Aura
 function AuraTable:FindTheirs(spell)
     local auras = self:GetUnitAuras()
     local aurasub = auras[spell:GetID()]
@@ -357,6 +374,7 @@ function AuraTable:FindTheirs(spell)
 end
 
 -- Find any
+---@param spell Spell
 ---@return Aura
 function AuraTable:FindAny(spell)
     local a = self:Find(spell)
@@ -368,6 +386,7 @@ function AuraTable:FindAny(spell)
 end
 
 -- Has any stealable aura
+---@return boolean
 function AuraTable:HasAnyStealableAura()
     for _, auras in pairs(self:GetUnitAuras()) do
         for _, aura in pairs(auras) do
@@ -385,6 +404,8 @@ function AuraTable:HasAnyStealableAura()
 end
 
 -- Has any dispelable aura
+---@param spell Spell
+---@return boolean
 function AuraTable:HasAnyDispelableAura(spell)
     for _, auras in pairs(self:GetUnitAuras()) do
         for _, aura in pairs(auras) do
