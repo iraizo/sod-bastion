@@ -10,6 +10,7 @@ local EventManager = {
 EventManager.__index = EventManager
 
 -- Constructor
+---@return EventManager
 function EventManager:New()
     local self = setmetatable({}, EventManager)
     self.events = {}
@@ -31,6 +32,9 @@ function EventManager:New()
 end
 
 -- Register an event
+---@param event string
+---@param handler fun(...)
+---@return nil
 function EventManager:RegisterEvent(event, handler)
     if not self.events[event] then
         self.events[event] = {}
@@ -40,6 +44,9 @@ function EventManager:RegisterEvent(event, handler)
 end
 
 -- Register a wow event
+---@param event string
+---@param handler fun(...)
+---@return nil
 function EventManager:RegisterWoWEvent(event, handler)
     if not self.wowEventHandlers[event] then
         self.wowEventHandlers[event] = {}
@@ -50,6 +57,9 @@ function EventManager:RegisterWoWEvent(event, handler)
 end
 
 -- Trigger an event
+---@param event string
+---@param ... any
+---@return nil
 function EventManager:TriggerEvent(event, ...)
     if self.events[event] then
         for _, handler in pairs(self.events[event]) do

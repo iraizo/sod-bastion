@@ -3,10 +3,12 @@
 local Command = {}
 Command.__index = Command
 
+---@return string
 function Command:__tostring()
     return "Command(" .. self.command .. ")"
 end
 
+---@param prefix string
 function Command:New(prefix)
     local self = setmetatable({}, Command)
 
@@ -21,6 +23,10 @@ function Command:New(prefix)
     return self
 end
 
+---@param command string
+---@param helpmsg string
+---@param cb fun(args: table)
+---@return nil
 function Command:Register(command, helpmsg, cb)
     self.commands[command] = {
         helpmsg = helpmsg,
@@ -28,6 +34,8 @@ function Command:Register(command, helpmsg, cb)
     }
 end
 
+---@param msg string
+---@return table
 function Command:Parse(msg)
     local args = {}
     for arg in msg:gmatch("%S+") do
@@ -37,6 +45,8 @@ function Command:Parse(msg)
     return args
 end
 
+---@param msg string
+---@return nil
 function Command:OnCommand(msg)
     local args = self:Parse(msg)
 
@@ -51,6 +61,7 @@ function Command:OnCommand(msg)
     end
 end
 
+---@return nil
 function Command:PrintHelp()
     for k, v in pairs(self.commands) do
         print('/' .. self.prefix .. ' ' .. k .. " - " .. v.helpmsg)

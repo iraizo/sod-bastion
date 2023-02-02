@@ -1443,13 +1443,119 @@ BuildAPL:AddSpell(
     ):SetTarget(Target)
 )
 
+
+-- GetTimeToShurikenTornado
+--[[
+    spec:RegisterStateTable( "time_to_sht", setmetatable( {}, {
+    __index = function( t, k )
+        local n = tonumber( k )
+        n = n - ( n % 1 )
+
+        if not n or n > 5 then return 3600 end
+
+        if n <= swings_since_sht then return 0 end
+
+        local mh_speed = swings.mainhand_speed
+        local mh_next = ( swings.mainhand > now - 3 ) and ( swings.mainhand + mh_speed ) or now + ( mh_speed * 0.5 )
+
+        local oh_speed = swings.offhand_speed
+        local oh_next = ( swings.offhand > now - 3 ) and ( swings.offhand + oh_speed ) or now
+
+        table.wipe( sht )
+
+        if mh_speed and mh_speed > 0 then
+            for i = 1, 4 do
+                insert( sht, mh_next + ( i * mh_speed ) )
+            end
+        end
+
+        if oh_speed and oh_speed > 0 then
+            for i = 1, 4 do
+                insert( sht, oh_next + ( i * oh_speed ) )
+            end
+        end
+
+        local i = 1
+
+        while( sht[i] ) do
+            if sht[i] < last_shadow_techniques + 3 then
+                table.remove( sht, i )
+            else
+                i = i + 1
+            end
+        end
+
+        if #sht > 0 and n - swings_since_sht < #sht then
+            table.sort( sht )
+            return max( 0, sht[ n - swings_since_sht ] - query_time )
+        else
+            return 3600
+        end
+    end
+} ) )
+]]
+function GetTimeToShurikenTornado(unit, n)
+    local now = GetTime()
+    local sht = {}
+    local swings = unit:GetSwingTimers()
+
+    if not unit.swings_since_sht then
+        unit.swings_since_sht = 0
+    end
+
+    if not unit.last_shadow_techniques then
+        unit.last_shadow_techniques = 0
+    end
+
+    if n <= unit.swings_since_sht then
+        return 0
+    end
+
+    local mh_speed = swings[1]
+    local mh_next = (unit.last_mh > now - 3) and (unit.last_mh + mh_speed) or now + (mh_speed * 0.5)
+
+    local oh_speed = swings[2]
+    local oh_next = (unit.last_oh > now - 3) and (unit.last_oh + oh_speed) or now
+
+    table.wipe(sht)
+
+    if mh_speed and mh_speed > 0 then
+        for i = 1, 4 do
+            table.insert(sht, mh_next + (i * mh_speed))
+        end
+    end
+
+    if oh_speed and oh_speed > 0 then
+        for i = 1, 4 do
+            table.insert(sht, oh_next + (i * oh_speed))
+        end
+    end
+
+    local i = 1
+
+    while (sht[i]) do
+        if sht[i] < unit.last_shadow_techniques + 3 then
+            table.remove(sht, i)
+        else
+            i = i + 1
+        end
+    end
+
+    if #sht > 0 and n - unit.swings_since_sht < #sht then
+        table.sort(sht)
+        return math.max(0, sht[n - unit.swings_since_sht] - now)
+    else
+        return 3600
+    end
+end
+
 -- # Build immediately unless the next CP is Animacharged and we won't cap energy waiting for it.
 -- actions.build+=/variable,name=anima_helper,value=!talent.echoing_reprimand.enabled|!(variable.is_next_cp_animacharged&(time_to_sht.3.plus<0.5|time_to_sht.4.plus<1)&energy<60)
 BuildAPL:AddVariable(
     'anima_helper',
     function()
         return not EchoingReprimand:IsKnown() or ((not (DefaultAPL:GetVariable('is_next_cp_animacharged') and
-            (Player:GetTimeToShurikenTornado(3) < 0.5 or Player:GetTimeToShurikenTornado(4) < 1) and
+            (GetTimeToShurikenTornado(Player, 3) < 0.5 or GetTimeToShurikenTornado(Player, 4) < 1) and
             Player:GetPower() < 60)))
     end
 )

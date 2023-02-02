@@ -2,6 +2,8 @@
 local ClassMagic = {}
 ClassMagic.__index = ClassMagic
 
+---@param Class table
+---@param key string
 ---@return any
 function ClassMagic:Resolve(Class, key)
     if Class[key] or Class[key] == false then
