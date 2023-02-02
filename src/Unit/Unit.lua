@@ -529,12 +529,21 @@ function Unit:IsMovingAtAll()
 end
 
 ---@return number
-function Unit:GetComboPoints()
+function Unit:GetComboPoints(unit)
+    if Tinkr.classic then
+        if not unit then
+            return 0
+        end
+        return GetComboPoints(self:GetOMToken(), unit:GetOMToken())
+    end
     return UnitPower(self:GetOMToken(), 4)
 end
 
 ---@return number
 function Unit:GetComboPointsMax()
+    if Tinkr.classic then
+        return 5
+    end
     return UnitPowerMax(self:GetOMToken(), 4)
 end
 
