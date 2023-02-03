@@ -528,6 +528,7 @@ function Unit:IsMovingAtAll()
     return ObjectMovementFlag(self:GetOMToken()) ~= 0
 end
 
+---@param unit Unit | nil
 ---@return number
 function Unit:GetComboPoints(unit)
     if Tinkr.classic then
@@ -548,6 +549,7 @@ function Unit:GetComboPointsMax()
 end
 
 -- Get combopoints deficit
+---@param unit Unit | nil
 ---@return number
 function Unit:GetComboPointsDeficit(unit)
     if Tinkr.classic then
