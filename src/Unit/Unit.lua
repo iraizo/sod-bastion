@@ -41,6 +41,11 @@ function Unit:__eq(other)
 end
 
 -- tostring
+---ToString
+---
+---```lua
+---print(Unit:New('player'))
+---```
 ---@return string
 function Unit:__tostring()
     return "Bastion.__Unit(" .. tostring(self:GetOMToken()) .. ")" .. " - " .. (self:GetName() or '')

@@ -107,6 +107,8 @@ local RakeAura = Bastion.SpellBook:GetSpell(155722)
 local Starsurge = Bastion.SpellBook:GetSpell(197626)
 local NaturesVigil = Bastion.SpellBook:GetSpell(124974)
 local SpringBlossoms = Bastion.SpellBook:GetSpell(207386)
+local RakeDebuff = Bastion.SpellBook:GetSpell(155722)
+
 
 local Lowest = Bastion.UnitManager:CreateCustomUnit('lowest', function(unit)
     local lowest = nil
@@ -385,6 +387,104 @@ local Explosive = Bastion.UnitManager:CreateCustomUnit('explosive', function(uni
     return explosive
 end)
 
+local RakeTarget = Bastion.UnitManager:CreateCustomUnit('rake', function(unit)
+    local rakeTarget = nil
+
+    Bastion.UnitManager:EnumEnemies(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and unit:InMelee(Player) and
+            Player:IsFacing(unit) and
+            (
+            not unit:GetAuras():FindMy(RakeDebuff):IsUp() or
+                unit:GetAuras():FindMy(RakeDebuff):GetRemainingTime() <= 3.6) then
+            rakeTarget = unit
+        end
+
+    end)
+
+
+    if rakeTarget == nil then
+        rakeTarget = None
+    end
+
+    return rakeTarget
+end)
+
+local MoonfireTarget = Bastion.UnitManager:CreateCustomUnit('moonfire', function(unit)
+    local moonfireTarget = nil
+
+    Bastion.UnitManager:EnumEnemies(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
+            (
+            not unit:GetAuras():FindMy(MoonfireAura):IsUp() or
+                unit:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 3.6) then
+            moonfireTarget = unit
+        end
+
+    end)
+
+    if moonfireTarget == nil then
+        moonfireTarget = None
+    end
+
+    return moonfireTarget
+end)
+
+local SunfireTarget = Bastion.UnitManager:CreateCustomUnit('sunfire', function(unit)
+    local sunfireTarget = nil
+
+    Bastion.UnitManager:EnumEnemies(function(unit)
+        if unit:IsDead() then
+            return false
+        end
+
+        if not Player:CanSee(unit) then
+            return false
+        end
+
+        if Player:GetDistance(unit) > 40 then
+            return false
+        end
+
+        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
+            (
+            not unit:GetAuras():FindMy(SunfireAura):IsUp() or
+                unit:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 3.6) then
+            sunfireTarget = unit
+        end
+
+    end)
+
+    if sunfireTarget == nil then
+        sunfireTarget = None
+    end
+
+    return sunfireTarget
+end)
+
 local RestoCommands = Bastion.Command:New('resto')
 
 local PLACE_EFFLO = false
@@ -396,6 +496,29 @@ end)
 
 local DefaultAPL = Bastion.APL:New('default')
 local DamageAPL = Bastion.APL:New('damage')
+
+DamageAPL:AddSpell(
+    Rake:CastableIf(function(self)
+        return RakeTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            (
+            not RakeTarget:GetAuras():FindMy(RakeDebuff):IsUp() or
+                RakeTarget:GetAuras():FindMy(RakeDebuff):GetRemainingTime() <= 3.6)
+    end):SetTarget(RakeTarget)
+)
+
+DamageAPL:AddSpell(
+    FerociousBite:CastableIf(function(self)
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            Player:GetComboPoints() >= 5
+    end):SetTarget(Target)
+)
+
+DamageAPL:AddSpell(
+    Shred:CastableIf(function(self)
+        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
+            Player:GetComboPoints() < 5
+    end):SetTarget(Target)
+)
 
 DefaultAPL:AddSpell(
     Moonfire:CastableIf(function(self)
@@ -413,12 +536,20 @@ DefaultAPL:AddSpell(
     end)
 )
 
+CatForm:OnCast(function(self)
+    if not Player:GetAuras():FindMy(Prowl):IsUp() and not Player:IsAffectingCombat() then
+        Prowl:Cast(Player)
+    end
+end)
+
 DefaultAPL:AddAction(
     'cat_form_shift',
     function()
-        if IsShiftKeyDown() and not Player:GetAuras():FindMy(CatForm):IsUp() and not Player:IsCastingOrChanneling() then
+        if (IsShiftKeyDown() or not Player:IsAffectingCombat()) and not Player:IsMounted() and
+            not Player:GetAuras():FindMy(CatForm):IsUp() and
+            not Player:IsCastingOrChanneling() then
             CatForm:Cast(Player)
-        elseif not IsShiftKeyDown() and Player:GetAuras():FindMy(CatForm):IsUp() then
+        elseif (not IsShiftKeyDown() and Player:IsAffectingCombat()) and Player:GetAuras():FindMy(CatForm):IsUp() then
             CancelShapeshiftForm()
         end
     end
@@ -585,26 +716,26 @@ DefaultAPL:AddSpell(
 
 DefaultAPL:AddSpell(
     Sunfire:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and
+        return SunfireTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(SunfireTarget) and
             (
-            not Target:GetAuras():FindMy(SunfireAura):IsUp() or
-                Target:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
-            Target:IsHostile() and
-            Target:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Target)
+            not SunfireTarget:GetAuras():FindMy(SunfireAura):IsUp() or
+                SunfireTarget:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
+            SunfireTarget:IsHostile() and
+            SunfireTarget:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(SunfireTarget)
 )
 
 DefaultAPL:AddSpell(
     Moonfire:CastableIf(function(self)
-        return Target:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-            and Player:CanSee(Target) and
+        return MoonfireTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+            and Player:CanSee(MoonfireTarget) and
             (
-            not Target:GetAuras():FindMy(MoonfireAura):IsUp() or
-                Target:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
-            Target:IsHostile() and
-            Target:IsAffectingCombat() and Player:GetPP() >= 25
-    end):SetTarget(Target)
+            not MoonfireTarget:GetAuras():FindMy(MoonfireAura):IsUp() or
+                MoonfireTarget:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
+            MoonfireTarget:IsHostile() and
+            MoonfireTarget:IsAffectingCombat() and Player:GetPP() >= 25
+    end):SetTarget(MoonfireTarget)
 )
 
 DefaultAPL:AddSpell(

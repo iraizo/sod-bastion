@@ -992,8 +992,6 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
 end)
 
 local function GetRimeDuration(topCard)
-    --     // card order is [ 2 3 4 5 6 7 8 A ]
-
     if topCard == RimeCards.Two then
         return 0
     elseif topCard == RimeCards.Three then
@@ -1248,6 +1246,52 @@ DefaultAPL:AddVariable(
 
 -- # Account for ShT reaction time by ignoring low-CP animacharged matches in the 0.5s preceeding a potential ShT proc
 -- actions+=/variable,name=effective_combo_points,value=effective_combo_points
+-- DefaultAPL:AddVariable(
+--     'effective_combo_points',
+--     function()
+--         local cur = Player:GetComboPoints() or 0
+--         if not EchoingReprimand:IsKnown() then
+--             return cur
+--         end
+
+--         if cur < 2 or cur > 5 then
+--             return cur
+--         end
+
+--         if Player:GetAuras():FindMy(EchoingReprimand):IsUp() or Player:GetAuras():FindMy(EchoingReprimand2):IsUp() or
+--             Player:GetAuras():FindMy(EchoingReprimand3):IsUp() or
+--             Player:GetAuras():FindMy(EchoingReprimand4):IsUp() or
+--             Player:GetAuras():FindMy(EchoingReprimand5):IsUp()
+--         then
+--             return 7
+--         end
+
+--         return cur
+--     end
+-- )
+
+-- -- actions+=/variable,name=effective_combo_points,if=talent.echoing_reprimand.enabled&effective_combo_points>combo_points&combo_points.deficit>2&time_to_sht.4.plus<0.5&!variable.is_next_cp_animacharged,value=combo_points
+-- DefaultAPL:AddVariable(
+--     'effective_combo_points',
+--     function()
+--         if not EchoingReprimand:IsKnown() then
+--             return 0
+--         end
+
+--         local cur = Player:GetComboPoints() or 0
+--         local deficit = Player:GetComboPointsDeficit() or 0
+
+--         if cur > Player:GetComboPoints() and deficit > 2 and
+--             Player:GetAuras():FindMy(EchoingReprimand4):GetRemainingTime() < 0.5 and
+--             not DefaultAPL:GetVariable('is_next_cp_animacharged')
+--         then
+--             return cur
+--         end
+
+--         return 0
+--     end
+-- )
+
 DefaultAPL:AddVariable(
     'effective_combo_points',
     function()
@@ -1268,14 +1312,6 @@ DefaultAPL:AddVariable(
             return 7
         end
 
-        return cur
-    end
-)
-
--- actions+=/variable,name=effective_combo_points,if=talent.echoing_reprimand.enabled&effective_combo_points>combo_points&combo_points.deficit>2&time_to_sht.4.plus<0.5&!variable.is_next_cp_animacharged,value=combo_points
-DefaultAPL:AddVariable(
-    'effective_combo_points',
-    function()
         if not EchoingReprimand:IsKnown() then
             return 0
         end
@@ -1290,10 +1326,10 @@ DefaultAPL:AddVariable(
             return cur
         end
 
-        return 0
+        -- return 0
+        return cur
     end
 )
-
 -- # Check CDs at first
 -- actions+=/call_action_list,name=cds
 DefaultAPL:AddAPL(
@@ -1995,31 +2031,41 @@ StealthCDsAPL:AddSpell(
 
 -- # CP thresholds for entering Shadow Dance Default to start dance with 0 or 1 combo point
 -- actions.stealth_cds+=/variable,name=shd_combo_points,value=combo_points<=1
-StealthCDsAPL:AddVariable(
-    'shd_combo_points',
-    function(self)
-        return Player:GetComboPoints() <= 1
-    end
-)
+-- StealthCDsAPL:AddVariable(
+--     'shd_combo_points',
+--     function(self)
+--         return Player:GetComboPoints() <= 1
+--     end
+-- )
 
--- # Use stealth cooldowns with high combo points when playing shuriken tornado or with high target counts
--- actions.stealth_cds+=/variable,name=shd_combo_points,value=combo_points.deficit<=1,if=spell_targets.shuriken_storm>(4-2*talent.shuriken_tornado.enabled)|variable.priority_rotation&spell_targets.shuriken_storm>=4
+-- -- # Use stealth cooldowns with high combo points when playing shuriken tornado or with high target counts
+-- -- actions.stealth_cds+=/variable,name=shd_combo_points,value=combo_points.deficit<=1,if=spell_targets.shuriken_storm>(4-2*talent.shuriken_tornado.enabled)|variable.priority_rotation&spell_targets.shuriken_storm>=4
+-- StealthCDsAPL:AddVariable(
+--     'shd_combo_points',
+--     function(self)
+--         return Player:GetComboPointsDeficit() <= 1 and
+--             ((Player:GetEnemies(10) > (4 - 2 * (ShurikenTornado:IsKnown() and 1 or 0))) or
+--                 (DefaultAPL:GetVariable('priority_rotation') and
+--                     Player:GetEnemies(10) >= 4))
+--     end
+-- )
+
+-- -- # Use stealth cooldowns on any combo point on 4 targets
+-- -- actions.stealth_cds+=/variable,name=shd_combo_points,value=1,if=spell_targets.shuriken_storm=(4-talent.seal_fate)
+-- StealthCDsAPL:AddVariable(
+--     'shd_combo_points',
+--     function(self)
+--         return Player:GetEnemies(10) == (4 - (SealFate:IsKnown() and 1 or 0))
+--     end
+-- )
+
 StealthCDsAPL:AddVariable(
     'shd_combo_points',
     function(self)
-        return Player:GetComboPointsDeficit() <= 1 and
+        return (Player:GetComboPoints() <= 1) or (Player:GetComboPointsDeficit() <= 1 and
             ((Player:GetEnemies(10) > (4 - 2 * (ShurikenTornado:IsKnown() and 1 or 0))) or
                 (DefaultAPL:GetVariable('priority_rotation') and
-                    Player:GetEnemies(10) >= 4))
-    end
-)
-
--- # Use stealth cooldowns on any combo point on 4 targets
--- actions.stealth_cds+=/variable,name=shd_combo_points,value=1,if=spell_targets.shuriken_storm=(4-talent.seal_fate)
-StealthCDsAPL:AddVariable(
-    'shd_combo_points',
-    function(self)
-        return Player:GetEnemies(10) == (4 - (SealFate:IsKnown() and 1 or 0))
+                    Player:GetEnemies(10) >= 4))) or (Player:GetEnemies(10) == (4 - (SealFate:IsKnown() and 1 or 0)))
     end
 )
 

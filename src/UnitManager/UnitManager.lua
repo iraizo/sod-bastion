@@ -182,7 +182,7 @@ function UnitManager:CreateCustomUnit(token, cb)
     return cachedUnit
 end
 
--- Enum Friends (party/raid members)
+---@description Enumerates all friendly units in the battlefield
 ---@param cb fun(unit: Unit):boolean
 ---@return nil
 function UnitManager:EnumFriends(cb)
