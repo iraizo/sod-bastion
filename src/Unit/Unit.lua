@@ -372,8 +372,9 @@ end
 -- Get Casting or channeling spell
 ---@return Spell | nil
 function Unit:GetCastingOrChannelingSpell()
-    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
-        .unit)
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
+            self
+            .unit)
 
     if not name then
         name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
@@ -408,8 +409,9 @@ end
 
 ---@return number
 function Unit:GetChannelOrCastPercentComplete()
-    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
-        .unit)
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
+            self
+            .unit)
 
     if not name then
         name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
@@ -429,8 +431,9 @@ end
 -- Check if unit is interruptible
 ---@return boolean
 function Unit:IsInterruptible()
-    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(self
-        .unit)
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
+            self
+            .unit)
 
     if not name then
         name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
@@ -447,8 +450,8 @@ end
 -- Check if unit is interruptible
 ---@param percent number
 ---@return boolean
-function Unit:IsInterruptibleAt(percent)
-    if not self:IsInterruptible() then
+function Unit:IsInterruptibleAt(percent, ignoreInterruptible)
+    if not ignoreInterruptible and not self:IsInterruptible() then
         return false
     end
 
@@ -575,7 +578,7 @@ end
 ---@return boolean
 function Unit:IsTanking(unit)
     local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self:GetOMToken(),
-        unit:GetOMToken())
+            unit:GetOMToken())
     return isTanking
 end
 
@@ -642,15 +645,22 @@ end
 ---@param unit Unit
 ---@return boolean
 function Unit:InMelee(unit)
-    local x, y, z = ObjectPosition(self:GetOMToken())
-    local x2, y2, z2 = ObjectPosition(unit:GetOMToken())
+    local x, y, z = ObjectPosition(self.unit)
+    local x2, y2, z2 = ObjectPosition(unit.unit)
 
     if not x or not x2 then
         return false
     end
 
+    local scr = ObjectCombatReach(self.unit)
+    local ucr = ObjectCombatReach(unit.unit)
+
+    if not scr or not ucr then
+        return false
+    end
+
     local dist = math.sqrt((x - x2) ^ 2 + (y - y2) ^ 2 + (z - z2) ^ 2)
-    local maxDist = math.max((ObjectCombatReach(self:GetOMToken()) + 1.3333) + ObjectCombatReach(unit:GetOMToken()), 5.0)
+    local maxDist = math.max((scr + 1.3333) + ucr, 5.0)
     maxDist = maxDist + 1.0 + self:GetMeleeBoost()
 
     return dist <= maxDist
@@ -851,7 +861,8 @@ end
 ---@return nil
 function Unit:WatchForSwings()
     Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
-        local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike = CombatLogGetCurrentEventInfo()
+        local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike =
+            CombatLogGetCurrentEventInfo()
 
         if sourceGUID == self:GetGUID() then
             if subtype == "SPELL_ENERGIZE" and spellID == 196911 then

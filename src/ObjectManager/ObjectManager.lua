@@ -75,7 +75,7 @@ function ObjectManager:Refresh()
     for _, object in pairs(objects) do
         self:EnumLists(object)
 
-        if ObjectType(object) == 5 or ObjectType(object) == 6 then
+        if ({ [5] = true,[6] = true,[7] = true })[ObjectType(object)] then
             local unit = Bastion.UnitManager:GetObject(ObjectGUID(object))
             if not unit then
                 unit = Bastion.Unit:New(object)
@@ -84,7 +84,7 @@ function ObjectManager:Refresh()
 
             if unit:GetID() == 120651 then
                 self.explosives:push(unit)
-            elseif unit:IsPlayer() and unit:IsInParty() then
+            elseif unit:IsPlayer() and (unit:IsInParty() or unit == Bastion.UnitManager['player']) then
                 self.friends:push(unit)
             elseif unit:IsEnemy() then
                 self.enemies:push(unit)

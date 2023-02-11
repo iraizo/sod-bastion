@@ -7,6 +7,7 @@ local Spell = {
     PreCastFunc = false,
     OnCastFunc = false,
     PostCastFunc = false,
+    lastCastAttempt = 0,
     wasLooking = false,
     lastCastAt = 0,
     conditions = {},
@@ -305,6 +306,15 @@ function Spell:GetTimeSinceLastCast()
     return GetTime() - self:GetLastCastTime()
 end
 
+-- Get the time since the last cast attempt
+---@return number
+function Spell:GetTimeSinceLastCastAttempt()
+    if not self.lastCastAttempt then
+        return math.huge
+    end
+    return GetTime() - self.lastCastAttempt
+end
+
 -- Get the spells charges
 ---@return number
 function Spell:GetCharges()
@@ -404,24 +414,24 @@ end
 ---@return boolean
 function Spell:IsMagicDispel()
     return ({
-        [88423] = true
-    })[self:GetID()]
+            [88423] = true
+        })[self:GetID()]
 end
 
 -- IsCurseDispel
 ---@return boolean
 function Spell:IsCurseDispel()
     return ({
-        [88423] = true
-    })[self:GetID()]
+            [88423] = true
+        })[self:GetID()]
 end
 
 -- IsPoisonDispel
 ---@return boolean
 function Spell:IsPoisonDispel()
     return ({
-        [88423] = true
-    })[self:GetID()]
+            [88423] = true
+        })[self:GetID()]
 end
 
 -- IsDiseaseDispel
@@ -429,7 +439,7 @@ end
 function Spell:IsDiseaseDispel()
     return ({
 
-    })[self:GetID()]
+        })[self:GetID()]
 end
 
 -- IsSpell
