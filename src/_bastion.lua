@@ -18,6 +18,8 @@ Bastion.List = Bastion.require("List")
 Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
 ---@type Vector3
 Bastion.Vector3 = Bastion.require("Vector3")
+---@type Sequencer
+Bastion.Sequencer = Bastion.require("Sequencer")
 ---@type Command
 Bastion.Command = Bastion.require("Command")
 ---@type Cache
@@ -85,8 +87,24 @@ Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
     end
 end)
 
+local pguid = UnitGUID("player")
+local missed = {}
+
 Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
-    local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike = CombatLogGetCurrentEventInfo()
+    local args = { CombatLogGetCurrentEventInfo() }
+
+    local subEvent = args[2]
+    local sourceGUID = args[4]
+    local destGUID = args[8]
+    local spellID = args[12]
+
+    -- if sourceGUID == pguid then
+    --     local args = { CombatLogGetCurrentEventInfo() }
+
+    --     for i = 1, #args do
+    --         Log(tostring(args[i]))
+    --     end
+    -- end
 
     local u = Bastion.UnitManager[sourceGUID]
     local u2 = Bastion.UnitManager[destGUID]
@@ -99,23 +117,37 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
 
     if u2 then
         u2:SetLastCombatTime(t)
+
+        if subEvent == "SPELL_MISSED" and sourceGUID == pguid and spellID == 408 then
+            local missType = args[15]
+
+            if missType == "IMMUNE" then
+                local castingSpell = u:GetCastingOrChannelingSpell()
+
+                if castingSpell then
+                    if not missed[castingSpell:GetID()] then
+                        missed[castingSpell:GetID()] = true
+                    end
+                end
+            end
+        end
     end
 end)
 
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
-    if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
-        Bastion.CombatTimer:Start()
-    elseif Bastion.CombatTimer:IsRunning() and not UnitAffectingCombat("player") then
-        Bastion.CombatTimer:Reset()
-    end
-
-    if Bastion.Enabled then
-        Bastion.ObjectManager:Refresh()
-        for i = 1, #Bastion.modules do
-            Bastion.modules[i]:Tick()
+        if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
+            Bastion.CombatTimer:Start()
+        elseif Bastion.CombatTimer:IsRunning() and not UnitAffectingCombat("player") then
+            Bastion.CombatTimer:Reset()
         end
-    end
-end)
+
+        if Bastion.Enabled then
+            Bastion.ObjectManager:Refresh()
+            for i = 1, #Bastion.modules do
+                Bastion.modules[i]:Tick()
+            end
+        end
+    end)
 
 function Bastion:Register(module)
     table.insert(Bastion.modules, module)
@@ -228,11 +260,17 @@ Command:Register('mplus', 'Toggle m+ module on/off', function(args)
     Bastion:Print("casts")
 end)
 
+Command:Register('missed', 'Dump the list of immune kidney shot spells', function()
+    for k, v in pairs(missed) do
+        Bastion:Print(k)
+    end
+end)
+
 local files = ListFiles("scripts/bastion/scripts")
 
 for i = 1, #files do
     local file = files[i]
-    if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
+    if file:sub( -4) == ".lua" or file:sub( -5) == '.luac' then
         Tinkr:require("scripts/bastion/scripts/" .. file:sub(1, -5), Bastion)
     end
 end

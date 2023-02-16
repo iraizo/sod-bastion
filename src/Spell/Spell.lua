@@ -7,9 +7,9 @@ local Spell = {
     PreCastFunc = false,
     OnCastFunc = false,
     PostCastFunc = false,
-    lastCastAttempt = 0,
+    lastCastAttempt = false,
     wasLooking = false,
-    lastCastAt = 0,
+    lastCastAt = false,
     conditions = {},
     target = false,
 }
@@ -119,6 +119,13 @@ function Spell:OnCooldown()
     return self:GetCooldownRemaining() > 0
 end
 
+-- Clear castable function
+---@return Spell
+function Spell:ClearCastableFunction()
+    self.CastableIfFunc = false
+    return self
+end
+
 -- Cast the spell
 ---@param unit Unit
 ---@param condition string
@@ -163,6 +170,42 @@ function Spell:Cast(unit, condition)
     return true
 end
 
+-- ForceCast the spell
+---@param unit Unit
+---@param condition string
+---@return boolean
+function Spell:ForceCast(unit)
+    -- Call pre cast function
+    -- if self:GetPreCastFunction() then
+    --     self:GetPreCastFunction()(self)
+    -- end
+
+    -- Check if the mouse was looking
+    self.wasLooking = IsMouselooking()
+
+    -- if unit:GetOMToken() contains 'nameplate' then we need to use Object wrapper to cast
+    local u = unit:GetOMToken()
+    if type(u) == "string" and string.find(u, 'nameplate') then
+        u = Object(u)
+    end
+
+    -- Cast the spell
+    CastSpellByName(self:GetName(), u)
+    SpellCancelQueuedSpell()
+
+    Bastion:Debug("Casting", self)
+
+    -- Set the last cast time
+    self.lastCastAttempt = GetTime()
+
+    -- -- Call post cast function
+    -- if self:GetOnCastFunction() then
+    --     self:GetOnCastFunction()(self)
+    -- end
+
+    return true
+end
+
 -- Get post cast func
 ---@return fun(self:Spell)
 function Spell:GetPostCastFunction()
@@ -187,7 +230,7 @@ end
 ---@return boolean
 function Spell:IsUsable()
     local usable, noMana = IsUsableSpell(self:GetID())
-    return usable or usableExcludes[self:GetID()]
+    return usable or usableExcludes[self:GetID()] and not noMana
 end
 
 -- Check if the spell is castable
@@ -319,6 +362,10 @@ end
 ---@return number
 function Spell:GetCharges()
     return GetSpellCharges(self:GetID())
+end
+
+function Spell:GetMaxCharges()
+    return select(2, GetSpellCharges(self:GetID()))
 end
 
 -- Get the spells charges

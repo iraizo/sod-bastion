@@ -13,6 +13,9 @@ local Unit = {
     last_off_attack = 0,
     last_main_attack = 0,
     last_combat_time = 0,
+    ttd_ticker = 0,
+    ttd = 0,
+    id = false,
 }
 
 function Unit:__index(k)
@@ -449,6 +452,7 @@ end
 
 -- Check if unit is interruptible
 ---@param percent number
+---@param ignoreInterruptible boolean
 ---@return boolean
 function Unit:IsInterruptibleAt(percent, ignoreInterruptible)
     if not ignoreInterruptible and not self:IsInterruptible() then
@@ -626,6 +630,13 @@ function Unit:IsBehind(unit)
     return math.abs(angle) > 90
 end
 
+-- IsInfront
+---@param unit Unit
+---@return boolean
+function Unit:IsInfront(unit)
+    return not self:IsBehind(unit)
+end
+
 ---@return number
 function Unit:GetMeleeBoost()
     if IsPlayerSpell(196924) then
@@ -669,7 +680,9 @@ end
 -- Get object id
 ---@return number
 function Unit:GetID()
-    return ObjectID(self:GetOMToken())
+    if self.id then return self.id end
+    self.id = ObjectID(self:GetOMToken())
+    return self.id
 end
 
 -- In party
@@ -714,7 +727,7 @@ function Unit:PredictHealth(time)
     local x = {}
     local y = {}
 
-    if #self.regression_history > 20 then
+    if #self.regression_history > 60 then
         table.remove(self.regression_history, 1)
     end
 
@@ -737,7 +750,7 @@ function Unit:PredictTime(percent)
     local x = {}
     local y = {}
 
-    if #self.regression_history > 20 then
+    if #self.regression_history > 60 then
         table.remove(self.regression_history, 1)
     end
 
@@ -753,21 +766,50 @@ function Unit:PredictTime(percent)
     return (percent - intercept) / slope
 end
 
+-- Start time to die ticker
+function Unit:StartTTDTicker()
+    if self.ttd_ticker then
+        return
+    end
+
+    self.ttd_ticker = C_Timer.NewTicker(0.5, function()
+            local timeto = self:PredictTime(0) - GetTime()
+            self.ttd = timeto
+        end)
+end
+
 -- Time until death
 ---@return number
 function Unit:TimeToDie()
     if self:IsDead() then
         self.regression_history = {}
+        if self.ttd_ticker then
+            self.ttd_ticker:Cancel()
+            self.ttd_ticker = nil
+        end
         return 0
     end
 
-    local timeto = self:PredictTime(0) - GetTime()
+    if not self.ttd_ticker then
+        self:StartTTDTicker()
+    end
 
-    if timeto ~= timeto or timeto < 0 or timeto == math.huge then
+    -- If there's not enough data to make a prediction return 0 unless the unit has more than 5 million health
+    if #self.regression_history < 5 and self:GetMaxHealth() < 5000000 then
         return 0
     end
 
-    return timeto
+    -- if the unit has more than 5 million health but there's not enough data to make a prediction we can assume there's roughly 250000 damage per second and estimate the time to die
+    if #self.regression_history < 5 and self:GetMaxHealth() > 5000000 then
+        return self:GetMaxHealth() /
+            250000 -- 250000 is an estimate of the average damage per second a well geared group will average
+    end
+
+    if self.ttd ~= self.ttd or self.ttd < 0 or self.ttd == math.huge then
+        return 0
+    end
+
+    return self.ttd
 end
 
 -- Set combat time if affecting combat and return the difference between now and the last time
@@ -820,7 +862,12 @@ function Unit:GetMaxGCD()
         haste = 50
     end
 
-    return 1.5 / (1 + haste / 100)
+    -- if the unit uses focus their gcd is 1.0 seconds not 1.5
+    local base = 1.5
+    if self:GetPowerType() == 3 then
+        base = 1.0
+    end
+    return base / (1 + haste / 100)
 end
 
 -- IsStealthed

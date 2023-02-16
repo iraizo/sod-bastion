@@ -18,79 +18,365 @@ function MythicPlusUtils:New()
 
     self.random = math.random(1000000, 9999999)
     self.kickList = {
-        -- Algeth'ar Academy
-        [396812] = { true, true }, -- https://www.wowhead.com/spell=396812/mystic-blast
-        [388392] = { true, true }, -- https://www.wowhead.com/spell=388392/monotonous-lecture
-        [388863] = { true, true }, -- https://www.wowhead.com/spell=388863/mana-void
-        [388862] = { true, true }, -- https://www.wowhead.com/spell=388862/surge
-        [377389] = { true, true }, -- https://www.wowhead.com/spell=377389/call-of-the-flock
-        [388623] = { true, true }, -- https://www.wowhead.com/spell=388623/branch-out
-        [396640] = { true, true }, -- https://www.wowhead.com/spell=396640/healing-touch
-        [387975] = { true, true }, -- https://www.wowhead.com/spell=387975/arcane-missiles
-        [387843] = { true, true }, -- https://www.wowhead.com/spell=387843/astral-bomb
-        -- Court of Stars
-        [211401] = { true, true }, -- https://www.wowhead.com/spell=211401/drifting-embers
-        [207980] = { true, true }, -- https://www.wowhead.com/spell=207980/disintegration-beam
-        [208165] = { true, true }, -- https://www.wowhead.com/spell=208165/withering-soul
-        [207881] = { true, true }, -- https://www.wowhead.com/spell=207881/infernal-eruption
-        [209413] = { true, false }, -- https://www.wowhead.com/spell=209413/suppress
-        [209485] = { true, true }, -- https://www.wowhead.com/spell=209485/drain-magic
-        [209410] = { true, true }, -- https://www.wowhead.com/spell=209410/nightfall-orb
-        [211470] = { true, true }, -- https://www.wowhead.com/spell=211470/bewitch
-        [225100] = { true, false }, -- https://www.wowhead.com/spell=225100/charging-station
-        [211299] = { true, false }, -- https://www.wowhead.com/spell=211299/searing-glare
-        -- Halls of Valor
-        [198595] = { true, true }, -- https://www.wowhead.com/spell=198595/thunderous-bolt
-        [198959] = { true, true }, -- https://www.wowhead.com/spell=198959/etch
-        [215433] = { true, true }, -- https://www.wowhead.com/spell=215433/holy-radiance
-        [192288] = { true, true }, -- https://www.wowhead.com/spell=192288/searing-light
-        [199726] = { true, true }, -- https://www.wowhead.com/spell=199726/unruly-yell
-        [198750] = { true, true }, -- https://www.wowhead.com/spell=198750/surge
-        [198934] = { true, true }, -- https://www.wowhead.com/spell=198934/rune-of-healing
-        [192563] = { true, true }, -- https://www.wowhead.com/spell=192563/cleansing-flames
-        -- Ruby Life Pools
-        [372749] = { true, true }, -- https://www.wowhead.com/spell=372749/ice-shield
-        -- [373803] = { true, true }, -- https://www.wowhead.com/spell=373803/cold-claws
-        [373017] = { true, true }, -- https://www.wowhead.com/spell=373017/roaring-blaze
-        [392398] = { true, true }, -- https://www.wowhead.com/spell=392398/crackling-detonation
-        [392451] = { true, true }, -- https://www.wowhead.com/spell=392451/flashfire
-        [385310] = { true, true }, -- https://www.wowhead.com/spell=385310/lightning-bolt
-        [384194] = { true, true }, -- https://www.wowhead.com/spell=384194/cinderbolt
-        [373680] = { true, false }, -- https://www.wowhead.com/spell=373680/frost-overload
-        -- Shadowmoon Burial Grounds
-        [152818] = { true, true }, -- https://www.wowhead.com/spell=152818/shadow-mend
-        [156776] = { true, true }, -- https://www.wowhead.com/spell=156776/rending-voidlash
-        [156722] = { true, true }, -- https://www.wowhead.com/spell=156722/void-bolt
-        [398206] = { true, true }, -- https://www.wowhead.com/spell=398206/death-blast
-        [153524] = { true, true }, -- https://www.wowhead.com/spell=153524/plague-spit
-        [156718] = { true, true }, -- https://www.wowhead.com/spell=156718/necrotic-burst
-        -- Temple of the Jade Serpent
-        [397888] = { true, false }, -- https://www.wowhead.com/spell=397888/hydrolance
-        [395859] = { true, true }, -- https://www.wowhead.com/spell=395859/haunting-scream
-        [396073] = { true, true }, -- https://www.wowhead.com/spell=396073/cat-nap
-        [397914] = { true, true }, -- https://www.wowhead.com/spell=397914/defiling-mist
-        [397899] = { false, true }, -- https://www.wowhead.com/spell=397899/leg-sweep
-        [397801] = { true, false }, -- https://www.wowhead.com/spell=397801/hydrolance
-        [395872] = { true, true }, -- https://www.wowhead.com/spell=395872/sleepy-soliloquy
-        -- The Azure Vault
-        [375602] = { true, true }, -- https://www.wowhead.com/spell=375602/erratic-growth
-        [387564] = { true, true }, -- https://www.wowhead.com/spell=387564/mystic-vapors
-        [373932] = { true, true }, -- https://www.wowhead.com/spell=373932/illusionary-bolt
-        [386546] = { true, true }, -- https://www.wowhead.com/spell=386546/waking-bane
-        [389804] = { true, true }, -- https://www.wowhead.com/spell=389804/heavy-tome
-        [377488] = { true, true }, -- https://www.wowhead.com/spell=377488/icy-bindings
-        [377503] = { true, true }, -- https://www.wowhead.com/spell=377503/condensed-frost
-        [375596] = { true, true }, -- https://www.wowhead.com/spell=375596/erratic-growth
-        -- NO
-        [384365] = { true, true }, -- https://www.wowhead.com/spell=384365/disruptive-shout
-        [386012] = { true, false }, -- https://www.wowhead.com/spell=386012/stormbolt
-        [386024] = { true, true }, -- https://www.wowhead.com/spell=386024/tempest
-        [387411] = { true, true }, -- https://www.wowhead.com/spell=387411/death-bolt-volley
-        [387606] = { true, true }, -- https://www.wowhead.com/spell=387606/dominate
-        [373395] = { true, true }, -- https://www.wowhead.com/spell=373395/bloodcurdling-shout
-        [376725] = { true, true }, -- https://www.wowhead.com/spell=376725/storm-bolt
-        [384808] = { true, true }, -- https://www.wowhead.com/spell=384808/guardian-wind
-        -- [363607] = {true, true}, -- https://www.wowhead.com/spell=363607/domination-bolt
+        -- Ruby life pools
+        [372735] = { -- Techtonic Slam
+            [187969] = {
+                false, true, true -- Kick, Stun, Disorient
+            }
+        },
+        [384933] = { -- Ice Shield
+            [188067] = {
+                true, true, true
+            }
+        },
+        [372749] = { -- Ice Shield
+            [188067] = {
+                true, true, true
+            }
+        },
+        [372743] = { -- Ice Shield
+            [188067] = {
+                true, true, true
+            }
+        },
+        [371984] = {
+            [188067] = {
+                true, true, true
+            }
+        },
+        [373680] = {
+            [188252] = {
+                true, false, false
+            }
+        },
+        [373688] = {
+            [188252] = {
+                true, false, false
+            }
+        },
+        [385310] = {
+            [195119] = {
+                true, false, false
+            }
+        },
+        [384194] = {
+            [190207] = {
+                true, true, true
+            }
+        },
+        [384197] = {
+            [190207] = {
+                true, true, true
+            }
+        },
+        [373017] = {
+            [189886] = {
+                true, false, false
+            }
+        },
+        [392576] = {
+            [198047] = {
+                true, false, false
+            }
+        },
+        [392451] = {
+            [197985] = {
+                true, true, false,
+            }
+        },
+        [392452] = {
+            [197985] = {
+                true, true, false,
+            }
+        },
+        -- Nokhud
+        [383823] = {
+            [192796] = {
+                false, true, true
+            }
+        },
+        [384492] = {
+            [192794] = {
+                false, true, true
+            }
+        },
+        [384365] = {
+            [192800] = {
+                true, false, false
+            },
+            [191847] = {
+                true, false, false
+            }
+        },
+        [386012] = {
+            [194317] = {
+                true, false, false
+            },
+            [195265] = {
+                true, false, false
+            },
+            [194315] = {
+                true, false, false
+            },
+            [194316] = {
+                true, false, false
+            }
+
+        },
+        [386028] = {
+            [195696] = {
+                true, false, false
+            }
+        },
+        [386024] = {
+            [194894] = {
+                true, true, true
+            }
+        },
+        [386025] = {
+            [194894] = {
+                true, true, true
+            }
+        },
+        [387629] = {
+            [195876] = {
+                false, true, true
+            }
+        },
+        [387608] = {
+            [195842] = {
+                false, true, true
+            }
+        },
+        [387611] = {
+            [195842] = {
+                false, true, true
+            }
+        },
+        [387440] = {
+            [195878] = {
+                false, true, true
+            }
+        },
+        [373395] = {
+            [199717] = {
+                true, false, false
+            }
+        },
+        [376725] = {
+            [190294] = {
+                true, true, true
+            },
+        },
+        [370764] = {
+            [187160] = {
+                false, true, true
+            },
+            [196116] = {
+                false, true, true
+            },
+        },
+        [387564] = {
+            [196102] = {
+                true, true, true
+            }
+        },
+        [375596] = {
+            [196115] = {
+                true, false, false
+            },
+            [191164] = {
+                true, false, false
+            },
+
+        },
+        [386549] = {
+            [186741] = {
+                true, true, true
+            }
+        },
+        [386546] = {
+            [186741] = {
+                true, true, true
+            }
+        },
+        [389804] = {
+            [187154] = {
+                true, false, false
+            }
+        },
+        [377488] = {
+            [187155] = {
+                true, true, true
+            }
+        },
+        [377105] = {
+            [190510] = {
+                false, true, true
+            }
+        },
+        [373932] = {
+            [190187] = {
+                true, false, false
+            }
+        },
+        -- AA
+        [387910] = {
+            [196200] = {
+                false, true, true
+            }
+        },
+        [387975] = {
+            [196202] = {
+                true, true, true
+            }
+        },
+        [388863] = {
+            [196045] = {
+                true, true, true
+            }
+        },
+        [388392] = {
+            [196044] = {
+                true, true, true
+            }
+        },
+        [396812] = {
+            [196576] = {
+                true, true, true
+            }
+        },
+        [377389] = {
+            [192333] = {
+                true, false, false
+            }
+        },
+        [397888] = {
+            [200126] = {
+                true, true, true
+            }
+        },
+        [397801] = {
+            [56448] = {
+                true, false, false
+            }
+        },
+        [395859] = {
+            [59555] = {
+                true, true, true
+            }
+        },
+        [395872] = {
+            [59546] = {
+                true, false, false
+            }
+        },
+        [396018] = {
+            [59552] = {
+                true, false, false
+            }
+        },
+        [396073] = {
+            [59544] = {
+                true, true, false
+            }
+        },
+        [397899] = {
+            [200131] = {
+                false, true, true
+            }
+        },
+        [397914] = {
+            [200137] = {
+                true, true, true
+            }
+        },
+        -- sbg
+        [152818] = {
+            [75713] = {
+                true, true, false
+            }
+        },
+        [398154] = {
+            [75451] = {
+                false, true, true
+            }
+        },
+        [156776] = {
+            [76446] = {
+                true, true, true
+            }
+        },
+        [156772] = {
+            [77700] = {
+                true, false, false
+            }
+        },
+        [153524] = {
+            [75459] = {
+                true, true, true
+            }
+        },
+        [156718] = {
+            [76104] = {
+                true, false, false
+            }
+        },
+        [225100] = {
+            [104270] = {
+                true, false, false
+            }
+        },
+        [210261] = {
+            [104251] = {
+                true, true, true
+            }
+        },
+        [209027] = {
+            [104246] = {
+                false, true, true
+            }
+        },
+        [212031] = {
+            [105705] = {
+                false, true, false
+            }
+        },
+        [212784] = {
+            [105715] = {
+                false, true, false
+            }
+        },
+        [198585] = {
+            [95842] = {
+                true, true, true
+            }
+        },
+        [198959] = {
+            [96664] = {
+                true, true, true
+            }
+        },
+        [215433] = {
+            [95834] = {
+                true, true, true
+            }
+        },
+        [199210] = {
+            [96640] = {
+                false, true, true
+            }
+        },
+        [199090] = {
+            [96611] = {
+                false, true, true
+            }
+        },
+        [185425] = {
+            [96677] = {
+                false, true, false
+            }
+        },
     }
 
     Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
@@ -175,9 +461,21 @@ function MythicPlusUtils:CastingCriticalKick(unit, percent)
 
     if castingSpell then
         local spellID = castingSpell:GetID()
-        local isKick = unpack(self.kickList[spellID] or { false, false })
+        local kickEntry = self.kickList[spellID]
+        if not kickEntry then
+            return false
+        end
+
+        local npcTraits = kickEntry[unit:GetID()]
+
+        if not npcTraits then
+            return false
+        end
+
+        local isKick, isStun, isDisorient = unpack(npcTraits)
 
         if isKick and unit:IsInterruptibleAt(percent) then
+            print("I want to kick", unit:GetName(), unit:GetID() .. "'s " .. spellID)
             return true
         end
     end
@@ -193,8 +491,21 @@ function MythicPlusUtils:CastingCriticalStun(unit, percent)
 
     if castingSpell then
         local spellID = castingSpell:GetID()
-        local _, isStun = unpack(self.kickList[spellID] or { false, false })
-        if isStun and unit:IsInterruptibleAt(percent, true) then
+        local kickEntry = self.kickList[spellID]
+        if not kickEntry then
+            return false
+        end
+
+        local npcTraits = kickEntry[unit:GetID()]
+
+        if not npcTraits then
+            return false
+        end
+
+        local isKick, isStun, isDisorient = unpack(npcTraits)
+
+        if (isStun or isDisorient) and not isKick and unit:IsInterruptibleAt(percent, true) then
+            print("I want to stun", unit:GetName(), unit:GetID() .. "'s " .. spellID)
             return true
         end
     end

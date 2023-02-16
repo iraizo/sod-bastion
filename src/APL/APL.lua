@@ -82,6 +82,25 @@ end
 
 -- Execute
 function APLActor:Execute()
+    -- If the actor is a sequencer we don't want to continue executing the APL if the sequencer is not finished
+    if self:GetActor().sequencer then
+        if self:GetActor().condition and self:GetActor().condition() and not self:GetActor().sequencer:Finished() then
+            print("Execute?")
+            self:GetActor().sequencer:Execute()
+            return true
+        end
+
+        if not self:GetActor().condition and not self:GetActor().sequencer:Finished() then
+            print("Execute?")
+            self:GetActor().sequencer:Execute()
+            return true
+        end
+
+        -- Check if the sequencer can be reset and reset it if it can
+        if self:GetActor().sequencer:ShouldReset() then
+            self:GetActor().sequencer:Reset()
+        end
+    end
     if self:GetActor().apl then
         if self:GetActor().condition and self:GetActor().condition() then
             -- print("Bastion: APL:Execute: Executing sub APL " .. self:GetActor().apl.name)
@@ -116,6 +135,7 @@ function APLActor:Execute()
         -- print("Bastion: APL:Execute: Setting variable " .. self:GetActor().variable)
         self:GetActor()._apl.variables[self:GetActor().variable] = self:GetActor().cb(self:GetActor()._apl)
     end
+    return false
 end
 
 -- has traits
@@ -229,11 +249,27 @@ end
 function APL:Execute()
     for _, actor in ipairs(self.apl) do
         if actor:HasTraits() and actor:Evaluate() then
-            actor:Execute()
+            if actor:Execute() then
+                print("BREAQK", actor)
+                break
+            end
         else
-            actor:Execute()
+            if actor:Execute() then
+                print("BREAQK", actor)
+                break
+            end
         end
     end
+end
+
+-- Add a Sequencer to the APL
+---@param sequencer Sequencer
+---@param condition fun(...):boolean
+---@return APLActor
+function APL:AddSequence(sequencer, condition)
+    local actor = APLActor:New({ sequencer = sequencer, condition = condition })
+    table.insert(self.apl, actor)
+    return actor
 end
 
 -- tostring
