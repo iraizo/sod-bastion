@@ -263,6 +263,8 @@ local RuptureTarget = Bastion.UnitManager:CreateCustomUnit('rupture', function()
         return target
     end)
 
+
+
 local DefaultAPL    = Bastion.APL:New('default')
 local ItemsAPL      = Bastion.APL:New('items')
 local DefensivesAPL = Bastion.APL:New('defensives')
@@ -404,13 +406,13 @@ TrinketsAPL:AddItem(
     end):SetTarget(Player)
 )
 
--- TrinketsAPL:AddItem(
---     AlgetharsPuzzleBox:UsableIf(function(self)
---         return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
---             not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 3 or Target:IsBoss()) and
---             not Player:IsMoving()
---     end):SetTarget(Player)
--- )
+TrinketsAPL:AddItem(
+    AlgetharsPuzzleBox:UsableIf(function(self)
+        return Target:Exists() and Player:InMelee(Target) and self:IsEquippedAndUsable() and
+            not Player:IsCastingOrChanneling() and (Player:GetMeleeAttackers() > 3 or Target:IsBoss()) and
+            not Player:IsMoving()
+    end):SetTarget(Player)
+)
 
 DefaultAPL:AddSpell(
     Stealth:CastableIf(
@@ -942,7 +944,6 @@ local function ShouldPoolForCD()
     if power > 80 then return false end
 
     if SD < 3 and power < 80 then
-        print("Whys this true")
         return true
     end
 
@@ -954,7 +955,8 @@ BuildersAPL:AddSpell(
     Gloomblade:CastableIf(function(self)
         return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and not Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and
-            Player:GetEnemies(10) <= 1 and self:IsInRange(Target)
+            (Player:GetEnemies(10) <= 1 or (Player:GetEnemies(10) <= 2 and Player:GetAuras():FindMy(LingeringShadow):GetRemainingTime() > 6)) and
+            self:IsInRange(Target)
             and not ShouldPoolForCD()
     end):SetTarget(Target)
 )
@@ -1118,9 +1120,12 @@ CDsAPL:AddSpell(
     Vanish:CastableIf(function(self)
         return self:IsKnownAndUsable() and
             not Player:IsCastingOrChanneling() and
-            Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and Player:GetEnemies(10) <= 1 and
-            SecretTechnique:GetTimeSinceLastCast() <= 1 and Vanish:GetCharges() > 1
-    end):SetTarget(Player)
+            Player:GetAuras():FindMy(ShadowDanceAura):IsUp() and
+            SecretTechnique:GetTimeSinceLastCast() <= 3 and Vanish:GetCharges() > 1 and Player:GetEnemies(10) < 7 and
+            GlobalCooldown:GetCooldownRemaining() <= 0
+    end):SetTarget(Player):OnCast(function()
+        Shadowstrike:ForceCast(Target)
+    end)
 )
 
 local function HasRampedInDance()
@@ -1162,7 +1167,7 @@ FinishersAPL:AddSpell(
 -- Cold Blood: before using a finishing move / before Secret Technique (if talented).
 CDsAPL:AddSpell(
     ColdBlood:CastableIf(function(self)
-        return (self:IsKnownAndUsable() or SecretTechnique:IsKnownAndUsable()) and
+        return (self:IsKnownAndUsable() or (SecretTechnique:IsKnownAndUsable() and ColdBlood:GetCooldownRemaining() > 2)) and
             not Player:IsCastingOrChanneling() and SecretTechnique:IsKnownAndUsable() and
             SecretTechnique:IsInRange(Target) and Player:GetAuras():FindMy(ShadowDanceAura):IsUp()
             and Player:GetComboPoints() >= 5 and not IsDeadge(Target) and HasRampedInDance()
@@ -1239,7 +1244,8 @@ DefaultAPL:AddAPL(
     FinishersAPL,
     function()
         return Player:GetComboPoints() >= 6 or
-            (Player:GetComboPoints() >= 5 and Player:GetAuras():FindMy(ShadowDanceAura):IsUp())
+            (Player:GetComboPoints() >= 5 and Player:GetAuras():FindMy(ShadowDanceAura):IsUp()) or
+            (Player:GetEnemies(10) > 3 and Player:GetComboPoints() >= 4)
     end
 )
 

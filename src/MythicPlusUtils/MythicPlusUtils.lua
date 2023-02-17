@@ -475,7 +475,6 @@ function MythicPlusUtils:CastingCriticalKick(unit, percent)
         local isKick, isStun, isDisorient = unpack(npcTraits)
 
         if isKick and unit:IsInterruptibleAt(percent) then
-            print("I want to kick", unit:GetName(), unit:GetID() .. "'s " .. spellID)
             return true
         end
     end
@@ -505,7 +504,6 @@ function MythicPlusUtils:CastingCriticalStun(unit, percent)
         local isKick, isStun, isDisorient = unpack(npcTraits)
 
         if (isStun or isDisorient) and not isKick and unit:IsInterruptibleAt(percent, true) then
-            print("I want to stun", unit:GetName(), unit:GetID() .. "'s " .. spellID)
             return true
         end
     end
