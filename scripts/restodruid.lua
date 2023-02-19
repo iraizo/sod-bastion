@@ -111,379 +111,370 @@ local RakeDebuff = Bastion.SpellBook:GetSpell(155722)
 
 
 local Lowest = Bastion.UnitManager:CreateCustomUnit('lowest', function(unit)
-    local lowest = nil
-    local lowestHP = math.huge
+        local lowest = nil
+        local lowestHP = math.huge
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if unit:IsDead() then
-            return false
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if unit:IsDead() then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            local hp = unit:GetHP()
+            if hp < lowestHP then
+                lowest = unit
+                lowestHP = hp
+            end
+        end)
+
+        if not lowest then
+            lowest = Player
         end
 
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        local hp = unit:GetHP()
-        if hp < lowestHP then
-            lowest = unit
-            lowestHP = hp
-        end
+        return lowest
     end)
-
-    if not lowest then
-        lowest = Player
-    end
-
-    return lowest
-end)
 
 local DispelTarget = Bastion.UnitManager:CreateCustomUnit('dispel', function(unit)
-    local lowest = nil
-    local lowestHP = math.huge
+        local lowest = nil
+        local lowestHP = math.huge
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if unit:IsDead() then
-            return false
-        end
-
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if not unit:IsDead() and Player:CanSee(unit) and
-            unit:GetAuras():HasAnyDispelableAura(NaturesCure) then
-
-            local hp = unit:GetHP()
-            if hp < lowestHP then
-                lowest = unit
-                lowestHP = hp
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if unit:IsDead() then
+                return false
             end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if not unit:IsDead() and Player:CanSee(unit) and
+                unit:GetAuras():HasAnyDispelableAura(NaturesCure) then
+                local hp = unit:GetHP()
+                if hp < lowestHP then
+                    lowest = unit
+                    lowestHP = hp
+                end
+            end
+        end)
+
+        if lowest == nil then
+            lowest = None
         end
+
+        return lowest
     end)
-
-    if lowest == nil then
-        lowest = None
-    end
-
-    return lowest
-end)
 
 local PurgeTarget = Bastion.UnitManager:CreateCustomUnit('purge', function(unit)
-    local purge = nil
+        local purge = nil
 
-    Bastion.UnitManager:EnumEnemies(function(unit)
-        if unit:IsDead() then
-            return false
+        Bastion.UnitManager:EnumEnemies(function(unit)
+            if unit:IsDead() then
+                return false
+            end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if not unit:IsDead() and Player:CanSee(unit) and
+                unit:GetAuras():HasAnyStealableAura() then
+                purge = unit
+                return true
+            end
+        end)
+
+        if purge == nil then
+            purge = None
         end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if not unit:IsDead() and Player:CanSee(unit) and
-            unit:GetAuras():HasAnyStealableAura() then
-            purge = unit
-            return true
-        end
+        return purge
     end)
-
-    if purge == nil then
-        purge = None
-    end
-
-    return purge
-end)
 
 local Tank = Bastion.UnitManager:CreateCustomUnit('tank', function(unit)
-    local tank = nil
+        local tank = nil
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if Player:GetDistance(unit) > 40 then
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if unit:IsDead() then
+                return false
+            end
+
+            if unit:IsTank() then
+                tank = unit
+                return true
+            end
+
             return false
+        end)
+
+        if tank == nil then
+            tank = Player
         end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if unit:IsDead() then
-            return false
-        end
-
-        if unit:IsTank() then
-            tank = unit
-            return true
-        end
-
-        return false
+        return tank
     end)
-
-    if tank == nil then
-        tank = Player
-    end
-
-    return tank
-end)
 
 local RejuvUnit = Bastion.UnitManager:CreateCustomUnit('rejuv', function(unit)
-    local lowest = nil
-    local lowestHP = math.huge
+        local lowest = nil
+        local lowestHP = math.huge
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if unit:IsDead() then
-            return false
-        end
-
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if not unit:IsDead() and Player:CanSee(unit) and
-            (
-            not unit:GetAuras():FindMy(Rejuvenation):IsUp() or
-                unit:GetAuras():FindMy(Rejuvenation):GetRemainingTime() <= 3.6) then
-
-            local hp = unit:GetHP()
-            if hp < lowestHP then
-                lowest = unit
-                lowestHP = hp
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if unit:IsDead() then
+                return false
             end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if not unit:IsDead() and Player:CanSee(unit) and
+                (
+                not unit:GetAuras():FindMy(Rejuvenation):IsUp() or
+                unit:GetAuras():FindMy(Rejuvenation):GetRemainingTime() <= 3.6) then
+                local hp = unit:GetHP()
+                if hp < lowestHP then
+                    lowest = unit
+                    lowestHP = hp
+                end
+            end
+        end)
+
+
+        if lowest == nil then
+            lowest = Player
         end
 
+        return lowest
     end)
-
-
-    if lowest == nil then
-        lowest = Player
-    end
-
-    return lowest
-end)
 
 local SwiftmendUnit = Bastion.UnitManager:CreateCustomUnit('swiftmend', function(unit)
-    local lowest = nil
-    local lowestHP = math.huge
+        local lowest = nil
+        local lowestHP = math.huge
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if unit:IsDead() then
-            return false
-        end
-
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if (
-            Player:CanSee(unit) and (
-                (unit:GetAuras():FindMy(Regrowth):IsUp())
-                    or
-                    (
-                    unit:GetAuras():FindMy(Rejuvenation):IsUp() and
-                        not unit:GetAuras():FindMy(WildGrowth):IsUp())
-                )
-            ) then
-
-            local hp = unit:GetHP()
-            if hp < lowestHP then
-                lowest = unit
-                lowestHP = hp
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if unit:IsDead() then
+                return false
             end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if (
+                Player:CanSee(unit) and (
+                (unit:GetAuras():FindMy(Regrowth):IsUp())
+                or
+                (
+                unit:GetAuras():FindMy(Rejuvenation):IsUp() and
+                not unit:GetAuras():FindMy(WildGrowth):IsUp())
+                )
+                ) then
+                local hp = unit:GetHP()
+                if hp < lowestHP then
+                    lowest = unit
+                    lowestHP = hp
+                end
+            end
+        end)
+
+
+        if lowest == nil then
+            lowest = None
         end
 
+        return lowest
     end)
-
-
-    if lowest == nil then
-        lowest = None
-    end
-
-    return lowest
-end)
 
 local WildGrowthUnit = Bastion.UnitManager:CreateCustomUnit('wildgrowth', function(unit)
-    local lowest = nil
-    local lowestHP = math.huge
+        local lowest = nil
+        local lowestHP = math.huge
 
-    Bastion.UnitManager:EnumFriends(function(unit)
-        if unit:IsDead() then
-            return false
-        end
-
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
-
-        if Player:CanSee(unit) and (
-            (
-                Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
-                    (
-                    Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
-                        unit:GetPartyHPAround(30, 90) >= 2)) or
-                (unit:GetPartyHPAround(30, 90) >= 3 or unit:GetPartyHPAround(30, 85) >= 2))
-        then
-            local hp = unit:GetHP()
-            if hp < lowestHP then
-                lowest = unit
-                lowestHP = hp
+        Bastion.UnitManager:EnumFriends(function(unit)
+            if unit:IsDead() then
+                return false
             end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
+
+            if Player:CanSee(unit) and (
+                (
+                Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
+                (
+                Player:GetAuras():FindMy(SoulOfTheForest):GetRemainingTime() <= 5 or
+                unit:GetPartyHPAround(30, 90) >= 2)) or
+                (unit:GetPartyHPAround(30, 90) >= 3 or unit:GetPartyHPAround(30, 85) >= 2))
+            then
+                local hp = unit:GetHP()
+                if hp < lowestHP then
+                    lowest = unit
+                    lowestHP = hp
+                end
+            end
+        end)
+
+
+        if lowest == nil then
+            lowest = None
         end
 
+        return lowest
     end)
-
-
-    if lowest == nil then
-        lowest = None
-    end
-
-    return lowest
-end)
 
 local Explosive = Bastion.UnitManager:CreateCustomUnit('explosive', function(unit)
-    local explosive = nil
+        local explosive = nil
 
-    Bastion.ObjectManager.explosives:each(function(unit)
-        if unit:IsDead() then
-            return false
+        Bastion.ObjectManager.explosives:each(function(unit)
+            if unit:IsDead() then
+                return false
+            end
+
+            if not Player:CanSee(unit) then
+                return false
+            end
+
+            if Player:GetDistance(unit) <= 40 then
+                explosive = unit
+                return true
+            end
+        end)
+
+        if explosive == nil then
+            explosive = None
         end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
-
-        if Player:GetDistance(unit) <= 40 then
-            explosive = unit
-            return true
-        end
+        return explosive
     end)
-
-    if explosive == nil then
-        explosive = None
-    end
-
-    return explosive
-end)
 
 local RakeTarget = Bastion.UnitManager:CreateCustomUnit('rake', function(unit)
-    local rakeTarget = nil
+        local rakeTarget = nil
 
-    Bastion.UnitManager:EnumEnemies(function(unit)
-        if unit:IsDead() then
-            return false
-        end
+        Bastion.UnitManager:EnumEnemies(function(unit)
+            if unit:IsDead() then
+                return false
+            end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
+            if not Player:CanSee(unit) then
+                return false
+            end
 
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
 
-        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and unit:InMelee(Player) and
-            Player:IsFacing(unit) and
-            (
-            not unit:GetAuras():FindMy(RakeDebuff):IsUp() or
+            if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and unit:InMelee(Player) and
+                Player:IsFacing(unit) and
+                (
+                not unit:GetAuras():FindMy(RakeDebuff):IsUp() or
                 unit:GetAuras():FindMy(RakeDebuff):GetRemainingTime() <= 3.6) then
-            rakeTarget = unit
+                rakeTarget = unit
+            end
+        end)
+
+
+        if rakeTarget == nil then
+            rakeTarget = None
         end
 
+        return rakeTarget
     end)
-
-
-    if rakeTarget == nil then
-        rakeTarget = None
-    end
-
-    return rakeTarget
-end)
 
 local MoonfireTarget = Bastion.UnitManager:CreateCustomUnit('moonfire', function(unit)
-    local moonfireTarget = nil
+        local moonfireTarget = nil
 
-    Bastion.UnitManager:EnumEnemies(function(unit)
-        if unit:IsDead() then
-            return false
-        end
+        Bastion.UnitManager:EnumEnemies(function(unit)
+            if unit:IsDead() then
+                return false
+            end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
+            if not Player:CanSee(unit) then
+                return false
+            end
 
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
 
-        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
-            (
-            not unit:GetAuras():FindMy(MoonfireAura):IsUp() or
+            if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
+                (
+                not unit:GetAuras():FindMy(MoonfireAura):IsUp() or
                 unit:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 3.6) then
-            moonfireTarget = unit
+                moonfireTarget = unit
+            end
+        end)
+
+        if moonfireTarget == nil then
+            moonfireTarget = None
         end
 
+        return moonfireTarget
     end)
-
-    if moonfireTarget == nil then
-        moonfireTarget = None
-    end
-
-    return moonfireTarget
-end)
 
 local SunfireTarget = Bastion.UnitManager:CreateCustomUnit('sunfire', function(unit)
-    local sunfireTarget = nil
+        local sunfireTarget = nil
 
-    Bastion.UnitManager:EnumEnemies(function(unit)
-        if unit:IsDead() then
-            return false
-        end
+        Bastion.UnitManager:EnumEnemies(function(unit)
+            if unit:IsDead() then
+                return false
+            end
 
-        if not Player:CanSee(unit) then
-            return false
-        end
+            if not Player:CanSee(unit) then
+                return false
+            end
 
-        if Player:GetDistance(unit) > 40 then
-            return false
-        end
+            if Player:GetDistance(unit) > 40 then
+                return false
+            end
 
-        if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
-            (
-            not unit:GetAuras():FindMy(SunfireAura):IsUp() or
+            if not unit:IsDead() and Player:CanSee(unit) and unit:InCombatOdds() > 80 and
+                (
+                not unit:GetAuras():FindMy(SunfireAura):IsUp() or
                 unit:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 3.6) then
-            sunfireTarget = unit
+                sunfireTarget = unit
+            end
+        end)
+
+        if sunfireTarget == nil then
+            sunfireTarget = None
         end
 
+        return sunfireTarget
     end)
-
-    if sunfireTarget == nil then
-        sunfireTarget = None
-    end
-
-    return sunfireTarget
-end)
 
 local RestoCommands = Bastion.Command:New('resto')
 
@@ -502,7 +493,7 @@ DamageAPL:AddSpell(
         return RakeTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling() and
             (
             not RakeTarget:GetAuras():FindMy(RakeDebuff):IsUp() or
-                RakeTarget:GetAuras():FindMy(RakeDebuff):GetRemainingTime() <= 3.6)
+            RakeTarget:GetAuras():FindMy(RakeDebuff):GetRemainingTime() <= 3.6)
     end):SetTarget(RakeTarget)
 )
 
@@ -520,11 +511,6 @@ DamageAPL:AddSpell(
     end):SetTarget(Target)
 )
 
-DefaultAPL:AddSpell(
-    Moonfire:CastableIf(function(self)
-        return Explosive:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
-    end):SetTarget(Explosive)
-)
 
 DefaultAPL:AddSpell(
     Efflorescence:CastableIf(function(self)
@@ -545,7 +531,7 @@ end)
 DefaultAPL:AddAction(
     'cat_form_shift',
     function()
-        if (IsShiftKeyDown() or not Player:IsAffectingCombat()) and not Player:IsMounted() and
+        if (IsShiftKeyDown()) and not Player:IsMounted() and
             not Player:GetAuras():FindMy(CatForm):IsUp() and
             not Player:IsCastingOrChanneling() then
             CatForm:Cast(Player)
@@ -613,9 +599,9 @@ DefaultAPL:AddSpell(
             and Player:CanSee(SwiftmendUnit) and
             (
             SwiftmendUnit:GetHP() <= 60 or
-                (
-                Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2
-                )
+            (
+            Lowest:GetPartyHPAround(30, 90) >= 3 or Lowest:GetPartyHPAround(30, 85) >= 2
+            )
             )
     end):SetTarget(SwiftmendUnit)
 )
@@ -626,8 +612,8 @@ DefaultAPL:AddSpell(
             and Player:CanSee(WildGrowthUnit) and
             (
             Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
-                or
-                (WildGrowthUnit:GetPartyHPAround(30, 90) >= 3 or WildGrowthUnit:GetPartyHPAround(30, 85) >= 2)
+            or
+            (WildGrowthUnit:GetPartyHPAround(30, 90) >= 3 or WildGrowthUnit:GetPartyHPAround(30, 85) >= 2)
             ) and
             not Player:IsMoving()
     end):SetTarget(WildGrowthUnit)
@@ -647,7 +633,7 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Lowest) and Lowest:GetHP() < 70 and
             (
             NaturesSwiftness:GetTimeSinceLastCast() < 2 or Player:GetAuras():FindMy(NaturesSwiftness):IsUp() or
-                NaturesSwiftness:IsKnownAndUsable()) and not Player:IsMoving() and
+            NaturesSwiftness:IsKnownAndUsable()) and not Player:IsMoving() and
             not Player:GetAuras():FindMy(SoulOfTheForest):IsUp()
     end):SetTarget(Lowest)
 )
@@ -680,7 +666,7 @@ DefaultAPL:AddSpell(
             and
             (
             not Player:GetAuras():FindMy(LifebloomAura):IsUp() or
-                Player:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Player:IsAffectingCombat()
+            Player:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Player:IsAffectingCombat()
     end):SetTarget(Player)
 )
 
@@ -690,7 +676,7 @@ DefaultAPL:AddSpell(
             and
             (
             not Tank:GetAuras():FindMy(LifebloomAura):IsUp() or
-                Tank:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Tank:IsAffectingCombat()
+            Tank:GetAuras():FindMy(LifebloomAura):GetRemainingTime() <= 4.5) and Tank:IsAffectingCombat()
     end):SetTarget(Tank)
 )
 
@@ -700,7 +686,7 @@ DefaultAPL:AddSpell(
             and Player:CanSee(Lowest) and
             (
             not Player:GetAuras():FindMy(Regrowth):IsUp() and Lowest:GetHP() < 70 or
-                (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
+            (Lowest:GetHP() <= 85 and Player:GetAuras():FindMy(ClearCasting):IsUp())) and
             not Player:GetAuras():FindMy(SoulOfTheForest):IsUp() and
             not Player:IsMoving()
     end):SetTarget(Lowest)
@@ -714,13 +700,20 @@ DefaultAPL:AddSpell(
     end):SetTarget(RejuvUnit)
 )
 
+
+DefaultAPL:AddSpell(
+    Moonfire:CastableIf(function(self)
+        return Explosive:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
+    end):SetTarget(Explosive)
+)
+
 DefaultAPL:AddSpell(
     Sunfire:CastableIf(function(self)
         return SunfireTarget:Exists() and self:IsKnownAndUsable() and not Player:IsCastingOrChanneling()
             and Player:CanSee(SunfireTarget) and
             (
             not SunfireTarget:GetAuras():FindMy(SunfireAura):IsUp() or
-                SunfireTarget:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
+            SunfireTarget:GetAuras():FindMy(SunfireAura):GetRemainingTime() <= 5.4) and
             SunfireTarget:IsHostile() and
             SunfireTarget:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(SunfireTarget)
@@ -732,7 +725,7 @@ DefaultAPL:AddSpell(
             and Player:CanSee(MoonfireTarget) and
             (
             not MoonfireTarget:GetAuras():FindMy(MoonfireAura):IsUp() or
-                MoonfireTarget:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
+            MoonfireTarget:GetAuras():FindMy(MoonfireAura):GetRemainingTime() <= 5.4) and
             MoonfireTarget:IsHostile() and
             MoonfireTarget:IsAffectingCombat() and Player:GetPP() >= 25
     end):SetTarget(MoonfireTarget)
