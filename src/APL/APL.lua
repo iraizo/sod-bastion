@@ -110,12 +110,14 @@ function APLActor:Execute()
     if self:GetActor().spell then
         if self:GetActor().condition then
             -- print("Bastion: APL:Execute: Condition for spell " .. self:GetActor().spell:GetName())
-            self:GetActor().spell:CastableIf(self:GetActor().castableFunc):Cast(self:GetActor().target,
+            self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
+                self:GetActor().target,
                 self:GetActor().condition)
         end
 
         -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
-        self:GetActor().spell:CastableIf(self:GetActor().castableFunc):Cast(self:GetActor().target)
+        self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(self
+        :GetActor().target)
     end
     if self:GetActor().item then
         if self:GetActor().condition then
@@ -208,9 +210,16 @@ end
 ---@return APLActor
 function APL:AddSpell(spell, condition)
     local castableFunc = spell.CastableIfFunc
+    local onCastFunc = spell.OnCastFunc
     local target = spell:GetTarget()
 
-    local actor = APLActor:New({ spell = spell, condition = condition, castableFunc = castableFunc, target = target })
+    local actor = APLActor:New({
+        spell = spell,
+        condition = condition,
+        castableFunc = castableFunc,
+        target = target,
+        onCastFunc = onCastFunc
+    })
 
     table.insert(self.apl, actor)
 

@@ -8,6 +8,7 @@ local MythicPlusUtils = {
     loggedCasts = {},
     loggedDebuffs = {},
     kickList = {},
+    aoeBosses = {}
 }
 
 MythicPlusUtils.__index = MythicPlusUtils
@@ -17,9 +18,53 @@ function MythicPlusUtils:New()
     local self = setmetatable({}, MythicPlusUtils)
 
     self.random = math.random(1000000, 9999999)
+
+    self.aoeBosses = {
+        [196482] = true,
+        [188252] = true,
+        [186644] = true,
+        [104217] = true,
+    }
+
+    self.tankBusters = {
+        [397931] = true, -- https://www.wowhead.com/spell=397931/dark-claw
+        [396019] = true, -- https://www.wowhead.com/spell=396019/staggering-blow
+        [372730] = true, -- https://www.wowhead.com/spell=372730/crushing-smash
+        [395303] = true, -- https://www.wowhead.com/spell=395303/thunder-jaw
+        [392395] = true, -- https://www.wowhead.com/spell=392395/thunder-jaw
+        [372858] = true, -- https://www.wowhead.com/spell=372858/searing-blows
+        [372859] = true, -- https://www.wowhead.com/spell=372859/searing-blows
+        [387135] = true, -- https://www.wowhead.com/spell=387135/arcing-strike
+        [388801] = true, -- https://www.wowhead.com/spell=388801/mortal-strike
+        [387826] = true, -- https://www.wowhead.com/spell=387826/heavy-slash
+        [370764] = true, -- https://www.wowhead.com/spell=370764/piercing-shards
+        [377105] = true, -- https://www.wowhead.com/spell=377105/ice-cutter
+        [388911] = true, -- https://www.wowhead.com/spell=388911/severing-slash
+        [388912] = true, -- https://www.wowhead.com/spell=388912/severing-slash
+        [199050] = true, -- https://www.wowhead.com/spell=199050/mortal-hew
+        [164907] = true, -- https://www.wowhead.com/spell=164907/void-slash
+        [377991] = true, -- https://www.wowhead.com/spell=377991/storm-slash
+        [376997] = true, -- https://www.wowhead.com/spell=376997/savage-peck
+        [192018] = true, -- https://www.wowhead.com/spell=192018/shield-of-light
+        [106823] = true, -- https://www.wowhead.com/spell=106823/serpent-strike
+        [106841] = true, -- https://www.wowhead.com/spell=106841/jade-serpent-strike
+        [381512] = true, -- https://www.wowhead.com/spell=381512/stormslam
+        [381514] = true, -- https://www.wowhead.com/spell=381514/stormslam
+        [381513] = true, -- https://www.wowhead.com/spell=381513/stormslam
+        [381515] = true, -- https://www.wowhead.com/spell=381515/stormslam
+        [372222] = true, -- https://www.wowhead.com/spell=372222/arcane-cleave
+        [385958] = true, -- https://www.wowhead.com/spell=385958/arcane-expulsion
+        [382836] = true, -- https://www.wowhead.com/spell=382836/brutalize
+        [376827] = true, -- https://www.wowhead.com/spell=376827/conductive-strike not sure if we defensive on these or the other strike NO final boss
+        [375937] = true, -- https://www.wowhead.com/spell=375937/rending-strike not sure if we defensive on these or the other strike NO final boss
+        [198888] = true, -- https://www.wowhead.com/spell=198888/lightning-breath
+        [384978] = true, -- https://www.wowhead.com/spell=384978/dragon-strike
+        [388923] = true, -- https://www.wowhead.com/spell=388923/burst-forth
+    }
+
     self.kickList = {
         -- Ruby life pools
-        [372735] = { -- Techtonic Slam
+        [372735] = {              -- Techtonic Slam
             [187969] = {
                 false, true, true -- Kick, Stun, Disorient
             }
@@ -377,6 +422,11 @@ function MythicPlusUtils:New()
                 false, true, false
             }
         },
+        [195696] = {
+            [387125] = {
+                true, false, false
+            }
+        }
     }
 
     Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
@@ -509,6 +559,16 @@ function MythicPlusUtils:CastingCriticalStun(unit, percent)
     end
 
     return false
+end
+
+---@param unit Unit
+---@return boolean
+function MythicPlusUtils:IsAOEBoss(unit)
+    return self.aoeBosses[unit:GetID()]
+end
+
+function MythicPlusUtils:IsTankBuster(spell)
+    return self.tankBusters[spell:GetID()]
 end
 
 return MythicPlusUtils

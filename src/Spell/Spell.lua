@@ -12,6 +12,7 @@ local Spell = {
     lastCastAt = false,
     conditions = {},
     target = false,
+    release_at = false,
 }
 
 local usableExcludes = {
@@ -88,6 +89,26 @@ function Spell:GetCooldown()
     return select(2, GetSpellCooldown(self:GetID()))
 end
 
+-- Get the full cooldown (time until all charges are available)
+---@return number
+function Spell:GetFullRechargeTime()
+    local start, duration, enabled = GetSpellCooldown(self:GetID())
+    if enabled == 0 then
+        return 0
+    end
+
+    local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(self:GetID())
+    if charges == maxCharges then
+        return 0
+    end
+
+    if charges == 0 then
+        return start + duration - GetTime()
+    end
+
+    return chargeStart + chargeDuration - GetTime()
+end
+
 -- Return the castable function
 ---@return fun(self:Spell):boolean
 function Spell:GetCastableFunction()
@@ -111,6 +132,12 @@ end
 function Spell:GetCooldownRemaining()
     local start, duration = GetSpellCooldown(self:GetID())
     return start + duration - GetTime()
+end
+
+-- Get the spell count
+---@return number
+function Spell:GetCount()
+    return GetSpellCount(self:GetID())
 end
 
 -- On cooldown
@@ -368,6 +395,10 @@ function Spell:GetMaxCharges()
     return select(2, GetSpellCharges(self:GetID()))
 end
 
+function Spell:GetCastLength()
+    return select(4, GetSpellInfo(self:GetID()))
+end
+
 -- Get the spells charges
 ---@return number
 function Spell:GetChargesFractional()
@@ -461,24 +492,24 @@ end
 ---@return boolean
 function Spell:IsMagicDispel()
     return ({
-            [88423] = true
-        })[self:GetID()]
+        [88423] = true
+    })[self:GetID()]
 end
 
 -- IsCurseDispel
 ---@return boolean
 function Spell:IsCurseDispel()
     return ({
-            [88423] = true
-        })[self:GetID()]
+        [88423] = true
+    })[self:GetID()]
 end
 
 -- IsPoisonDispel
 ---@return boolean
 function Spell:IsPoisonDispel()
     return ({
-            [88423] = true
-        })[self:GetID()]
+        [88423] = true
+    })[self:GetID()]
 end
 
 -- IsDiseaseDispel
@@ -486,7 +517,7 @@ end
 function Spell:IsDiseaseDispel()
     return ({
 
-        })[self:GetID()]
+    })[self:GetID()]
 end
 
 -- IsSpell
@@ -494,6 +525,19 @@ end
 ---@return boolean
 function Spell:IsSpell(spell)
     return self:GetID() == spell:GetID()
+end
+
+-- GetCost
+---@return number
+function Spell:GetCost()
+    local cost = GetSpellPowerCost(self:GetID())
+    return cost and cost.cost or 0
+end
+
+-- IsFree
+---@return boolean
+function Spell:IsFree()
+    return self:GetCost() == 0
 end
 
 return Spell

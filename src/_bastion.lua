@@ -135,19 +135,19 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
 end)
 
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
-        if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
-            Bastion.CombatTimer:Start()
-        elseif Bastion.CombatTimer:IsRunning() and not UnitAffectingCombat("player") then
-            Bastion.CombatTimer:Reset()
-        end
+    if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
+        Bastion.CombatTimer:Start()
+    elseif Bastion.CombatTimer:IsRunning() and not UnitAffectingCombat("player") then
+        Bastion.CombatTimer:Reset()
+    end
 
-        if Bastion.Enabled then
-            Bastion.ObjectManager:Refresh()
-            for i = 1, #Bastion.modules do
-                Bastion.modules[i]:Tick()
-            end
+    if Bastion.Enabled then
+        Bastion.ObjectManager:Refresh()
+        for i = 1, #Bastion.modules do
+            Bastion.modules[i]:Tick()
         end
-    end)
+    end
+end)
 
 function Bastion:Register(module)
     table.insert(Bastion.modules, module)
@@ -270,7 +270,7 @@ local files = ListFiles("scripts/bastion/scripts")
 
 for i = 1, #files do
     local file = files[i]
-    if file:sub( -4) == ".lua" or file:sub( -5) == '.luac' then
+    if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
         Tinkr:require("scripts/bastion/scripts/" .. file:sub(1, -5), Bastion)
     end
 end

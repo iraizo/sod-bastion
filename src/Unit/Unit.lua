@@ -372,16 +372,35 @@ function Unit:IsCasting()
     return UnitCastingInfo(self:GetOMToken()) ~= nil
 end
 
+function Unit:GetTimeCastIsAt(percent)
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
+        self:GetOMToken())
+
+    if not name then
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self
+            :GetOMToken())
+    end
+
+    if name and startTimeMS and endTimeMS then
+        local castLength = endTimeMS - startTimeMS
+        local startTime = startTimeMS / 1000
+        local timeUntil = (castLength / 1000) * (percent / 100)
+
+        return startTime + timeUntil
+    end
+
+    return 0
+end
+
 -- Get Casting or channeling spell
 ---@return Spell | nil
 function Unit:GetCastingOrChannelingSpell()
     local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
-            self
-            .unit)
+        self:GetOMToken())
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
-            :unit())
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self
+            :GetOMToken())
     end
 
     if name then
@@ -389,6 +408,24 @@ function Unit:GetCastingOrChannelingSpell()
     end
 
     return nil
+end
+
+-- Get the end time of the cast or channel
+---@return number
+function Unit:GetCastingOrChannelingEndTime()
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
+        self:GetOMToken())
+
+    if not name then
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self
+            :GetOMToken())
+    end
+
+    if name then
+        return endTimeMS / 1000
+    end
+
+    return 0
 end
 
 -- Check if the unit is channeling a spell
@@ -413,12 +450,11 @@ end
 ---@return number
 function Unit:GetChannelOrCastPercentComplete()
     local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
-            self
-            .unit)
+        self:GetOMToken())
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
-            :unit())
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self
+            :GetOMToken())
     end
 
     if name and startTimeMS and endTimeMS then
@@ -435,12 +471,11 @@ end
 ---@return boolean
 function Unit:IsInterruptible()
     local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(
-            self
-            .unit)
+        self:GetOMToken())
 
     if not name then
-        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self.unit
-            :unit())
+        name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellId = UnitChannelInfo(self
+            :GetOMToken())
     end
 
     if name then
@@ -481,7 +516,7 @@ function Unit:GetEnemies(range)
     local count = 0
 
     Bastion.UnitManager:EnumEnemies(function(unit)
-        if not self:IsUnit(unit) and unit:GetDistance(self) <= range and unit:IsAlive() and self:CanSee(unit) and
+        if not self:IsUnit(unit) and self:IsWithinCombatDistance(unit, range) and unit:IsAlive() and self:CanSee(unit) and
             unit:IsEnemy() then
             count = count + 1
         end
@@ -503,7 +538,7 @@ function Unit:GetMeleeAttackers()
 
     Bastion.UnitManager:EnumEnemies(function(unit)
         if not self:IsUnit(unit) and unit:IsAlive() and self:CanSee(unit) and
-            self:InMelee(unit) and unit:IsEnemy() and unit:InCombatOdds() > 80 then
+            self:InMelee(unit) and unit:IsEnemy() then
             count = count + 1
         end
     end)
@@ -582,7 +617,7 @@ end
 ---@return boolean
 function Unit:IsTanking(unit)
     local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(self:GetOMToken(),
-            unit:GetOMToken())
+        unit:GetOMToken())
     return isTanking
 end
 
@@ -773,9 +808,9 @@ function Unit:StartTTDTicker()
     end
 
     self.ttd_ticker = C_Timer.NewTicker(0.5, function()
-            local timeto = self:PredictTime(0) - GetTime()
-            self.ttd = timeto
-        end)
+        local timeto = self:PredictTime(0) - GetTime()
+        self.ttd = timeto
+    end)
 end
 
 -- Time until death
@@ -967,5 +1002,167 @@ end
 function Unit:IsDry()
     return not ObjectIsSubmerged(self.unit)
 end
+
+-- The unit stagger amount
+---@return number
+function Unit:GetStagger()
+    return UnitStagger(self:GetOMToken())
+end
+
+-- The percent of health the unit is currently staggering
+---@return number
+function Unit:GetStaggerPercent()
+    local stagger = self:GetStagger()
+    local max_health = self:GetMaxHealth()
+
+    return (stagger / max_health) * 100
+end
+
+-- Get the units power regen rate
+---@return number
+function Unit:GetPowerRegen()
+    return GetPowerRegen(self:GetOMToken())
+end
+
+-- Get the units staggered health relation
+---@return number
+function Unit:GetStaggeredHealth()
+    local stagger = self:GetStagger()
+    local max_health = self:GetMaxHealth()
+
+    return (stagger / max_health) * 100
+end
+
+-- get the units combat reach
+---@return number
+function Unit:GetCombatReach()
+    return ObjectCombatReach(self:GetOMToken())
+end
+
+-- Get the units combat distance (distance - combat reach (realized distance))
+---@return number
+function Unit:GetCombatDistance(Target)
+    return self:GetDistance(Target) - Target:GetCombatReach()
+end
+
+-- Is the unit within distance of the target (combat reach + distance)
+--- If the target is within 8 combat yards (8 + combat reach) of the unit
+---@param Target Unit
+---@param Distance number
+---@return boolean
+function Unit:IsWithinCombatDistance(Target, Distance)
+    if not Target:Exists() then
+        return false
+    end
+    return self:GetDistance(Target) <= Distance + Target:GetCombatReach()
+end
+
+-- Check if the unit is within X yards (consider combat reach)
+---@param Target Unit
+---@param Distance number
+---@return boolean
+function Unit:IsWithinDistance(Target, Distance)
+    return self:GetDistance(Target) <= Distance
+end
+
+-- Get the angle between the unit and the target in raidans
+---@param Target Unit
+---@return number
+function Unit:GetAngle(Target)
+    if not Target:Exists() then
+        return 0
+    end
+
+    local sp = self:GetPosition()
+    local tp = Target:GetPosition()
+
+    local an = Tinkr.Common.GetAnglesBetweenPositions(sp.x, sp.y, sp.z, tp.x, tp.y, tp.z)
+
+    return an
+end
+
+function Unit:GetFacing()
+    return ObjectRotation(self:GetOMToken()) or 0
+end
+
+-- Check if target is within a arc around the unit (angle, distance) accounting for a rotation of self
+---@param Target Unit
+---@param Angle number
+---@param Distance number
+---@return boolean
+function Unit:IsWithinCone(Target, Angle, Distance, rotation)
+    if not Target:Exists() then
+        return false
+    end
+
+    local angle = self:GetAngle(Target)
+    local rotation = rotation or self:GetFacing()
+
+    local diff = math.abs(angle - rotation)
+
+    if diff > math.pi then
+        diff = math.abs(diff - math.pi * 2)
+    end
+
+    return diff <= Angle and self:GetDistance(Target) <= Distance
+end
+
+-- local empowering = {}
+
+-- Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_EMPOWER_START", function(...)
+--     local unit, unk, id = ...
+--     if not unit then return end
+--     local guid = ObjectGUID(unit)
+--     if not guid then return end
+--     empowering[guid] = -1
+-- end)
+
+-- Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_EMPOWER_STOP", function(...)
+--     local unit, unk, id = ...
+--     if not unit then return end
+--     local guid = ObjectGUID(unit)
+--     if not guid then return end
+--     empowering[guid] = -1
+-- end)
+
+-- function Unit:GetUnitEmpowerStage()
+--     local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID, _, numStages =
+--         UnitChannelInfo(self:GetOMToken());
+
+--     if name and empowering[self:GetGUID()] == -1 then
+--         empowering[self:GetGUID()] = numStages
+--     end
+
+--     if not name and empowering[self:GetGUID()] then
+--         return empowering[self:GetGUID()]
+--     end
+
+--     if not name then
+--         return empowering[self:GetGUID()]
+--     end
+
+--     local getStageDuration = function(stage)
+--         if stage == numStages then
+--             return GetUnitEmpowerHoldAtMaxTime(self:GetOMToken());
+--         else
+--             return GetUnitEmpowerStageDuration(self:GetOMToken(), stage - 1);
+--         end
+--     end
+
+--     local time = GetTime() - (startTime / 1000);
+
+--     local higheststage = 0
+--     local sumdur = 0
+--     for i = 1, numStages - 1, 1 do
+--         local duration = getStageDuration(i) / 1000;
+--         sumdur = sumdur + duration
+
+--         if time > sumdur then
+--             higheststage = i
+--         end
+--     end
+
+--     return higheststage
+-- end
 
 return Unit
