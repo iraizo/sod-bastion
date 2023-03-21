@@ -271,6 +271,34 @@ function UnitManager:GetFriendWithMostFriends(radius)
     return unit, friends
 end
 
+-- Get the enemy with the most enemies within a given radius
+function UnitManager:GetEnemiesWithMostEnemies(radius)
+    local unit = nil
+    local count = 0
+    local enemies = {}
+    self:EnumEnemies(function(u)
+        if u:IsAlive() then
+            local c = 0
+            self:EnumEnemies(function(other)
+                if other:IsAlive() and u:GetDistance(other) <= radius then
+                    c = c + 1
+                end
+            end)
+            if c > count then
+                unit = u
+                count = c
+                enemies = {}
+                self:EnumEnemies(function(other)
+                    if other:IsAlive() and u:GetDistance(other) <= radius then
+                        table.insert(enemies, other)
+                    end
+                end)
+            end
+        end
+    end)
+    return unit, enemies
+end
+
 -- Find the centroid of the most dense area of friends (party/raid members) of a given radius within a given range
 ---@param radius number
 ---@param range number
@@ -290,6 +318,45 @@ function UnitManager:FindFriendsCentroid(radius, range)
     end
 
     centroid = centroid / #friends
+
+    if unit:GetPosition():Distance(centroid) > range then
+        return unit:GetPosition()
+    end
+
+    local _, _, z = TraceLine(
+        centroid.x,
+        centroid.y,
+        centroid.z + 5,
+        centroid.x,
+        centroid.y,
+        centroid.z - 5,
+        0x100151
+    )
+
+    centroid.z = z + 0.01
+
+    return centroid
+end
+
+-- Find the centroid of the most dense area of enemies of a given radius within a given range
+---@param radius number
+---@param range number
+---@return Vector3 | nil
+function UnitManager:FindEnemiesCentroid(radius, range)
+    local unit, enemies = self:GetEnemiesWithMostEnemies(radius)
+    if unit == nil then
+        return nil
+    end
+
+    local centroid = Bastion.Vector3:New(0, 0, 0)
+    local zstart = -math.huge
+    for i = 1, #enemies do
+        local p = enemies[i]:GetPosition()
+        centroid = centroid + p
+        zstart = p.z > zstart and p.z or zstart
+    end
+
+    centroid = centroid / #enemies
 
     if unit:GetPosition():Distance(centroid) > range then
         return unit:GetPosition()
