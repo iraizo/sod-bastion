@@ -343,6 +343,14 @@ function Spell:HasRange()
     return SpellHasRange(self:GetName())
 end
 
+-- Get the range of the spell
+---@return number
+---@return number
+function Spell:GetRange()
+    local name, rank, icon, castTime, minRange, maxRange, spellID, originalIcon = GetSpellInfo(self:GetID())
+    return maxRange, minRange
+end
+
 -- Check if the spell is in range of the unit
 ---@param unit Unit
 ---@return boolean

@@ -61,7 +61,6 @@ Bastion.CombatTimer = Bastion.Timer:New('combat')
 Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
 ---@type NotificationsList
 Bastion.Notifications = Bastion.NotificationsList:New()
-
 Bastion.modules = {}
 Bastion.Enabled = false
 
@@ -89,7 +88,6 @@ end)
 
 local pguid = UnitGUID("player")
 local missed = {}
-
 Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
     local args = { CombatLogGetCurrentEventInfo() }
 
@@ -133,7 +131,6 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
         end
     end
 end)
-
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
         Bastion.CombatTimer:Start()
@@ -164,7 +161,6 @@ function Bastion:FindModule(name)
 
     return nil
 end
-
 function Bastion:Print(...)
     local args = { ... }
     local str = "|cFFDF362D[Bastion]|r |cFFFFFFFF"
@@ -205,7 +201,6 @@ Command:Register('debug', 'Toggle debug mode on/off', function()
         Bastion:Print("Debug mode disabled")
     end
 end)
-
 Command:Register('dumpspells', 'Dump spells to a file', function()
     local i = 1
     local rand = math.random(100000, 999999)
@@ -271,6 +266,9 @@ local files = ListFiles("scripts/bastion/scripts")
 for i = 1, #files do
     local file = files[i]
     if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
+
         Tinkr:require("scripts/bastion/scripts/" .. file:sub(1, -5), Bastion)
     end
 end
+
+

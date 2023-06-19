@@ -114,6 +114,24 @@ function Unit:GetHP()
     return self:GetHealth() / self:GetMaxHealth() * 100
 end
 
+-- Get realized health
+---@return number
+function Unit:GetRealizedHealth()
+    return self:GetHealth() - self:GetHealAbsorbedHealth()
+end
+
+-- get realized health percentage
+---@return number
+function Unit:GetRealizedHP()
+    return self:GetRealizedHealth() / self:GetMaxHealth() * 100
+end
+
+-- Get the abosorbed unit health
+---@return number
+function Unit:GetHealAbsorbedHealth()
+    return UnitGetTotalHealAbsorbs(self:GetOMToken())
+end
+
 -- Get the units health deficit
 ---@return number
 function Unit:GetHealthPercent()
