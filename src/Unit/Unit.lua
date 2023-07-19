@@ -1125,6 +1125,25 @@ function Unit:IsWithinCone(Target, Angle, Distance, rotation)
     return diff <= Angle and self:GetDistance(Target) <= Distance
 end
 
+function Unit:GetEmpoweredStage()
+    local stage = 0
+    local _, _, _, startTime, _, _, _, spellID, _, numStages = UnitChannelInfo(self:GetOMToken())
+   
+    if numStages and numStages > 0 then
+        startTime = startTime / 1000
+        local currentTime = GetTime()
+        local stageDuration = 0
+        for i = 1, numStages do
+            stageDuration = stageDuration + GetUnitEmpowerStageDuration((self:GetOMToken()), i - 1) / 1000
+            if startTime + stageDuration > currentTime then
+                break
+            end
+            stage = i
+        end
+    end
+    return stage
+end
+
 -- local empowering = {}
 
 -- Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_EMPOWER_START", function(...)
