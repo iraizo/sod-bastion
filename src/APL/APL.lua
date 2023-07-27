@@ -206,7 +206,7 @@ end
 
 -- Add a spell to the APL
 ---@param spell Spell
----@param condition fun(...):boolean
+---@param condition? fun(...):boolean
 ---@return APLActor
 function APL:AddSpell(spell, condition)
     local castableFunc = spell.CastableIfFunc
