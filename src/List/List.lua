@@ -90,9 +90,9 @@ function List:each(callback)
 end
 
 ---@param callback fun(value: any): boolean
----@return boolean
+---@return List
 function List:map(callback)
-    local newList = List.new()
+    local newList = List:New()
     for _, v in ipairs(self._list) do
         newList:push(callback(v))
     end
@@ -100,9 +100,9 @@ function List:map(callback)
 end
 
 ---@param callback fun(value: any): boolean
----@return boolean
+---@return List
 function List:filter(callback)
-    local newList = List.new()
+    local newList = List:New()
     for _, v in ipairs(self._list) do
         if callback(v) then
             newList:push(v)
@@ -111,7 +111,7 @@ function List:filter(callback)
     return newList
 end
 
----@param callback fun(value: any): boolean
+---@param callback fun(result: any, value: any): boolean
 ---@param initialValue any
 ---@return boolean
 function List:reduce(callback, initialValue)
@@ -152,7 +152,7 @@ end
 
 ---@return List
 function List:reverse()
-    local newList = List.new()
+    local newList = List:New()
     for i = #self._list, 1, -1 do
         newList:push(self._list[i])
     end
@@ -161,7 +161,7 @@ end
 
 ---@return List
 function List:clone()
-    local newList = List.new()
+    local newList = List:New()
     for _, v in ipairs(self._list) do
         newList:push(v)
     end
@@ -171,7 +171,7 @@ end
 ---@param list List
 ---@return List
 function List:concat(list)
-    local newList = List.new()
+    local newList = List:New()
     for _, v in ipairs(self._list) do
         newList:push(v)
     end

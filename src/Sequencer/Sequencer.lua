@@ -1,6 +1,9 @@
 -- Create a sequencer class that takes a table of actions and executes them in order
 
 ---@class Sequencer
+---@field resetCondition fun(): boolean
+---@field abortCondition fun(): boolean
+---@field actions fun(sequencer: Sequencer)[]
 local Sequencer = {}
 Sequencer.__index = Sequencer
 

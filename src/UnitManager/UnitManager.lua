@@ -153,7 +153,7 @@ end
 
 -- Set a unit by guid
 ---@param unit Unit
----@return Unit
+---@return nil
 function UnitManager:SetObject(unit)
     self.objects[unit:GetGUID()] = unit
 end
@@ -224,6 +224,7 @@ function UnitManager:GetNumFriendsWithBuff(spell)
         if unit:GetAuras():FindMy(spell):IsUp() then
             count = count + 1
         end
+        return false
     end)
     return count
 end
@@ -236,6 +237,7 @@ function UnitManager:GetNumFriendsAlive()
         if unit:IsAlive() then
             count = count + 1
         end
+        return false
     end)
     return count
 end
@@ -255,6 +257,7 @@ function UnitManager:GetFriendWithMostFriends(radius)
                 if other:IsAlive() and u:GetDistance(other) <= radius then
                     c = c + 1
                 end
+                return false
             end)
             if c > count then
                 unit = u
@@ -264,9 +267,11 @@ function UnitManager:GetFriendWithMostFriends(radius)
                     if other:IsAlive() and u:GetDistance(other) <= radius then
                         table.insert(friends, other)
                     end
+                    return false
                 end)
             end
         end
+        return false
     end)
     return unit, friends
 end
@@ -283,6 +288,7 @@ function UnitManager:GetEnemiesWithMostEnemies(radius)
                 if other:IsAlive() and u:GetDistance(other) <= radius then
                     c = c + 1
                 end
+                return false
             end)
             if c > count then
                 unit = u
@@ -292,9 +298,11 @@ function UnitManager:GetEnemiesWithMostEnemies(radius)
                     if other:IsAlive() and u:GetDistance(other) <= radius then
                         table.insert(enemies, other)
                     end
+                    return false
                 end)
             end
         end
+        return false
     end)
     return unit, enemies
 end
