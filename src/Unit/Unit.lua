@@ -505,7 +505,7 @@ end
 
 -- Check if unit is interruptible
 ---@param percent number
----@param ignoreInterruptible boolean
+---@param ignoreInterruptible? boolean
 ---@return boolean
 function Unit:IsInterruptibleAt(percent, ignoreInterruptible)
     if not ignoreInterruptible and not self:IsInterruptible() then
@@ -933,7 +933,6 @@ function Unit:IsStealthed()
     local Shadowmeld = Bastion.SpellBook:GetSpell(58984)
     local Sepsis = Bastion.SpellBook:GetSpell(328305)
 
-
     return self:GetAuras():FindAny(Stealth) or self:GetAuras():FindAny(ShadowDance)
 end
 
@@ -1107,6 +1106,7 @@ end
 ---@param Target Unit
 ---@param Angle number
 ---@param Distance number
+---@param rotation? number
 ---@return boolean
 function Unit:IsWithinCone(Target, Angle, Distance, rotation)
     if not Target:Exists() then
@@ -1114,7 +1114,7 @@ function Unit:IsWithinCone(Target, Angle, Distance, rotation)
     end
 
     local angle = self:GetAngle(Target)
-    local rotation = rotation or self:GetFacing()
+    rotation = rotation or self:GetFacing()
 
     local diff = math.abs(angle - rotation)
 

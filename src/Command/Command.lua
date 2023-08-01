@@ -1,6 +1,13 @@
 -- Create a wow command handler class
 ---@class Command
+---@field command string
+---@field commands Command.commands[]
 local Command = {}
+
+---@class Command.commands
+---@field helpmsg string
+---@field cb fun(args: table)
+
 Command.__index = Command
 
 ---@return string
