@@ -7,7 +7,7 @@ local Bastion = {
 Bastion.__index = Bastion
 
 function Bastion.require(class)
-    return Tinkr:require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
+    return require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
 end
 
 ---@type ClassMagic
@@ -61,7 +61,8 @@ Bastion.CombatTimer = Bastion.Timer:New('combat')
 Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
 ---@type NotificationsList
 Bastion.Notifications = Bastion.NotificationsList:New()
-Bastion.modules = {}
+local LIBRARIES = {}
+local MODULES = {}
 Bastion.Enabled = false
 
 Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
@@ -89,7 +90,7 @@ end)
 local pguid = UnitGUID("player")
 local missed = {}
 Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
-    local args = { CombatLogGetCurrentEventInfo() }
+    local args = {CombatLogGetCurrentEventInfo()}
 
     local subEvent = args[2]
     local sourceGUID = args[4]
@@ -131,6 +132,16 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
         end
     end
 end)
+
+function Bastion:RegisterLibrary(name, payload)
+    LIBRARIES[name] = payload
+    -- Bastion:Print("Registered Library", name)
+end
+
+function Bastion:GetLibrary(name)
+    return LIBRARIES[name]
+end
+
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
         Bastion.CombatTimer:Start()
@@ -140,29 +151,29 @@ Bastion.Ticker = C_Timer.NewTicker(0.1, function()
 
     if Bastion.Enabled then
         Bastion.ObjectManager:Refresh()
-        for i = 1, #Bastion.modules do
-            Bastion.modules[i]:Tick()
+        for i = 1, #MODULES do
+            MODULES[i]:Tick()
         end
     end
 end)
 
 function Bastion:Register(module)
-    table.insert(Bastion.modules, module)
+    table.insert(MODULES, module)
     Bastion:Print("Registered", module)
 end
 
 -- Find a module by name
 function Bastion:FindModule(name)
-    for i = 1, #Bastion.modules do
-        if Bastion.modules[i].name == name then
-            return Bastion.modules[i]
+    for i = 1, #MODULES do
+        if MODULES[i].name == name then
+            return MODULES[i]
         end
     end
 
     return nil
 end
 function Bastion:Print(...)
-    local args = { ... }
+    local args = {...}
     local str = "|cFFDF362D[Bastion]|r |cFFFFFFFF"
     for i = 1, #args do
         str = str .. tostring(args[i]) .. " "
@@ -174,7 +185,7 @@ function Bastion:Debug(...)
     if not Bastion.DebugMode then
         return
     end
-    local args = { ... }
+    local args = {...}
     local str = "|cFFDF6520[Bastion]|r |cFFFFFFFF"
     for i = 1, #args do
         str = str .. tostring(args[i]) .. " "
@@ -207,7 +218,9 @@ Command:Register('dumpspells', 'Dump spells to a file', function()
     while true do
         local spellName, spellSubName = GetSpellBookItemName(i, BOOKTYPE_SPELL)
         if not spellName then
-            do break end
+            do
+                break
+            end
         end
 
         -- use spellName and spellSubName here
@@ -261,14 +274,17 @@ Command:Register('missed', 'Dump the list of immune kidney shot spells', functio
     end
 end)
 
-local files = ListFiles("scripts/bastion/scripts")
+local function Load(dir)
+    local files = ListFiles(dir)
 
-for i = 1, #files do
-    local file = files[i]
-    if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
-
-        Tinkr:require("scripts/bastion/scripts/" .. file:sub(1, -5), Bastion)
+    for i = 1, #files do
+        local file = files[i]
+        if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
+            require(dir .. file:sub(1, -5), Bastion)
+        end
     end
 end
 
-
+Load("scripts/bastion/scripts/Libraries/")
+Load("scripts/bastion/scripts/Modules/")
+Load("scripts/bastion/scripts/")
