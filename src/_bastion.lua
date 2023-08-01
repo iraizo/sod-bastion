@@ -10,6 +10,8 @@ function Bastion.require(class)
     return require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
 end
 
+Bastion.Globals = {}
+
 ---@type ClassMagic
 Bastion.ClassMagic = Bastion.require("ClassMagic")
 ---@type List
@@ -43,15 +45,18 @@ Bastion.UnitManager = Bastion.require("UnitManager"):New()
 ---@type ObjectManager
 Bastion.ObjectManager = Bastion.require("ObjectManager"):New()
 ---@type EventManager
-Bastion.EventManager = Bastion.require("EventManager"):New()
+Bastion.EventManager = Bastion.require("EventManager")
+Bastion.Globals.EventManager = Bastion.EventManager:New()
 ---@type Spell
 Bastion.Spell = Bastion.require("Spell")
 ---@type SpellBook
 Bastion.SpellBook = Bastion.require("SpellBook")
+Bastion.Globals.SpellBook = Bastion.SpellBook:New()
 ---@type Item
 Bastion.Item = Bastion.require("Item")
 ---@type ItemBook
 Bastion.ItemBook = Bastion.require("ItemBook")
+Bastion.Globals.ItemBook = Bastion.ItemBook:New()
 ---@type AuraTable
 Bastion.AuraTable = Bastion.require("AuraTable")
 ---@type Class
@@ -64,11 +69,13 @@ Bastion.CombatTimer = Bastion.Timer:New('combat')
 Bastion.MythicPlusUtils = Bastion.require("MythicPlusUtils"):New()
 ---@type NotificationsList
 Bastion.Notifications = Bastion.NotificationsList:New()
+
 local LIBRARIES = {}
 local MODULES = {}
+
 Bastion.Enabled = false
 
-Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
+Bastion.Globals.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
     local u = Bastion.UnitManager[unit]
 
     if u then
@@ -76,7 +83,7 @@ Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
     end
 end)
 
-Bastion.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
+Bastion.Globals.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
     local unit, castGUID, spellID = ...
 
     local spell = Bastion.SpellBook:GetIfRegistered(spellID)
@@ -92,7 +99,8 @@ end)
 
 local pguid = UnitGUID("player")
 local missed = {}
-Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
+
+Bastion.Globals.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
     local args = {CombatLogGetCurrentEventInfo()}
 
     local subEvent = args[2]
@@ -207,6 +215,7 @@ Command:Register('debug', 'Toggle debug mode on/off', function()
         Bastion:Print("Debug mode disabled")
     end
 end)
+
 Command:Register('dumpspells', 'Dump spells to a file', function()
     local i = 1
     local rand = math.random(100000, 999999)
@@ -284,7 +293,6 @@ end
 ---@param library Library
 function Bastion:RegisterLibrary(library)
     LIBRARIES[library.name] = library
-    print("Registered library", library.name)
 end
 
 function Bastion:CheckLibraryDependencies()

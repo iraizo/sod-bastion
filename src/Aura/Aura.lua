@@ -1,5 +1,4 @@
 -- Document with emmy lua: https://emmylua.github.io/
-
 local Tinkr, Bastion = ...
 
 -- Create a new Aura class
@@ -66,19 +65,18 @@ function Aura:New(unit, index, type)
             timeMod = 0,
 
             index = nil,
-            type = nil,
+            type = nil
 
         }
 
         if self.aura.spellId then
-            Bastion.SpellBook:GetSpell(self.aura.spellId)
+            Bastion.Globals.SpellBook:GetSpell(self.aura.spellId)
         end
         return self
     end
 
-    local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal,
-    spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(unit:GetOMToken(), index,
-        type)
+    local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal, spellId,
+        canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(unit:GetOMToken(), index, type)
 
     local self = setmetatable({}, Aura)
     self.aura = {
@@ -100,10 +98,10 @@ function Aura:New(unit, index, type)
         auraInstanceID = nil,
 
         index = index,
-        type = type,
+        type = type
     }
     if self.aura.spellId then
-        Bastion.SpellBook:GetSpell(self.aura.spellId)
+        Bastion.Globals.SpellBook:GetSpell(self.aura.spellId)
     end
     return self
 end
@@ -132,11 +130,11 @@ function Aura:CreateFromUnitAuraInfo(unitAuraInfo)
         auraInstanceID = unitAuraInfo.auraInstanceID,
 
         index = nil,
-        type = unitAuraInfo.isHarmful and "HARMFUL" or "HELPFUL",
+        type = unitAuraInfo.isHarmful and "HARMFUL" or "HELPFUL"
     }
 
     -- Register spell in spellbook
-    Bastion.SpellBook:GetSpell(self.aura.spellId)
+    Bastion.Globals.SpellBook:GetSpell(self.aura.spellId)
     return self
 end
 
@@ -239,7 +237,7 @@ end
 -- Get the auras spell id
 ---@return Spell
 function Aura:GetSpell()
-    return Bastion.SpellBook:GetSpell(self.aura.spellId)
+    return Bastion.Globals.SpellBook:GetSpell(self.aura.spellId)
 end
 
 -- Get the auras can apply aura status

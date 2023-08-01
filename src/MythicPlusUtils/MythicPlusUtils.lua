@@ -430,7 +430,7 @@ function MythicPlusUtils:New()
         }
     }
 
-    Bastion.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
+    Bastion.Globals.EventManager:RegisterWoWEvent('UNIT_AURA', function(unit, auras)
         if not self.debuffLogging then
             return
         end
@@ -453,7 +453,7 @@ function MythicPlusUtils:New()
         end
     end)
 
-    Bastion.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_START', function(unitTarget, castGUID, spellID)
+    Bastion.Globals.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_START', function(unitTarget, castGUID, spellID)
         if not self.castLogging then
             return
         end
@@ -472,7 +472,7 @@ function MythicPlusUtils:New()
         ]], true)
     end)
 
-    Bastion.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_CHANNEL_START', function(unitTarget, castGUID, spellID)
+    Bastion.Globals.EventManager:RegisterWoWEvent('UNIT_SPELLCAST_CHANNEL_START', function(unitTarget, castGUID, spellID)
         if not self.castLogging then
             return
         end

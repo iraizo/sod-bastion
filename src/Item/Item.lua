@@ -54,7 +54,7 @@ function Item:New(id)
     local name, spellID = GetItemSpell(self:GetID())
     if spellID then
         self.spellID = spellID
-        Bastion.SpellBook:GetSpell(spellID)
+        Bastion.Globals.SpellBook:GetSpell(spellID)
     end
 
     return self
@@ -302,7 +302,7 @@ end
 -- Get the last use time
 ---@return number
 function Item:GetLastUseTime()
-    return Bastion.SpellBook:GetSpell(self:GetID()):GetLastCastTime()
+    return Bastion.Globals.SpellBook:GetSpell(self:GetID()):GetLastCastTime()
 end
 
 -- Get time since last use
@@ -430,7 +430,7 @@ end
 ---@return Spell | nil
 function Item:GetSpell()
     if self.spellID then
-        return Bastion.SpellBook:GetSpell(self.spellID)
+        return Bastion.Globals.SpellBook:GetSpell(self.spellID)
     end
 
     return nil

@@ -1,5 +1,4 @@
 -- Document with emmy lua: https://emmylua.github.io/
-
 -- Create an APL trait for the APL class
 ---@class APLTrait
 local APLTrait = {}
@@ -55,7 +54,7 @@ end
 ---@param ... APLTrait
 ---@return APLActor
 function APLActor:AddTraits(...)
-    for _, trait in ipairs({ ... }) do
+    for _, trait in ipairs({...}) do
         table.insert(self.traits, trait)
     end
 
@@ -85,13 +84,11 @@ function APLActor:Execute()
     -- If the actor is a sequencer we don't want to continue executing the APL if the sequencer is not finished
     if self:GetActor().sequencer then
         if self:GetActor().condition and self:GetActor().condition() and not self:GetActor().sequencer:Finished() then
-            print("Execute?")
             self:GetActor().sequencer:Execute()
             return true
         end
 
         if not self:GetActor().condition and not self:GetActor().sequencer:Finished() then
-            print("Execute?")
             self:GetActor().sequencer:Execute()
             return true
         end
@@ -111,13 +108,12 @@ function APLActor:Execute()
         if self:GetActor().condition then
             -- print("Bastion: APL:Execute: Condition for spell " .. self:GetActor().spell:GetName())
             self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
-                self:GetActor().target,
-                self:GetActor().condition)
+                self:GetActor().target, self:GetActor().condition)
         end
 
         -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
-        self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(self
-        :GetActor().target)
+        self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
+            self:GetActor().target)
     end
     if self:GetActor().item then
         if self:GetActor().condition then
@@ -189,7 +185,11 @@ end
 ---@param cb fun(...):any
 ---@return APLActor
 function APL:AddVariable(name, cb)
-    local actor = APLActor:New({ variable = name, cb = cb, _apl = self })
+    local actor = APLActor:New({
+        variable = name,
+        cb = cb,
+        _apl = self
+    })
     table.insert(self.apl, actor)
     return actor
 end
@@ -199,7 +199,10 @@ end
 ---@param cb fun(...):any
 ---@return APLActor
 function APL:AddAction(action, cb)
-    local actor = APLActor:New({ action = action, cb = cb })
+    local actor = APLActor:New({
+        action = action,
+        cb = cb
+    })
     table.insert(self.apl, actor)
     return actor
 end
@@ -234,7 +237,12 @@ function APL:AddItem(item, condition)
     local usableFunc = item.UsableIfFunc
     local target = item:GetTarget()
 
-    local actor = APLActor:New({ item = item, condition = condition, usableFunc = usableFunc, target = target })
+    local actor = APLActor:New({
+        item = item,
+        condition = condition,
+        usableFunc = usableFunc,
+        target = target
+    })
 
     table.insert(self.apl, actor)
 
@@ -249,7 +257,10 @@ function APL:AddAPL(apl, condition)
     if not condition then
         error("Bastion: APL:AddAPL: No condition for APL " .. apl.name)
     end
-    local actor = APLActor:New({ apl = apl, condition = condition })
+    local actor = APLActor:New({
+        apl = apl,
+        condition = condition
+    })
     table.insert(self.apl, actor)
     return actor
 end
@@ -259,12 +270,10 @@ function APL:Execute()
     for _, actor in ipairs(self.apl) do
         if actor:HasTraits() and actor:Evaluate() then
             if actor:Execute() then
-                print("BREAQK", actor)
                 break
             end
         else
             if actor:Execute() then
-                print("BREAQK", actor)
                 break
             end
         end
@@ -276,7 +285,10 @@ end
 ---@param condition fun(...):boolean
 ---@return APLActor
 function APL:AddSequence(sequencer, condition)
-    local actor = APLActor:New({ sequencer = sequencer, condition = condition })
+    local actor = APLActor:New({
+        sequencer = sequencer,
+        condition = condition
+    })
     table.insert(self.apl, actor)
     return actor
 end

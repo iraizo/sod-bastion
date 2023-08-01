@@ -422,7 +422,7 @@ function Unit:GetCastingOrChannelingSpell()
     end
 
     if name then
-        return Bastion.SpellBook:GetSpell(spellId)
+        return Bastion.Globals.SpellBook:GetSpell(spellId)
     end
 
     return nil
@@ -926,12 +926,12 @@ end
 -- IsStealthed
 ---@return boolean
 function Unit:IsStealthed()
-    local Stealth = Bastion.SpellBook:GetSpell(1784)
-    local Vanish = Bastion.SpellBook:GetSpell(1856)
-    local ShadowDance = Bastion.SpellBook:GetSpell(185422)
-    local Subterfuge = Bastion.SpellBook:GetSpell(115192)
-    local Shadowmeld = Bastion.SpellBook:GetSpell(58984)
-    local Sepsis = Bastion.SpellBook:GetSpell(328305)
+    local Stealth = Bastion.Globals.SpellBook:GetSpell(1784)
+    local Vanish = Bastion.Globals.SpellBook:GetSpell(1856)
+    local ShadowDance = Bastion.Globals.SpellBook:GetSpell(185422)
+    local Subterfuge = Bastion.Globals.SpellBook:GetSpell(115192)
+    local Shadowmeld = Bastion.Globals.SpellBook:GetSpell(58984)
+    local Sepsis = Bastion.Globals.SpellBook:GetSpell(328305)
 
     return self:GetAuras():FindAny(Stealth) or self:GetAuras():FindAny(ShadowDance)
 end
@@ -959,7 +959,7 @@ end
 
 ---@return nil
 function Unit:WatchForSwings()
-    Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
+    Bastion.Globals.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
         local _, subtype, _, sourceGUID, sourceName, _, _, destGUID, destName, destFlags, _, spellID, spellName, _, amount, interrupt, a, b, c, d, offhand, multistrike =
             CombatLogGetCurrentEventInfo()
 

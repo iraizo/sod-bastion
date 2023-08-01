@@ -1,5 +1,4 @@
 -- Create a sequencer class that takes a table of actions and executes them in order
-
 ---@class Sequencer
 ---@field resetCondition fun(): boolean
 ---@field abortCondition fun(): boolean
@@ -45,12 +44,10 @@ end
 ---@return boolean
 function Sequencer:Next()
     if self:Finished() then
-        print("Its finished?")
         return false
     end
 
     local action = self.actions[self.index]
-    print("Attempting action: " .. self.index .. "")
     if action(self) then
         self.index = self.index + 1
         return true
