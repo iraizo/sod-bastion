@@ -17,6 +17,7 @@ MythicPlusUtils.__index = MythicPlusUtils
 function MythicPlusUtils:New()
     local self = setmetatable({}, MythicPlusUtils)
 
+    ---@diagnostic disable-next-line: assign-type-mismatch
     self.random = math.random(1000000, 9999999)
 
     self.aoeBosses = {
@@ -565,10 +566,6 @@ end
 ---@return boolean
 function MythicPlusUtils:IsAOEBoss(unit)
     return self.aoeBosses[unit:GetID()]
-end
-
-function MythicPlusUtils:IsTankBuster(spell)
-    return self.tankBusters[spell:GetID()]
 end
 
 return MythicPlusUtils

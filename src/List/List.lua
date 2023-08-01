@@ -1,5 +1,3 @@
-local Tinkr, Bastion = ...
-
 ---@class List
 local List = {
     -- Add overload
@@ -144,7 +142,7 @@ function List:findIndex(callback)
     return nil
 end
 
----@param callback fun(value: any): boolean
+---@param callback fun(...): boolean
 ---@return nil
 function List:sort(callback)
     table.sort(self._list, callback)

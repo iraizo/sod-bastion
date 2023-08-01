@@ -18,12 +18,21 @@ function Class:__index(k)
     return response
 end
 
+---@class Class
+---@field class Class.class
+
+---@class Class.class
+---@field locale string
+---@field name string
+---@field id number
+
 -- Constructor
 ---@param locale string
 ---@param name string
 ---@param id number
 function Class:New(locale, name, id)
     local self = setmetatable({}, Class)
+
     self.class = {
         locale = locale,
         name = name,
@@ -50,10 +59,16 @@ function Class:GetID()
     return self.class.id
 end
 
+---@class ColorMixin
+---@field r number
+---@field g number
+---@field b number
+
 -- Return the classes color
 ---@return ColorMixin classColor
 function Class:GetColor()
     return C_ClassColor.GetClassColor(self.class.name)
 end
+
 
 return Class
