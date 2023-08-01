@@ -275,7 +275,6 @@ function AuraTable:Find(spell)
     end
 
     for k, a in pairs(aurasub) do
-        print(a)
         if a ~= nil then
             if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
                 return a

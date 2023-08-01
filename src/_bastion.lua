@@ -34,6 +34,7 @@ Bastion.Unit = Bastion.require("Unit")
 Bastion.Aura = Bastion.require("Aura")
 ---@type APL, APLActor, APLTrait
 Bastion.APL, Bastion.APLActor, Bastion.APLTrait = Bastion.require("APL")
+---@type Module
 Bastion.Module = Bastion.require("Module")
 ---@type UnitManager
 Bastion.UnitManager = Bastion.require("UnitManager"):New()
@@ -172,6 +173,7 @@ function Bastion:FindModule(name)
 
     return nil
 end
+
 function Bastion:Print(...)
     local args = {...}
     local str = "|cFFDF362D[Bastion]|r |cFFFFFFFF"
@@ -227,6 +229,7 @@ Command:Register('dumpspells', 'Dump spells to a file', function()
         local spellID = select(7, GetSpellInfo(spellName))
 
         if spellID then
+            spellName = spellName:gsub("[%W%s]", "")
             WriteFile('bastion-' .. UnitClass('player') .. '-' .. rand .. '.lua',
                 "local " .. spellName .. " = Bastion.SpellBook:GetSpell(" .. spellID .. ")", true)
         end
