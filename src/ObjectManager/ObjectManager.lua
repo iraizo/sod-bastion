@@ -1,6 +1,11 @@
 local Tinkr, Bastion = ...
 
 ---@class ObjectManager
+---@field _lists table
+---@field enemies List
+---@field friends List
+---@field activeEnemies List
+---@field explosives List
 local ObjectManager = {}
 ObjectManager.__index = ObjectManager
 
@@ -20,7 +25,7 @@ end
 -- Register a custom list with a callback
 ---@param name string
 ---@param cb function
----@return List
+---@return List | false
 function ObjectManager:RegisterList(name, cb)
     if self._lists[name] then
         return false
