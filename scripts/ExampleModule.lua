@@ -2,7 +2,10 @@ local Tinkr, Bastion = ...
 local ExampleModule = Bastion.Module:New('ExampleModule')
 local Player = Bastion.UnitManager:Get('player')
 
-local FlashHeal = Bastion.SpellBook:GetSpell(2061)
+-- Create a local spellbook
+local SpellBook = Bastion.SpellBook:New()
+
+local FlashHeal = SpellBook:GetSpell(2061)
 
 local AdvancedMath = Bastion:Import('AdvancedMath')
 

@@ -47,11 +47,11 @@ Bastion.EventManager = Bastion.require("EventManager"):New()
 ---@type Spell
 Bastion.Spell = Bastion.require("Spell")
 ---@type SpellBook
-Bastion.SpellBook = Bastion.require("SpellBook"):New()
+Bastion.SpellBook = Bastion.require("SpellBook")
 ---@type Item
 Bastion.Item = Bastion.require("Item")
 ---@type ItemBook
-Bastion.ItemBook = Bastion.require("ItemBook"):New()
+Bastion.ItemBook = Bastion.require("ItemBook")
 ---@type AuraTable
 Bastion.AuraTable = Bastion.require("AuraTable")
 ---@type Class
