@@ -86,7 +86,7 @@ end)
 Bastion.Globals.EventManager:RegisterWoWEvent("UNIT_SPELLCAST_SUCCEEDED", function(...)
     local unit, castGUID, spellID = ...
 
-    local spell = Bastion.SpellBook:GetIfRegistered(spellID)
+    local spell = Bastion.Globals.SpellBook:GetIfRegistered(spellID)
 
     if unit == "player" and spell then
         spell.lastCastAt = GetTime()
@@ -233,7 +233,7 @@ Command:Register('dumpspells', 'Dump spells to a file', function()
         if spellID then
             spellName = spellName:gsub("[%W%s]", "")
             WriteFile('bastion-' .. UnitClass('player') .. '-' .. rand .. '.lua',
-                "local " .. spellName .. " = Bastion.SpellBook:GetSpell(" .. spellID .. ")", true)
+                "local " .. spellName .. " = Bastion.Globals.SpellBook:GetSpell(" .. spellID .. ")", true)
         end
         i = i + 1
     end
