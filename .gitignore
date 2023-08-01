@@ -12,6 +12,8 @@ scripts/Libraries/*
 !scripts/.gitkeep
 !scripts/ExampleModule.lua
 !scripts/Libraries/ExampleLibrary.lua
+!scripts/Libraries/ExampleDependency.lua
+!scripts/Libraries/ExampleDependencyError.lua
 
 ## ignore vscode settings
 .vscode/*

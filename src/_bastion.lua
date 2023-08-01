@@ -14,6 +14,8 @@ end
 Bastion.ClassMagic = Bastion.require("ClassMagic")
 ---@type List
 Bastion.List = Bastion.require("List")
+---@type Library
+Bastion.Library = Bastion.require("Library")
 ---@type NotificationsList, Notification
 Bastion.NotificationsList, Bastion.Notification = Bastion.require("NotificationsList")
 ---@type Vector3
@@ -133,15 +135,6 @@ Bastion.EventManager:RegisterWoWEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
         end
     end
 end)
-
-function Bastion:RegisterLibrary(name, payload)
-    LIBRARIES[name] = payload
-    -- Bastion:Print("Registered Library", name)
-end
-
-function Bastion:GetLibrary(name)
-    return LIBRARIES[name]
-end
 
 Bastion.Ticker = C_Timer.NewTicker(0.1, function()
     if not Bastion.CombatTimer:IsRunning() and UnitAffectingCombat("player") then
@@ -288,6 +281,81 @@ local function Load(dir)
     end
 end
 
+---@param library Library
+function Bastion:RegisterLibrary(library)
+    LIBRARIES[library.name] = library
+    print("Registered library", library.name)
+end
+
+function Bastion:CheckLibraryDependencies()
+    for k, v in pairs(LIBRARIES) do
+        if v.dependencies then
+            for i = 1, #v.dependencies do
+                local dep = v.dependencies[i]
+                if LIBRARIES[dep] then
+                    if LIBRARIES[dep].dependencies then
+                        for j = 1, #LIBRARIES[dep].dependencies do
+                            if LIBRARIES[dep].dependencies[j] == v.name then
+                                Bastion:Print("Circular dependency detected between " .. v.name .. " and " .. dep)
+                                return false
+                            end
+                        end
+                    end
+                else
+                    Bastion:Print("Library " .. v.name .. " depends on " .. dep .. " but it's not registered")
+                    return false
+                end
+            end
+        end
+    end
+
+    return true
+end
+
+function Bastion:Import(library)
+    local lib = self:GetLibrary(library)
+
+    if not lib then
+        error("Library " .. library .. " not found")
+    end
+
+    return lib:Resolve()
+end
+
+function Bastion:GetLibrary(name)
+    if not LIBRARIES[name] then
+        error("Library " .. name .. " not found")
+    end
+
+    local library = LIBRARIES[name]
+
+    -- if library.dependencies then
+    --     for i = 1, #library.dependencies do
+    --         local dep = library.dependencies[i]
+    --         if LIBRARIES[dep] then
+    --             if LIBRARIES[dep].dependencies then
+    --                 for j = 1, #LIBRARIES[dep].dependencies do
+    --                     if LIBRARIES[dep].dependencies[j] == library.name then
+    --                         Bastion:Print("Circular dependency detected between " .. library.name .. " and " .. dep)
+    --                         return false
+    --                     end
+    --                 end
+    --             end
+    --         else
+    --             Bastion:Print("Library " .. v.name .. " depends on " .. dep .. " but it's not registered")
+    --             return false
+    --         end
+    --     end
+    -- end
+
+    return library
+end
+
 Load("scripts/bastion/scripts/Libraries/")
+
+-- if not Bastion:CheckLibraryDependencies() then
+--     return
+-- end
+
 Load("scripts/bastion/scripts/Modules/")
 Load("scripts/bastion/scripts/")

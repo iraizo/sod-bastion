@@ -4,7 +4,7 @@ local Player = Bastion.UnitManager:Get('player')
 
 local FlashHeal = Bastion.SpellBook:GetSpell(2061)
 
-local AdvancedMath = Bastion:GetLibrary('AdvancedMath')
+local AdvancedMath = Bastion:Import('AdvancedMath')
 
 print(AdvancedMath:Add(1, 2))
 
