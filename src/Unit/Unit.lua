@@ -13,7 +13,7 @@ local Unit = {
     last_off_attack = 0,
     last_main_attack = 0,
     last_combat_time = 0,
-    ttd_ticker = 0,
+    ttd_ticker = false,
     ttd = 0,
     id = false,
 }
@@ -838,7 +838,7 @@ function Unit:TimeToDie()
         self.regression_history = {}
         if self.ttd_ticker then
             self.ttd_ticker:Cancel()
-            self.ttd_ticker = nil
+            self.ttd_ticker = false
         end
         return 0
     end
