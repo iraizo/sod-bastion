@@ -114,8 +114,12 @@ end
 ---@return boolean
 function List:reduce(callback, initialValue)
     local result = initialValue
+    local done = false
     for _, v in ipairs(self._list) do
-        result = callback(result, v)
+        result, done = callback(result, v)
+        if done then
+            break
+        end
     end
     return result
 end
