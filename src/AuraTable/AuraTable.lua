@@ -384,6 +384,43 @@ function AuraTable:FindAny(spell)
     return self:FindMy(spell)
 end
 
+-- FindAnyOf
+---@param spells List
+---@return Aura
+function AuraTable:FindAnyOf(spells)
+    return spells:find(function(spell)
+        return self:FindAny(spell):IsValid()
+    end) or Bastion.Aura:New()
+end
+
+-- FindAnyOfMy
+---@param spells List
+---@return Aura
+function AuraTable:FindAnyOfMy(spells)
+    return spells:find(function(spell)
+        return self:FindMy(spell):IsValid()
+    end) or Bastion.Aura:New()
+end
+
+-- FindAnyOfTheirs
+---@param spells List
+---@return Aura
+function AuraTable:FindAnyOfTheirs(spells)
+    return spells:find(function(spell)
+        return self:FindTheirs(spell):IsValid()
+    end) or Bastion.Aura:New()
+end
+
+-- FindAnyFrom
+---@param spells List
+---@param source Unit
+---@return Aura
+function AuraTable:FindAnyFrom(spells, source)
+    return spells:find(function(spell)
+        return self:FindFrom(spell, source):IsValid()
+    end) or Bastion.Aura:New()
+end
+
 -- Has any stealable aura
 ---@return boolean
 function AuraTable:HasAnyStealableAura()
