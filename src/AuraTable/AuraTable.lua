@@ -437,6 +437,141 @@ function AuraTable:FindAnyFrom(spells, source)
     end, Bastion.Aura:New())
 end
 
+-- FindLongestOf
+---@param spells List
+---@return Aura
+function AuraTable:FindLongestOf(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:Find(cur)
+        if aura:IsValid() then
+            if aura:GetRemainingTime() > acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindLongestOfMy
+---@param spells List
+---@return Aura
+function AuraTable:FindLongestOfMy(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindMy(cur)
+        if aura:IsValid() then
+            print(aura:GetRemainingTime(), acc:GetRemainingTime())
+            if aura:GetRemainingTime() > acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindLongestOfTheirs
+---@param spells List
+---@return Aura
+function AuraTable:FindLongestOfTheirs(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindTheirs(cur)
+        if aura:IsValid() then
+            if aura:GetRemainingTime() > acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindLongestOfFrom
+---@param spells List
+---@param source Unit
+---@return Aura
+function AuraTable:FindLongestOfFrom(spells, source)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindFrom(cur, source)
+        if aura:IsValid() then
+            if aura:GetRemainingTime() > acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindShortestOf
+---@param spells List
+---@return Aura
+function AuraTable:FindShortestOf(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:Find(cur)
+        if aura:IsValid() then
+            if not acc:IsValid() then
+                return aura
+            end
+            if aura:GetRemainingTime() < acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindShortestOfMy
+---@param spells List
+---@return Aura
+function AuraTable:FindShortestOfMy(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindMy(cur)
+        if aura:IsValid() then
+            if not acc:IsValid() then
+                return aura
+            end
+            if aura:GetRemainingTime() < acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindShortestOfTheirs
+---@param spells List
+---@return Aura
+function AuraTable:FindShortestOfTheirs(spells)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindTheirs(cur)
+        if aura:IsValid() then
+            if not acc:IsValid() then
+                return aura
+            end
+            if aura:GetRemainingTime() < acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
+-- FindShortestOfFrom
+---@param spells List
+---@param source Unit
+---@return Aura
+function AuraTable:FindShortestOfFrom(spells, source)
+    return spells:reduce(function(acc, cur)
+        local aura = self:FindFrom(cur, source)
+        if aura:IsValid() then
+            if not acc:IsValid() then
+                return aura
+            end
+            if aura:GetRemainingTime() < acc:GetRemainingTime() then
+                return aura
+            end
+        end
+        return acc
+    end, Bastion.Aura:New())
+end
+
 -- Has any stealable aura
 ---@return boolean
 function AuraTable:HasAnyStealableAura()
