@@ -27,11 +27,22 @@ end
 ---@return Spell, ... Spell
 function SpellBook:GetSpells(...)
     local spells = {}
-    for _, id in ipairs({ ... }) do
+    for _, id in ipairs({...}) do
         table.insert(spells, self:GetSpell(id))
     end
 
     return unpack(spells)
+end
+
+---@param ... number[]
+---@return List
+function SpellBook:GetList(...)
+    local spells = {}
+    for _, id in ipairs({...}) do
+        table.insert(spells, self:GetSpell(id))
+    end
+
+    return Bastion.List:New(spells)
 end
 
 ---@param name string
