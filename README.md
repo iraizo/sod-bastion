@@ -11,3 +11,7 @@ Feel free to browse around the [Wiki](https://git.tinkr.site/4n0n/bastion/wiki) 
 - [Download](https://git.tinkr.site/4n0n/bastion/archive/main.zip) or clone the repository. 
 - Move the bastion folder to your `Tinkr/scripts` folder. 
 - Once in-game type `/bastion toggle` to enable the engine. 
+
+## Developer Information
+- [Issue Template](https://git.tinkr.site/Bastion/Bastion/wiki/Issues)
+- [Pull Requests](https://git.tinkr.site/Bastion/Bastion/wiki/Pull-Requests)
