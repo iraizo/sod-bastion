@@ -233,7 +233,7 @@ Command:Register('dumpspells', 'Dump spells to a file', function()
         if spellID then
             spellName = spellName:gsub("[%W%s]", "")
             WriteFile('bastion-' .. UnitClass('player') .. '-' .. rand .. '.lua',
-                "local " .. spellName .. " = Bastion.Globals.SpellBook:GetSpell(" .. spellID .. ")", true)
+                "local " .. spellName .. " = Bastion.Globals.SpellBook:GetSpell(" .. spellID .. ")\n", true)
         end
         i = i + 1
     end
