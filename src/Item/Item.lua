@@ -239,7 +239,7 @@ function Item:Click(x, y, z)
     if type(x) == 'table' then
         x, y, z = x.x, x.y, x.z
     end
-    if IsItemPending() == 64 then
+    if IsSpellPending() == 64 then
         MouselookStop()
         Click(x, y, z)
         if self:GetWasLooking() then
