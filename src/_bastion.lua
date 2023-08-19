@@ -6,8 +6,48 @@ local Bastion = {
 }
 Bastion.__index = Bastion
 
+function Bastion:Require(file)
+    -- If require starts with an @ then we require from the scripts/bastion/scripts folder
+    if file:sub(1, 1) == '@' then
+        file = file:sub(2)
+        -- print('1')
+        return require('scripts/bastion/scripts/' .. file, Bastion)
+    elseif file:sub(1, 1) == "~" then
+        file = file:sub(2)
+        -- print("2")
+        return require('scripts/bastion/' .. file, Bastion)
+    else
+        -- print("Normal req")
+        return require(file, Bastion)
+    end
+end
+
+local function Load(dir)
+    local dir = dir
+
+    if dir:sub(1, 1) == '@' then
+        dir = dir:sub(2)
+        dir = 'scripts/bastion/scripts/' .. dir
+    end
+
+    if dir:sub(1, 1) == '~' then
+        dir = dir:sub(2)
+        dir = 'scripts/bastion/' .. dir
+    end
+
+    local files = ListFiles(dir)
+
+    for i = 1, #files do
+        local file = files[i]
+        if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
+            return Bastion:Require(dir .. file:sub(1, -5))
+        end
+    end
+end
+
 function Bastion.require(class)
-    return require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
+    -- return require("scripts/bastion/src/" .. class .. "/" .. class, Bastion)
+    return Bastion:Require("~/src/" .. class .. "/" .. class)
 end
 
 Bastion.Globals = {}
@@ -279,17 +319,6 @@ Command:Register('missed', 'Dump the list of immune kidney shot spells', functio
     end
 end)
 
-local function Load(dir)
-    local files = ListFiles(dir)
-
-    for i = 1, #files do
-        local file = files[i]
-        if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
-            require(dir .. file:sub(1, -5), Bastion)
-        end
-    end
-end
-
 ---@param library Library
 function Bastion:RegisterLibrary(library)
     LIBRARIES[library.name] = library
@@ -359,11 +388,10 @@ function Bastion:GetLibrary(name)
     return library
 end
 
-Load("scripts/bastion/scripts/Libraries/")
-
 -- if not Bastion:CheckLibraryDependencies() then
 --     return
 -- end
 
-Load("scripts/bastion/scripts/Modules/")
-Load("scripts/bastion/scripts/")
+Load("@Libraries/")
+Load("@Modules/")
+Load("@")
