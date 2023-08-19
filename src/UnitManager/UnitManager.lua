@@ -4,49 +4,6 @@ local ObjectManager = Tinkr.Util.ObjectManager
 
 local Unit = Bastion.Unit
 
-local prefixes = {
-    '^player',
-    '^pet',
-    '^vehicle',
-    '^target',
-    '^focus',
-    '^mouseover',
-    '^none',
-    '^npc',
-    '^party[1-4]',
-    '^raid[1-4]?[0-9]',
-    '^boss[1-5]',
-    '^arena[1-5]'
-}
-
--- Validate a unit is a valid token
-local function Validate(token)
-    local start, index
-    local length, offset = string.len(token), 0
-    for i = 1, #prefixes do
-        start, index = string.find(token, prefixes[i])
-        if start then
-            offset = index + 1
-            if offset > length then
-                return true
-            else
-                while true do
-                    start, index = string.find(token, 'target', offset, true)
-                    if start then
-                        offset = index + 1
-                        if offset > length then
-                            return true
-                        end
-                    else
-                        return false
-                    end
-                end
-            end
-        end
-    end
-    return false
-end
-
 -- Create a new UnitManager class
 ---@class UnitManager
 local UnitManager = {
