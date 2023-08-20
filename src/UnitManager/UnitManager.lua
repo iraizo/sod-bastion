@@ -65,9 +65,6 @@ function UnitManager:New()
     return self
 end
 
-function UnitManager:Validate(token)
-    return Validate(token)
-end
 
 -- Get or create a unit
 ---@param token string
