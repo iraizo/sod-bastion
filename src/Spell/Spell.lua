@@ -12,11 +12,11 @@ local Spell = {
     lastCastAt = false,
     conditions = {},
     target = false,
-    release_at = false,
+    release_at = false
 }
 
 local usableExcludes = {
-    [18562] = true,
+    [18562] = true
 }
 
 function Spell:__index(k)
@@ -55,6 +55,12 @@ function Spell:New(id)
     self.spellID = id
 
     return self
+end
+
+-- Duplicator
+---@return Spell
+function Spell:Fresh()
+    return Spell:New(self:GetID())
 end
 
 -- Get the spells id
@@ -523,9 +529,7 @@ end
 -- IsDiseaseDispel
 ---@return boolean
 function Spell:IsDiseaseDispel()
-    return ({
-
-    })[self:GetID()]
+    return ({})[self:GetID()]
 end
 
 -- IsSpell
