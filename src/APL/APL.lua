@@ -109,21 +109,21 @@ function APLActor:Execute()
             -- print("Bastion: APL:Execute: Condition for spell " .. self:GetActor().spell:GetName())
             self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
                 self:GetActor().target, self:GetActor().condition)
+        else
+            -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
+            self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
+                self:GetActor().target)
         end
-
-        -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
-        self:GetActor().spell:CastableIf(self:GetActor().castableFunc):OnCast(self:GetActor().onCastFunc):Cast(
-            self:GetActor().target)
     end
     if self:GetActor().item then
         if self:GetActor().condition then
             -- print("Bastion: APL:Execute: Condition for spell " .. self:GetActor().spell:GetName())
             self:GetActor().item:UsableIf(self:GetActor().usableFunc):Use(self:GetActor().target,
                 self:GetActor().condition)
+        else
+            -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
+            self:GetActor().item:UsableIf(self:GetActor().usableFunc):Use(self:GetActor().target)
         end
-
-        -- print("Bastion: APL:Execute: No condition for spell " .. self:GetActor().spell:GetName())
-        self:GetActor().item:UsableIf(self:GetActor().usableFunc):Use(self:GetActor().target)
     end
     if self:GetActor().action then
         -- print("Bastion: APL:Execute: Executing action " .. self:GetActor().action)
@@ -209,7 +209,7 @@ end
 
 -- Add a spell to the APL
 ---@param spell Spell
----@param condition? fun(...):boolean
+---@param condition? string|fun(...):boolean
 ---@return APLActor
 function APL:AddSpell(spell, condition)
     local castableFunc = spell.CastableIfFunc
