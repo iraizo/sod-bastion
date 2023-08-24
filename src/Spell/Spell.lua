@@ -161,11 +161,15 @@ end
 
 -- Cast the spell
 ---@param unit Unit
----@param condition string
+---@param condition string|function
 ---@return boolean
 function Spell:Cast(unit, condition)
-    if condition and not self:EvaluateCondition(condition) then
-        return false
+    if condition then
+        if type(condition) == "string" and  not self:EvaluateCondition(condition) then
+            return false
+        elseif type(condition) == "function" and not condition(self) then
+            return false
+        end
     end
 
     if not self:Castable() then
