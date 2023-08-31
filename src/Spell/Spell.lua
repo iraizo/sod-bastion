@@ -161,7 +161,7 @@ end
 
 -- Cast the spell
 ---@param unit Unit
----@param condition string|function
+---@param condition? string|function
 ---@return boolean
 function Spell:Cast(unit, condition)
     if condition then
@@ -317,9 +317,9 @@ function Spell:GetWasLooking()
 end
 
 -- Click the spell
----@param x number
----@param y number
----@param z number
+---@param x number|Vector3
+---@param y? number
+---@param z? number
 ---@return boolean
 function Spell:Click(x, y, z)
     if type(x) == 'table' then
