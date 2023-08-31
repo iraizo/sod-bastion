@@ -231,7 +231,7 @@ end
 
 -- Add an item to the APL
 ---@param item Item
----@param condition fun(...):boolean
+---@param condition? fun(...):boolean
 ---@return APLActor
 function APL:AddItem(item, condition)
     local usableFunc = item.UsableIfFunc
@@ -268,8 +268,8 @@ end
 -- Execute the APL
 function APL:Execute()
     for _, actor in ipairs(self.apl) do
-        if actor:HasTraits() and actor:Evaluate() then
-            if actor:Execute() then
+        if actor:HasTraits() then
+            if actor:Evaluate() and actor:Execute() then
                 break
             end
         else
