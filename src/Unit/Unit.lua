@@ -596,7 +596,7 @@ end
 ---@param unit Unit | nil
 ---@return number
 function Unit:GetComboPoints(unit)
-    if Tinkr.classic then
+    if Tinkr.classic or Tinkr.era then
         if not unit then
             return 0
         end
@@ -607,7 +607,7 @@ end
 
 ---@return number
 function Unit:GetComboPointsMax()
-    if Tinkr.classic then
+    if Tinkr.classic or Tinkr.era then
         return 5
     end
     return UnitPowerMax(self:GetOMToken(), 4)
@@ -617,7 +617,7 @@ end
 ---@param unit Unit | nil
 ---@return number
 function Unit:GetComboPointsDeficit(unit)
-    if Tinkr.classic then
+    if Tinkr.classic or Tinkr.era then
         return self:GetComboPointsMax() - self:GetComboPoints(unit)
     end
     return self:GetComboPointsMax() - self:GetComboPoints()

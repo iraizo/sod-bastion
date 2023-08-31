@@ -118,7 +118,7 @@ end
 -- Get a units buffs
 ---@return nil
 function AuraTable:GetUnitBuffs()
-    if Tinkr.classic then
+    if Tinkr.classic or Tinkr.era then
         for i = 1, 40 do
             local aura = Bastion.Aura:New(self.unit, i, 'HELPFUL')
 
@@ -157,7 +157,7 @@ end
 -- Get a units debuffs
 ---@return nil
 function AuraTable:GetUnitDebuffs()
-    if Tinkr.classic then
+    if Tinkr.classic or Tinkr.era then
         for i = 1, 40 do
             local aura = Bastion.Aura:New(self.unit, i, 'HARMFUL')
 
@@ -279,7 +279,7 @@ function AuraTable:Find(spell)
             if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
                 return a
             else
-                if not Tinkr.classic then
+                if not Tinkr.classic or Tinkr.era then
                     self:RemoveInstanceID(a:GetAuraInstanceID())
                 end
             end
@@ -305,7 +305,7 @@ function AuraTable:FindMy(spell)
             if a:IsUp() then -- Handle expired and non refreshed dropoffs not coming in UNIT_AURA
                 return a
             else
-                if not Tinkr.classic then
+                if not Tinkr.classic or Tinkr.era then
                     self:RemoveInstanceID(a:GetAuraInstanceID())
                 end
             end
@@ -334,7 +334,7 @@ function AuraTable:FindFrom(spell, source)
                     return a
                 end
             else
-                if not Tinkr.classic then
+                if not Tinkr.classic or Tinkr.era then
                     self:RemoveInstanceID(a:GetAuraInstanceID())
                 end
             end
@@ -362,7 +362,7 @@ function AuraTable:FindTheirs(spell)
                     return a
                 end
             else
-                if not Tinkr.classic then
+                if not Tinkr.classic or Tinkr.era then
                     self:RemoveInstanceID(a:GetAuraInstanceID())
                 end
             end
