@@ -40,7 +40,7 @@ local function Load(dir)
     for i = 1, #files do
         local file = files[i]
         if file:sub(-4) == ".lua" or file:sub(-5) == '.luac' then
-            return Bastion:Require(dir .. file:sub(1, -5))
+            Bastion:Require(dir .. file:sub(1, -5))
         end
     end
 end
