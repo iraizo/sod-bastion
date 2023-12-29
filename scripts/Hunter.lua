@@ -19,9 +19,9 @@ local SerpentSting = SpellBook:GetSpell(13550)
 local isEatingAura = SpellBook:GetSpell(1539)
 
 local function FeedPet()
-    Evaluator:LoadString('TargetUnit("pet")', {''}, '')
+    Evaluator:LoadString('TargetUnit("pet")', { '' }, '')
     CastSpellByName("Feed Pet")
-    Evaluator:LoadString('UseItemByName("Bristle Whisker Catfish")', {''}, '')
+    Evaluator:LoadString('UseItemByName("Bristle Whisker Catfish")', { '' }, '')
 end
 
 -- Generates a circle around the given point, used for auto shot range
@@ -34,18 +34,19 @@ local function generateCircle(centerX, centerY, centerZ, radius, numPoints)
         local y = centerY + radius * math.sin(theta)
         local z = centerZ
 
-        table.insert(circlePoints, {x = x, y = y, z = z})
+        table.insert(circlePoints, { x = x, y = y, z = z })
     end
 
     return circlePoints
 end
 
+-- Gets the closest point from a list of points
 local function getClosestPoint(points, point)
     local closestPoint = nil
     local closestDistance = nil
 
     for i, p in ipairs(points) do
-        local distance = math.sqrt((p.x - point.x)^2 + (p.y - point.y)^2 + (p.z - point.z)^2)
+        local distance = math.sqrt((p.x - point.x) ^ 2 + (p.y - point.y) ^ 2 + (p.z - point.z) ^ 2)
 
         if closestDistance == nil or distance < closestDistance then
             closestPoint = p
@@ -59,27 +60,26 @@ end
 local function calculate_angles(pos1, pos2)
     -- Calculate direction vector from Object 1 to Object 2
     local dir_vector = pos2 - pos1
-
     -- Calculate heading angle in radians
-    local heading = math.atan2(dir_vector.y, dir_vector.x)
+    local heading = atan2(dir_vector.y, dir_vector.x)
 
     -- Calculate pitch angle in radians
-    local pitch = math.atan2(dir_vector.z, math.sqrt(dir_vector.x^2 + dir_vector.y^2))
+    local pitch = atan2(dir_vector.z, math.sqrt(dir_vector.x ^ 2 + dir_vector.y ^ 2))
 
     return heading, pitch
 end
 
-function slerp(start_angle, end_angle, t)
+-- Spherical Linear Interpolation, used for facing target in multiple steps
+local function slerp(start_angle, end_angle, t)
     -- Spherical Linear Interpolation
     local cos_interp = math.cos((1 - t) * start_angle + t * end_angle)
     local sin_interp = math.sin((1 - t) * start_angle + t * end_angle)
-    return math.atan2(sin_interp, cos_interp)
+    return atan2(sin_interp, cos_interp)
 end
 
-function radians_to_degrees(rad)
+local function radians_to_degrees(rad)
     return rad * (180 / math.pi)
 end
-
 
 local has_started_moving = nil
 local function hasArrived(point)
@@ -94,8 +94,7 @@ local function hasArrived(point)
             C_Timer.After(0.5, function()
                 local t = step / steps
                 local current_heading = slerp(0, target_heading, t)
-                local current_pitch = slerp(0, target_pitch, t)
-                
+
                 FaceDirection(current_heading, true)
             end)
         end
@@ -119,8 +118,6 @@ local function hasArrived(point)
 end
 
 Hunter:Sync(function()
-
-   -- Evaluator:LoadString('AttackTarget()', {''}, '')
     if Pet ~= nil then
         if Pet:IsDead() then
             RevivePet:Cast(Player)
@@ -129,7 +126,7 @@ Hunter:Sync(function()
         CallPet:Cast(Player)
     end
 
----@diagnostic disable-next-line: undefined-global
+    ---@diagnostic disable-next-line: undefined-global
     local happiness, _, _ = GetPetHappiness()
     if happiness ~= 3 and not UnitAffectingCombat('player') then
         if Pet:GetAuras():FindAny(isEatingAura):IsUp() == false then
@@ -204,17 +201,31 @@ Hunter:Sync(function()
         local player_pos = Player:GetPosition()
         local mapId = GetMapID()
 
+        -- We generate a circle around the target, and find the closest point to the player,
+        -- resulting in a position that isnt in the deadzone
+
         local points = generateCircle(pos.x, pos.y, pos.z, 20, 20)
         local closestPoint = getClosestPoint(points, Player:GetPosition())
 
-        local path, type = GeneratePath(player_pos.x, player_pos.y, player_pos.z, closestPoint.x, closestPoint.y, closestPoint.z, mapId)
+        if closestPoint == nil then
+            return
+        end
+
+        -- since the closestPoint can be in the air due to the world geometry
+        -- we will path find our way to the point cloest to the.. closest point
+        local path, type = GeneratePath(player_pos.x, player_pos.y, player_pos.z, closestPoint.x, closestPoint.y,
+            closestPoint.z, mapId)
         local last_point = nil
+
+        -- jesus christ, this is so ugly i dont know lua enough xd
         for _, point in ipairs(path) do
             last_point = point
         end
         if type == 0x01 then
             has_started_moving = GetTime()
             MoveTo(last_point.x, last_point.y, last_point.z)
+            -- recursively check if were at the point, if we do it also
+            -- faces the target
             hasArrived(closestPoint)
         end
     end
@@ -222,8 +233,6 @@ Hunter:Sync(function()
     if Player:GetEnemies(30) > 1 then
         MultiShot:Cast(Target)
     end
-
-
 end)
 
 Bastion:Register(Hunter)
